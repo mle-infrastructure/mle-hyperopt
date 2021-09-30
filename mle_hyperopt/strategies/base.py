@@ -5,11 +5,9 @@ class HyperOpt(object):
     def __init__(
         self,
         search_params: dict,
-        search_type: str = "grid",
     ):
         # Key Input: Specify which params to optimize & in which ranges (dict)
         self.search_params = search_params  # param space specs
-        self.search_type = search_type  # random/grid/smbo
         self.current_iter = 0
 
     def ask(self, num_iter_batch: int):

@@ -1,26 +1,16 @@
-from typing import Union
 from .base import HyperOpt
-from .hyperspace import construct_hyperparam_range
+from ..hyperspace import construct_hyperparam_range
 
 
-class NevergradHyperoptimisation(HyperOpt):
+class NevergradSearch(HyperOpt):
     def __init__(
         self,
-        hyper_log: HyperoptLogger,
-        resource_to_run: str,
-        job_arguments: dict,
-        config_fname: str,
-        job_fname: str,
-        experiment_dir: str,
         search_params: dict,
-        search_type: str = "nevergrad",
-        search_schedule: str = "sync",
         nevergrad_config: dict = {
             "base_estimator": "GP",
             "acq_function": "gp_hedge",
             "n_initial_points": 5,
         },
-        message_id: Union[str, None] = None,
     ):
         try:
             import nevergrad as ng
@@ -31,23 +21,9 @@ class NevergradHyperoptimisation(HyperOpt):
                 "the `mle_toolbox.hyperopt.nevergrad` module."
             )
 
-        # Check that SMBO uses synchronous scheduling
-        assert search_schedule == "sync", "Batch nevergrad schedules jobs synchronously"
-        BaseHyperOptimisation.__init__(
-            self,
-            hyper_log,
-            resource_to_run,
-            job_arguments,
-            config_fname,
-            job_fname,
-            experiment_dir,
-            search_params,
-            search_type,
-            search_schedule,
-            message_id,
-        )
+        HyperOpt.__init__(self, search_params)
         self.param_range = construct_hyperparam_range(
-            self.search_params, self.search_type
+            self.search_params, "nevergrad"
         )
 
         # Initialize the surrogate model/hyperparam config proposer
@@ -67,16 +43,16 @@ class NevergradHyperoptimisation(HyperOpt):
         else:
             raise ValueError("Please provide valid nevergrad optimizer type.")
 
-    def get_hyperparam_proposal(self, num_iter_per_batch: int):
+    def ask(self, batch_size: int):
         """Get proposals to eval next (in batches) - Random Sampling."""
         # Generate list of dictionaries with different hyperparams to evaluate
         self.last_batch_params = [
-            self.hyper_optimizer.ask() for i in range(num_iter_per_batch)
+            self.hyper_optimizer.ask() for i in range(batch_size)
         ]
         param_batch = [params.value[1] for params in self.last_batch_params]
         return param_batch
 
-    def clean_up_after_batch_iteration(self, batch_proposals, perf_measures):
+    def tell(self, batch_proposals, perf_measures):
         """Perform post-iteration clean-up by updating surrogate model."""
         # First key of all metrics is used to update the surrogate!
         to_model = list(perf_measures.keys())

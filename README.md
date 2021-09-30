@@ -5,7 +5,7 @@
 [![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/RobertTLange/mle-logging/blob/main/examples/getting_started.ipynb)
 <a href="docs/logo_transparent.png_2"><img src="docs/logo_transparent.png" width="200" align="right" /></a>
 
-Simple and intuitive hyperparameter optimization API for your Machine Learning Experiments (MLE). For a quickstart checkout the [notebook blog](https://github.com/RobertTLange/mle-hyperopt/blob/main/examples/getting_started.ipynb)
+Simple and intuitive hyperparameter optimization API for your Machine Learning Experiments (MLE). For a quickstart checkout the [notebook blog](https://github.com/RobertTLange/mle-hyperopt/blob/main/examples/getting_started.ipynb).
 
 ## The API 🎮
 
@@ -48,3 +48,11 @@ pip install -e .
 ## Development & Milestones for Next Release
 
 You can run the test suite via `python -m pytest -vv tests/`. If you find a bug or are missing your favourite feature, feel free to contact me [@RobertTLange](https://twitter.com/RobertTLange) or create an issue :hugs:. Here are some features I want to implement for the next release:
+
+- [ ] Implement tell API for all strategies
+- [ ] Setup the logger
+- [ ] Setup general parameter space (log uniform)
+- [ ] Setup saving and reloading log
+- [ ] Integrate back into `mle-toolbox`
+- [ ] Combine with fixed parameters into dict
+- [ ] Add method to store configuration as `.yaml` or `.json`

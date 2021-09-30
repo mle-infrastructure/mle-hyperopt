@@ -1,46 +1,24 @@
 import numpy as np
-from typing import Union
 from .base import HyperOpt
-from .hyperspace import construct_hyperparam_range
+from ..hyperspace import construct_hyperparam_range
 
 
-class RandomHyperoptimisation(HyperOpt):
+class RandomSearch(HyperOpt):
     def __init__(
         self,
-        hyper_log: HyperoptLogger,
-        resource_to_run: str,
-        job_arguments: dict,
-        config_fname: str,
-        job_fname: str,
-        experiment_dir: str,
         search_params: dict,
-        search_type: str = "random",
-        search_schedule: str = "sync",
-        message_id: Union[str, None] = None,
     ):
-        BaseHyperOptimisation.__init__(
-            self,
-            hyper_log,
-            resource_to_run,
-            job_arguments,
-            config_fname,
-            job_fname,
-            experiment_dir,
-            search_params,
-            search_type,
-            search_schedule,
-            message_id,
-        )
+        HyperOpt.__init__(self, search_params)
         self.param_range = construct_hyperparam_range(
-            self.search_params, self.search_type
+            self.search_params, "random"
         )
-        self.eval_counter = len(hyper_log)
+        self.eval_counter = 0
 
-    def get_hyperparam_proposal(self, num_evals_per_batch: int):
+    def ask(self, batch_size: int):
         """Get proposals to eval next (in batches) - Random Sampling."""
         param_batch = []
         # Sample a new configuration for each eval in the batch
-        while len(param_batch) < num_evals_per_batch:
+        while len(param_batch) < batch_size:
             proposal_params = {}
             # Sample the parameters individually at random from the ranges
             for p_name, p_range in self.param_range.items():
@@ -62,3 +40,6 @@ class RandomHyperoptimisation(HyperOpt):
                 # Otherwise continue sampling proposals
                 continue
         return param_batch
+
+    def tell(self, batch_proposals, perf_measures):
+        """Perform post-iteration clean-up by updating surrogate model."""

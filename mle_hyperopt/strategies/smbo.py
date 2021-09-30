@@ -1,27 +1,17 @@
 import numpy as np
-from typing import Union
 from .base import HyperOpt
-from .hyperspace import construct_hyperparam_range
+from ..hyperspace import construct_hyperparam_range
 
 
-class SMBOHyperoptimisation(HyperOpt):
+class SMBOSearch(HyperOpt):
     def __init__(
         self,
-        hyper_log: HyperoptLogger,
-        resource_to_run: str,
-        job_arguments: dict,
-        config_fname: str,
-        job_fname: str,
-        experiment_dir: str,
         search_params: dict,
-        search_type: str = "smbo",
-        search_schedule: str = "sync",
         smbo_config: dict = {
             "base_estimator": "GP",
             "acq_function": "gp_hedge",
             "n_initial_points": 5,
         },
-        message_id: Union[str, None] = None,
     ):
         try:
             from skopt import Optimizer
@@ -33,22 +23,9 @@ class SMBOHyperoptimisation(HyperOpt):
             )
 
         # Check that SMBO uses synchronous scheduling
-        assert search_schedule == "sync", "Batch SMBO schedules jobs synchronously"
-        BaseHyperOptimisation.__init__(
-            self,
-            hyper_log,
-            resource_to_run,
-            job_arguments,
-            config_fname,
-            job_fname,
-            experiment_dir,
-            search_params,
-            search_type,
-            search_schedule,
-            message_id,
-        )
+        HyperOpt.__init__(self, search_params)
         self.param_range = construct_hyperparam_range(
-            self.search_params, self.search_type
+            self.search_params, "smbo"
         )
 
         # Initialize the surrogate model/hyperparam config proposer
@@ -61,10 +38,10 @@ class SMBOHyperoptimisation(HyperOpt):
             n_initial_points=smbo_config["n_initial_points"],
         )
 
-    def get_hyperparam_proposal(self, num_iter_per_batch: int):
+    def ask(self, batch_size: int):
         """Get proposals to eval next (in batches) - Random Sampling."""
         param_batch = []
-        proposals = self.hyper_optimizer.ask(n_points=num_iter_per_batch)
+        proposals = self.hyper_optimizer.ask(n_points=batch_size)
         # Generate list of dictionaries with different hyperparams to evaluate
         for prop in proposals:
             proposal_params = {}
@@ -76,7 +53,7 @@ class SMBOHyperoptimisation(HyperOpt):
             param_batch.append(proposal_params)
         return param_batch
 
-    def clean_up_after_batch_iteration(self, batch_proposals, perf_measures):
+    def tell(self, batch_proposals, perf_measures):
         """Perform post-iteration clean-up by updating surrogate model."""
         x, y = [], []
         # First key of all metrics is used to update the surrogate!

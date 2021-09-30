@@ -32,7 +32,7 @@ git_tar = f"https://github.com/RobertTLange/mle-hyperopt/archive/v{verstr}.tar.g
 
 
 setup(
-    name="mle_logging",
+    name="mle_hyperopt",
     version=verstr,
     author="Robert Tjarko Lange",
     author_email="robertlange0@gmail.com",
