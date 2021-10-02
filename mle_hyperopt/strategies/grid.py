@@ -1,27 +1,34 @@
+from typing import Union
 from collections.abc import Mapping, Iterable
 from functools import partial, reduce
 import operator
 from itertools import product
 from .base import HyperOpt
-from ..hyperspace import construct_hyperparam_range
+from ..hyperspace import grid_space
 
 
 class GridSearch(HyperOpt):
     def __init__(
         self,
-        search_params: dict,
+        real: Union[dict, None] = None,
+        integer: Union[dict, None] = None,
+        categorical: Union[dict, None] = None,
+        fixed_params: Union[dict, None] = None,
+        reload_path: Union[str, None] = None,
+        reload_list: Union[list, None] = None,
     ):
-        HyperOpt.__init__(self, search_params)
+        HyperOpt.__init__(self, real, integer, categorical, fixed_params,
+                          reload_path, reload_list)
         # Generate all possible combinations of param configs in list & loop
         # over the list when doing the grid search
-        self.param_range = construct_hyperparam_range(
-            self.search_params, "grid"
-        )
+        self.param_range = grid_space(real, integer, categorical)
         self.param_grid = list(ParameterGrid(self.param_range))
         self.num_param_configs = len(self.param_grid)
-        self.eval_counter = 0
+        self.grid_counter = self.eval_counter
 
-    def ask(self, batch_size: int):
+        # TODO: Add start-up message printing the search space
+
+    def ask_search(self, batch_size: int):
         """Get proposals to eval next (in batches) - Grid Search"""
         param_batch = []
         # Sample a new configuration for each eval in the batch
@@ -30,22 +37,27 @@ class GridSearch(HyperOpt):
             and self.eval_counter < self.num_param_configs
         ):
             # Get parameter batch from the grid
-            proposal_params = self.param_grid[self.eval_counter]
-            param_batch.append(proposal_params)
-            self.eval_counter += 1
-            # if proposal_params not in (
-            #     self.hyper_log.all_evaluated_params + param_batch
-            # ):
-            #     # Add parameter proposal to the batch list
-            #     param_batch.append(proposal_params)
-            #     self.eval_counter += 1
-            # else:
-            #     # Otherwise continue sampling proposals
-            #     continue
+            proposal_params = self.param_grid[self.grid_counter]
+            if proposal_params not in (
+                self.all_evaluated_params + param_batch
+            ):
+                # Add parameter proposal to the batch list
+                param_batch.append(proposal_params)
+                self.grid_counter += 1
+            else:
+                # Otherwise continue sampling proposals
+                continue
         return param_batch
 
-    def tell(self, batch_proposals, perf_measures):
+    def tell_search(self, batch_proposals: list, perf_measures: list):
         """Update search log data - Grid Search"""
+        # Make sure that the grid_counter equals the eval eval_counter
+        # This is only relevant if we load in new log data mid-search
+        self.grid_counter = self.eval_counter
+
+    def plot_grid(self):
+        """Plot 2D heatmap of evaluations."""
+        raise NotImplementedError
 
 
 class ParameterGrid:

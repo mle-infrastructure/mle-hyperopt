@@ -1,6 +1,6 @@
 import numpy as np
 from .base import HyperOpt
-from ..hyperspace import construct_hyperparam_range
+from ..hyperspace import smbo_space
 
 
 class SMBOSearch(HyperOpt):

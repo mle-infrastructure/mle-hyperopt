@@ -1,5 +1,5 @@
 from .base import HyperOpt
-from ..hyperspace import construct_hyperparam_range
+from ..hyperspace import nevergrad_space
 
 
 class NevergradSearch(HyperOpt):

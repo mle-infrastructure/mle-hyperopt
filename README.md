@@ -1,4 +1,4 @@
-# `mle-hyperopt`: Lightweight Hyperparameter Optimization 🚀
+# Lightweight Hyperparameter Optimization 🚀
 [![Pyversions](https://img.shields.io/pypi/pyversions/mle-logging.svg?style=flat-square)](https://pypi.python.org/pypi/mle-logging)
 [![PyPI version](https://badge.fury.io/py/mle-logging.svg)](https://badge.fury.io/py/mle-logging)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
@@ -26,8 +26,9 @@ strategy.load("random_search_log.pkl")
 strategy = RandomSearch(reload_path="random_search_log.pkl")
 ```
 
-- List of implemented/wrapped algorithms
-- Example with different types of variables and priors over distributions
+- List of implemented/wrapped algorithms.
+- Example with different types of variables and priors over distributions.
+- Note that we assume that the objective is minimized (multiple by -1 is this is not the case).
 
 ## Installation ⏳
 
@@ -56,3 +57,9 @@ You can run the test suite via `python -m pytest -vv tests/`. If you find a bug 
 - [ ] Integrate back into `mle-toolbox`
 - [ ] Combine with fixed parameters into dict
 - [ ] Add method to store configuration as `.yaml` or `.json`
+- [ ] Add basic plotting utilities
+  - [ ] Grid search plot
+  - [ ] Best score at each iteration (as in algonauts)
+- [ ] Add assert checks for space dictionaries
+- [ ] Add "variable" wrappers (Real, Integer, Categorical)
+- [ ] Think about easy storing of log results in `MLELogger`, `multi_update` method?

@@ -1,12 +1,14 @@
+from typing import Union, List
 import numpy as np
 from .base import HyperOpt
-from ..hyperspace import construct_hyperparam_range
+from ..hyperspace import random_space
 
 
 class RandomSearch(HyperOpt):
     def __init__(
         self,
         search_params: dict,
+        refine_after: Union[None, List[int], int] = None,
     ):
         HyperOpt.__init__(self, search_params)
         self.param_range = construct_hyperparam_range(
@@ -43,3 +45,9 @@ class RandomSearch(HyperOpt):
 
     def tell(self, batch_proposals, perf_measures):
         """Perform post-iteration clean-up by updating surrogate model."""
+        # Refine after search iterations
+        raise NotImplementedError
+
+    def refine(self, top_k):
+        """Refine the space boundaries based on top-k performers."""
+        raise NotImplementedError
