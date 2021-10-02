@@ -26,16 +26,21 @@ class HyperOpt(object):
         fixed_params: Union[dict, None] = None,
         reload_path: Union[str, None] = None,
         reload_list: Union[list, None] = None,
+        seed_id: int = 42,
     ):
         # Key Input: Specify which params to optimize & in which ranges (dict)
         self.real = real
         self.integer = integer
         self.categorical = categorical
         self.fixed_params = fixed_params
+        self.seed_id = 42
         self.eval_counter = 0
         self.log = []
         self.all_evaluated_params = []
         self.load(reload_path, reload_list)
+
+        # TODO: Set random seed for reproduction for all strategies
+        np.random.seed(self.seed_id)
 
     def ask(self, batch_size: int, store: bool = False,
             config_fnames: Union[None, List[str]] = None):
@@ -54,7 +59,9 @@ class HyperOpt(object):
             else:
                 assert len(config_fnames) == len(param_batch)
             self.store_configs(param_batch, config_fnames)
-        return param_batch
+            return param_batch, config_fnames
+        else:
+            return param_batch
 
     def ask_search(self, batch_size: int):
         """Search method-specific proposal generation."""
@@ -64,20 +71,19 @@ class HyperOpt(object):
              batch_proposals: Union[List[dict], dict],
              perf_measures: Union[List[float], float]):
         """Perform post-iteration clean-up. (E.g. update surrogate model)"""
-        self.tell_search(batch_proposals, perf_measures)
-
         for i in range(len(batch_proposals)):
             # Check whether proposals were already previously added
             # If so -- ignore (and print message?)
             if batch_proposals[i] in self.all_evaluated_params:
-                print(f"{batch_proposals[i]} were previously evaluated.")
+                print(f"{batch_proposals[i]} was previously evaluated.")
             else:
                 self.log.append({"eval_id": self.eval_counter,
                                  "params": batch_proposals[i],
                                  "objective": perf_measures[i]})
                 self.all_evaluated_params.append(batch_proposals[i])
                 self.eval_counter += 1
-                print(f"Loaded {batch_proposals[i]}, Obj: {perf_measures[i]}.")
+
+        self.tell_search(batch_proposals, perf_measures)
 
     def tell_search(self, batch_proposals: list, perf_measures: list):
         """Search method-specific strategy update."""
@@ -112,8 +118,10 @@ class HyperOpt(object):
         assert top_k <= self.eval_counter
         objective_evals = [it["objective"] for it in self.log]
         best_idx = np.argsort(objective_evals)[:top_k]
-        best_configs = [self.log[idx] for idx in best_idx]
-        return best_configs
+        best_iters = [self.log[idx] for idx in best_idx]
+        best_configs = [it["params"] for it in best_iters]
+        best_evals = [it["objective"] for it in best_iters]
+        return best_configs, best_evals
 
     def print_ranking(self, top_k: int = 5):
         """Pretty print archive of best configurations."""

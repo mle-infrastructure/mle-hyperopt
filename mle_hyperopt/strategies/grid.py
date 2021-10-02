@@ -34,7 +34,7 @@ class GridSearch(HyperOpt):
         # Sample a new configuration for each eval in the batch
         while (
             len(param_batch) < batch_size
-            and self.eval_counter < self.num_param_configs
+            and self.grid_counter < self.num_param_configs
         ):
             # Get parameter batch from the grid
             proposal_params = self.param_grid[self.grid_counter]

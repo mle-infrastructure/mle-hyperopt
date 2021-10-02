@@ -1,3 +1,6 @@
+eval_0.yaml
+eval_1.yaml
+search_log.pkl
 *.gif
 *.zip
 .vim-arsync
