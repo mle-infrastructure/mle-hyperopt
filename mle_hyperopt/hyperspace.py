@@ -2,7 +2,7 @@ import numpy as np
 
 
 def grid_space(real, integer, categorical) -> dict:
-    """ For grid hyperopt generate numpy lists with desired resolution"""
+    """For grid hyperopt generate numpy lists with desired resolution"""
     param_range = {}
     if categorical is not None:
         for k, v in categorical.items():
@@ -73,8 +73,8 @@ def smbo_space(real, integer, categorical) -> dict:
     return param_range
 
 
-def nevergrad_space(real, integer, categorical) -> dict:
-    """ For Nevergrad-based hyperopt generate spaces with parametrization"""
+def nevergrad_space(real, integer, categorical) -> dict:  # noqa:C901
+    """For Nevergrad-based hyperopt generate spaces with parametrization"""
     param_range = {}
     try:
         import nevergrad as ng
@@ -95,9 +95,7 @@ def nevergrad_space(real, integer, categorical) -> dict:
                     lower=float(v["begin"]), upper=float(v["end"])
                 )
             elif v["prior"] == "log-uniform":
-                param_dict[k] = ng.p.Log(
-                    lower=float(v["begin"]), upper=float(v["end"])
-                )
+                param_dict[k] = ng.p.Log(lower=float(v["begin"]), upper=float(v["end"]))
     if integer is not None:
         for k, v in integer.items():
             if v["prior"] == "uniform":

@@ -30,8 +30,9 @@ class SMBOSearch(HyperOpt):
             )
 
         # Check that SMBO uses synchronous scheduling
-        HyperOpt.__init__(self, real, integer, categorical,
-                          fixed_params, reload_path, reload_list)
+        HyperOpt.__init__(
+            self, real, integer, categorical, fixed_params, reload_path, reload_list
+        )
         self.param_range = smbo_space(real, integer, categorical)
 
         # Initialize the surrogate model/hyperparam config proposer

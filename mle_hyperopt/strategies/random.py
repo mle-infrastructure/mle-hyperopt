@@ -16,8 +16,9 @@ class RandomSearch(HyperOpt):
         refine_after: Union[None, List[int], int] = None,
         refine_top_k: Union[None, int] = 5,
     ):
-        HyperOpt.__init__(self, real, integer, categorical, fixed_params,
-                          reload_path, reload_list)
+        HyperOpt.__init__(
+            self, real, integer, categorical, fixed_params, reload_path, reload_list
+        )
         self.param_range = random_space(real, integer, categorical)
         self.refine_after = refine_after
         self.refine_counter = 0
@@ -41,9 +42,7 @@ class RandomSearch(HyperOpt):
                     eval_param = np.random.uniform(*p_range["values"])
                 proposal_params[p_name] = eval_param
 
-            if proposal_params not in (
-                self.all_evaluated_params + param_batch
-            ):
+            if proposal_params not in (self.all_evaluated_params + param_batch):
                 # Add parameter proposal to the batch list
                 param_batch.append(proposal_params)
             else:
@@ -76,8 +75,10 @@ class RandomSearch(HyperOpt):
             real_refined = {}
             for var in self.real.keys():
                 top_k_var = [config[var] for config in top_k_configs]
-                real_refined[var] = {"begin": np.min(top_k_var),
-                                     "end": np.max(top_k_var)}
+                real_refined[var] = {
+                    "begin": np.min(top_k_var),
+                    "end": np.max(top_k_var),
+                }
         else:
             real_refined = None
 
@@ -85,15 +86,17 @@ class RandomSearch(HyperOpt):
             integer_refined = {}
             for var in self.integer.keys():
                 top_k_var = [config[var] for config in top_k_configs]
-                integer_refined[var] = {"begin": int(np.min(top_k_var)),
-                                        "end": int(np.max(top_k_var)),
-                                        "spacing": self.integer[var]["spacing"]}
+                integer_refined[var] = {
+                    "begin": int(np.min(top_k_var)),
+                    "end": int(np.max(top_k_var)),
+                    "spacing": self.integer[var]["spacing"],
+                }
         else:
             integer_refined = None
 
-        self.param_range = random_space(real_refined,
-                                        integer_refined,
-                                        categorical_refined)
+        self.param_range = random_space(
+            real_refined, integer_refined, categorical_refined
+        )
         print("Refined the random search space:")
         print(f"Real: {real_refined}")
         print(f"Integer: {integer_refined}")

@@ -17,7 +17,8 @@ sns.set(
 
 
 class HyperOpt(object):
-    """ Base Class for Running Hyperparameter Optimisation Searches."""
+    """Base Class for Running Hyperparameter Optimisation Searches."""
+
     def __init__(
         self,
         real: Union[dict, None] = None,
@@ -42,8 +43,12 @@ class HyperOpt(object):
         # TODO: Set random seed for reproduction for all strategies
         np.random.seed(self.seed_id)
 
-    def ask(self, batch_size: int, store: bool = False,
-            config_fnames: Union[None, List[str]] = None):
+    def ask(
+        self,
+        batch_size: int,
+        store: bool = False,
+        config_fnames: Union[None, List[str]] = None,
+    ):
         """Get proposals to eval - implemented by specific hyperopt algo"""
         param_batch = self.ask_search(batch_size)
         # If fixed params are not none add them to config dicts
@@ -54,8 +59,10 @@ class HyperOpt(object):
         # If string for storage is given: Save configs as .yaml
         if store:
             if config_fnames is None:
-                config_fnames = [f"eval_{self.eval_counter + i}.yaml"
-                                 for i in range(len(param_batch))]
+                config_fnames = [
+                    f"eval_{self.eval_counter + i}.yaml"
+                    for i in range(len(param_batch))
+                ]
             else:
                 assert len(config_fnames) == len(param_batch)
             self.store_configs(param_batch, config_fnames)
@@ -67,9 +74,11 @@ class HyperOpt(object):
         """Search method-specific proposal generation."""
         raise NotImplementedError
 
-    def tell(self,
-             batch_proposals: Union[List[dict], dict],
-             perf_measures: Union[List[float], float]):
+    def tell(
+        self,
+        batch_proposals: Union[List[dict], dict],
+        perf_measures: Union[List[float], float],
+    ):
         """Perform post-iteration clean-up. (E.g. update surrogate model)"""
         for i in range(len(batch_proposals)):
             # Check whether proposals were already previously added
@@ -77,9 +86,13 @@ class HyperOpt(object):
             if batch_proposals[i] in self.all_evaluated_params:
                 print(f"{batch_proposals[i]} was previously evaluated.")
             else:
-                self.log.append({"eval_id": self.eval_counter,
-                                 "params": batch_proposals[i],
-                                 "objective": perf_measures[i]})
+                self.log.append(
+                    {
+                        "eval_id": self.eval_counter,
+                        "params": batch_proposals[i],
+                        "objective": perf_measures[i],
+                    }
+                )
                 self.all_evaluated_params.append(batch_proposals[i])
                 self.eval_counter += 1
 
@@ -94,9 +107,11 @@ class HyperOpt(object):
         save_pkl_object(self.log, save_path)
         print(f"Stored {self.eval_counter} search iterations.")
 
-    def load(self,
-             reload_path: Union[str, None] = None,
-             reload_list: Union[list, None] = None):
+    def load(
+        self,
+        reload_path: Union[str, None] = None,
+        reload_list: Union[list, None] = None,
+    ):
         """Reload the state of the optimizer (parameters, values) as .pkl."""
         # Simply loop over param, value pairs and `tell` the strategy.
         prev_evals = int(self.eval_counter)
@@ -110,8 +125,10 @@ class HyperOpt(object):
                 self.tell([iter["params"]], [iter["objective"]])
 
         if reload_path is not None or reload_list is not None:
-            print(f"Reloaded {self.eval_counter - prev_evals}"
-                  " previous search iterations.")
+            print(
+                f"Reloaded {self.eval_counter - prev_evals}"
+                " previous search iterations."
+            )
 
     def get_best(self, top_k: int = 1):
         """Return top-k best performing parameter configurations."""
@@ -130,9 +147,11 @@ class HyperOpt(object):
         for i in range(top_k):
             print(best_evals[i], best_configs[i])
 
-    def store_configs(self,
-                      config_dicts: List[dict],
-                      config_fnames: Union[str, List[str], None] = None):
+    def store_configs(
+        self,
+        config_dicts: List[dict],
+        config_fnames: Union[str, List[str], None] = None,
+    ):
         """Store configuration as .json files to file path."""
         write_configs_to_file(config_dicts, config_fnames)
 

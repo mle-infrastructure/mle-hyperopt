@@ -1,3 +1,5 @@
 numpy
-pandas
-dotmap
+matplotlib
+seaborn
+scikit-optimize
+nevergrad

@@ -29,6 +29,4 @@ def write_configs_to_file(params_batch: List[dict], config_fnames: List[str]):
                 json.dump(params_batch[s_id], f)
         elif config_fext == ".yaml":
             with open(config_fnames[s_id], "w") as f:
-                yaml.dump(
-                    params_batch[s_id], f, default_flow_style=False
-                )
+                yaml.dump(params_batch[s_id], f, default_flow_style=False)

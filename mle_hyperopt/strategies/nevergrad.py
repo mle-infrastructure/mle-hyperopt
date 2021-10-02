@@ -22,9 +22,7 @@ class NevergradSearch(HyperOpt):
             )
 
         HyperOpt.__init__(self, search_params)
-        self.param_range = construct_hyperparam_range(
-            self.search_params, "nevergrad"
-        )
+        self.param_range = nevergrad_space(self.search_params, "nevergrad")
 
         # Initialize the surrogate model/hyperparam config proposer
         self.nevergrad_config = nevergrad_config
@@ -46,9 +44,7 @@ class NevergradSearch(HyperOpt):
     def ask(self, batch_size: int):
         """Get proposals to eval next (in batches) - Random Sampling."""
         # Generate list of dictionaries with different hyperparams to evaluate
-        self.last_batch_params = [
-            self.hyper_optimizer.ask() for i in range(batch_size)
-        ]
+        self.last_batch_params = [self.hyper_optimizer.ask() for i in range(batch_size)]
         param_batch = [params.value[1] for params in self.last_batch_params]
         return param_batch
 

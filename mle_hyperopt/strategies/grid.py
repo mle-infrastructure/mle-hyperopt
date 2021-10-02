@@ -17,8 +17,9 @@ class GridSearch(HyperOpt):
         reload_path: Union[str, None] = None,
         reload_list: Union[list, None] = None,
     ):
-        HyperOpt.__init__(self, real, integer, categorical,
-                          fixed_params, reload_path, reload_list)
+        HyperOpt.__init__(
+            self, real, integer, categorical, fixed_params, reload_path, reload_list
+        )
         # Generate all possible combinations of param configs in list & loop
         # over the list when doing the grid search
         self.param_range = grid_space(real, integer, categorical)
@@ -33,14 +34,11 @@ class GridSearch(HyperOpt):
         param_batch = []
         # Sample a new configuration for each eval in the batch
         while (
-            len(param_batch) < batch_size
-            and self.grid_counter < self.num_param_configs
+            len(param_batch) < batch_size and self.grid_counter < self.num_param_configs
         ):
             # Get parameter batch from the grid
             proposal_params = self.param_grid[self.grid_counter]
-            if proposal_params not in (
-                self.all_evaluated_params + param_batch
-            ):
+            if proposal_params not in (self.all_evaluated_params + param_batch):
                 # Add parameter proposal to the batch list
                 param_batch.append(proposal_params)
                 self.grid_counter += 1

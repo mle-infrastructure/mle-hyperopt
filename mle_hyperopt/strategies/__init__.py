@@ -4,10 +4,4 @@ from .smbo import SMBOSearch
 from .nevergrad import NevergradSearch
 
 
-__all__ = [
-    "__version__",
-    "RandomSearch",
-    "GridSearch",
-    "SMBOSearch",
-    "NevergradSearch"
-]
+__all__ = ["__version__", "RandomSearch", "GridSearch", "SMBOSearch", "NevergradSearch"]
