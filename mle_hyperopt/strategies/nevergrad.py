@@ -1,4 +1,4 @@
-from .base import HyperOpt
+from ..base import HyperOpt
 from ..hyperspace import nevergrad_space
 
 

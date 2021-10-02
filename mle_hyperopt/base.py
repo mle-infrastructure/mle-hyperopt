@@ -2,7 +2,7 @@ from typing import Union, List
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
-from ..utils import load_pkl_object, save_pkl_object, write_configs_to_file
+from .utils import load_pkl_object, save_pkl_object, write_configs_to_file
 
 
 sns.set(
@@ -126,7 +126,9 @@ class HyperOpt(object):
     def print_ranking(self, top_k: int = 5):
         """Pretty print archive of best configurations."""
         # TODO: Add nice rich-style print statement!
-        raise NotImplementedError
+        best_configs, best_evals = self.get_best(top_k)
+        for i in range(top_k):
+            print(best_evals[i], best_configs[i])
 
     def store_configs(self,
                       config_dicts: List[dict],

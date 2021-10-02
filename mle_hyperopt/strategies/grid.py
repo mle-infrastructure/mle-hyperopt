@@ -3,7 +3,7 @@ from collections.abc import Mapping, Iterable
 from functools import partial, reduce
 import operator
 from itertools import product
-from .base import HyperOpt
+from ..base import HyperOpt
 from ..hyperspace import grid_space
 
 
@@ -17,8 +17,8 @@ class GridSearch(HyperOpt):
         reload_path: Union[str, None] = None,
         reload_list: Union[list, None] = None,
     ):
-        HyperOpt.__init__(self, real, integer, categorical, fixed_params,
-                          reload_path, reload_list)
+        HyperOpt.__init__(self, real, integer, categorical,
+                          fixed_params, reload_path, reload_list)
         # Generate all possible combinations of param configs in list & loop
         # over the list when doing the grid search
         self.param_range = grid_space(real, integer, categorical)

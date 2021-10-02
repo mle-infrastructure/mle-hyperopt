@@ -51,15 +51,12 @@ pip install -e .
 You can run the test suite via `python -m pytest -vv tests/`. If you find a bug or are missing your favourite feature, feel free to contact me [@RobertTLange](https://twitter.com/RobertTLange) or create an issue :hugs:. Here are some features I want to implement for the next release:
 
 - [ ] Implement tell API for all strategies
-- [ ] Setup the logger
-- [ ] Setup general parameter space (log uniform)
-- [ ] Setup saving and reloading log
-- [ ] Integrate back into `mle-toolbox`
-- [ ] Combine with fixed parameters into dict
-- [ ] Add method to store configuration as `.yaml` or `.json`
-- [ ] Add basic plotting utilities
-  - [ ] Grid search plot
-  - [ ] Best score at each iteration (as in algonauts)
 - [ ] Add assert checks for space dictionaries
 - [ ] Add "variable" wrappers (Real, Integer, Categorical)
+- [ ] Setup general parameter spaces (log uniform)
+- [ ] Add tests for core functionality
+- [ ] Add github workflow (tests, pypi publish)
+- [ ] Integrate back into `mle-toolbox`
+- [ ] Add basic plotting utilities
+  - [ ] Grid search plot
 - [ ] Think about easy storing of log results in `MLELogger`, `multi_update` method?

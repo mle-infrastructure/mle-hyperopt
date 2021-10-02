@@ -1,6 +1,6 @@
 from typing import Union, List
 import numpy as np
-from .base import HyperOpt
+from ..base import HyperOpt
 from ..hyperspace import random_space
 
 
