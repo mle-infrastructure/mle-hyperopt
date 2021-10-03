@@ -83,17 +83,22 @@ class HyperOpt(object):
         for i in range(len(batch_proposals)):
             # Check whether proposals were already previously added
             # If so -- ignore (and print message?)
-            if batch_proposals[i] in self.all_evaluated_params:
+            proposal_clean = dict(batch_proposals[i])
+            if self.fixed_params is not None:
+                for k in self.fixed_params.keys():
+                    del proposal_clean[k]
+
+            if proposal_clean in self.all_evaluated_params:
                 print(f"{batch_proposals[i]} was previously evaluated.")
             else:
                 self.log.append(
                     {
                         "eval_id": self.eval_counter,
-                        "params": batch_proposals[i],
+                        "params": proposal_clean,
                         "objective": perf_measures[i],
                     }
                 )
-                self.all_evaluated_params.append(batch_proposals[i])
+                self.all_evaluated_params.append(proposal_clean)
                 self.eval_counter += 1
 
         self.tell_search(batch_proposals, perf_measures)
@@ -144,7 +149,10 @@ class HyperOpt(object):
         else:
             pareto_configs, pareto_evals = self.get_pareto_front()
             best_configs, best_evals = pareto_configs[:top_k], pareto_evals[:top_k]
-        return best_configs, best_evals
+        if top_k == 1:
+            return best_configs[0], best_evals[0]
+        else:
+            return best_configs, best_evals
 
     def print_ranking(self, top_k: int = 5):
         """Pretty print archive of best configurations."""

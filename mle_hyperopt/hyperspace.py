@@ -15,7 +15,7 @@ def grid_space(real, integer, categorical) -> dict:
     if integer is not None:
         for k, v in integer.items():
             param_range[k] = np.arange(
-                int(v["begin"]), int(v["end"]), int(v["spacing"])
+                int(v["begin"]), int(v["end"]) + 1, int(v["spacing"])
             ).tolist()
     return param_range
 
@@ -36,7 +36,7 @@ def random_space(real, integer, categorical) -> dict:
         for k, v in integer.items():
             param_range[k] = {
                 "value_type": "integer",
-                "values": np.arange(int(v["begin"]), int(v["end"]), 1).tolist(),
+                "values": np.arange(int(v["begin"]), int(v["end"]) + 1, 1).tolist(),
             }
     return param_range
 
@@ -68,7 +68,7 @@ def smbo_space(real, integer, categorical) -> dict:
     if integer is not None:
         for k, v in integer.items():
             param_range[k] = Integer(
-                int(v["begin"]), int(v["end"]), prior=v["prior"], name=k
+                int(v["begin"]), int(v["end"]) + 1, prior=v["prior"], name=k
             )
     return param_range
 
@@ -95,17 +95,16 @@ def nevergrad_space(real, integer, categorical) -> dict:  # noqa:C901
                     lower=float(v["begin"]), upper=float(v["end"])
                 )
             elif v["prior"] == "log-uniform":
-                param_dict[k] = ng.p.Log(lower=float(v["begin"]),
-                                         upper=float(v["end"]))
+                param_dict[k] = ng.p.Log(lower=float(v["begin"]), upper=float(v["end"]))
     if integer is not None:
         for k, v in integer.items():
             if v["prior"] == "uniform":
                 param_dict[k] = ng.p.Scalar(
-                    lower=float(v["begin"]), upper=float(v["end"])
+                    lower=float(v["begin"]), upper=float(v["end"]) + 1
                 ).set_integer_casting()
             elif v["prior"] == "log-uniform":
                 param_dict[k] = ng.p.Log(
-                    lower=float(v["begin"]), upper=float(v["end"])
+                    lower=float(v["begin"]), upper=float(v["end"]) + 1
                 ).set_integer_casting()
     param_range = ng.p.Instrumentation(**param_dict)
     return param_range

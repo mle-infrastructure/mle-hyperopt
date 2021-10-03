@@ -73,8 +73,9 @@ class NevergradSearch(HyperOpt):
     def get_pareto_front(self):
         """Get the pareto-front of the optimizer."""
         pareto_configs, pareto_evals = [], []
-        for param in sorted(self.hyper_optimizer.pareto_front(),
-                            key=lambda p: p.losses[0]):
+        for param in sorted(
+            self.hyper_optimizer.pareto_front(), key=lambda p: p.losses[0]
+        ):
             pareto_configs.append(param.value[1])
             pareto_evals.append(param.losses)
         return pareto_configs, pareto_evals

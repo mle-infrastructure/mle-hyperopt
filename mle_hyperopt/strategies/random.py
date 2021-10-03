@@ -10,21 +10,25 @@ class RandomSearch(HyperOpt):
         real: Union[dict, None] = None,
         integer: Union[dict, None] = None,
         categorical: Union[dict, None] = None,
+        search_config: Union[dict, None] = None,
         fixed_params: Union[dict, None] = None,
         reload_path: Union[str, None] = None,
         reload_list: Union[list, None] = None,
-        refine_after: Union[None, List[int], int] = None,
-        refine_top_k: Union[None, int] = 5,
     ):
         HyperOpt.__init__(
             self, real, integer, categorical, fixed_params, reload_path, reload_list
         )
         self.param_range = random_space(real, integer, categorical)
-        self.refine_after = refine_after
-        self.refine_counter = 0
-        if refine_after is not None:
-            assert refine_top_k > 1
-            self.refine_top_k = refine_top_k
+        self.search_config = search_config
+
+        if self.search_config is not None:
+            self.refine_counter = 0
+            assert self.search_config["refine_top_k"] > 1
+            self.refine_after = self.search_config["refine_after"]
+            # Make sure that refine iteration is list
+            if type(self.refine_after) == int:
+                self.refine_after = [self.refine_after]
+            self.refine_top_k = self.search_config["refine_top_k"]
 
     def ask_search(self, batch_size: int):
         """Get proposals to eval next (in batches) - Random Sampling."""
