@@ -133,18 +133,24 @@ class HyperOpt(object):
     def get_best(self, top_k: int = 1):
         """Return top-k best performing parameter configurations."""
         assert top_k <= self.eval_counter
-        objective_evals = [it["objective"] for it in self.log]
-        best_idx = np.argsort(objective_evals)[:top_k]
-        best_iters = [self.log[idx] for idx in best_idx]
-        best_configs = [it["params"] for it in best_iters]
-        best_evals = [it["objective"] for it in best_iters]
+        # Mono-objective case - get best objective evals
+        if type(self.log[0]["objective"]) in [float, int]:
+            objective_evals = [it["objective"] for it in self.log]
+            best_idx = np.argsort(objective_evals)[:top_k]
+            best_iters = [self.log[idx] for idx in best_idx]
+            best_configs = [it["params"] for it in best_iters]
+            best_evals = [it["objective"] for it in best_iters]
+        # Multi-objective case - get pareto front
+        else:
+            pareto_configs, pareto_evals = self.get_pareto_front()
+            best_configs, best_evals = pareto_configs[:top_k], pareto_evals[:top_k]
         return best_configs, best_evals
 
     def print_ranking(self, top_k: int = 5):
         """Pretty print archive of best configurations."""
         # TODO: Add nice rich-style print statement!
         best_configs, best_evals = self.get_best(top_k)
-        for i in range(top_k):
+        for i in range(len(best_configs)):
             print(best_evals[i], best_configs[i])
 
     def store_configs(
@@ -157,6 +163,7 @@ class HyperOpt(object):
 
     def plot_best(self):
         """Plot the evolution of best model performance over evaluations."""
+        assert type(self.log[0]["objective"]) in [float, int]
         objective_evals = [it["objective"] for it in self.log]
         timeseries = np.minimum.accumulate(objective_evals)
         fig, ax = plt.subplots()

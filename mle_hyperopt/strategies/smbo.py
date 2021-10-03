@@ -10,7 +10,7 @@ class SMBOSearch(HyperOpt):
         real: Union[dict, None] = None,
         integer: Union[dict, None] = None,
         categorical: Union[dict, None] = None,
-        smbo_config: dict = {
+        search_config: dict = {
             "base_estimator": "GP",
             "acq_function": "gp_hedge",
             "n_initial_points": 5,
@@ -36,13 +36,13 @@ class SMBOSearch(HyperOpt):
         self.param_range = smbo_space(real, integer, categorical)
 
         # Initialize the surrogate model/hyperparam config proposer
-        self.smbo_config = smbo_config
+        self.smbo_config = search_config
         self.hyper_optimizer = Optimizer(
             dimensions=list(self.param_range.values()),
             random_state=self.seed_id,
-            base_estimator=smbo_config["base_estimator"],
-            acq_func=smbo_config["acq_function"],
-            n_initial_points=smbo_config["n_initial_points"],
+            base_estimator=self.smbo_config["base_estimator"],
+            acq_func=self.smbo_config["acq_function"],
+            n_initial_points=self.smbo_config["n_initial_points"],
         )
 
     def ask_search(self, batch_size: int):

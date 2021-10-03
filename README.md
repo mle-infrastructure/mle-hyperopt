@@ -17,18 +17,23 @@ strategy = RandomSearch(hyperspace={})
 
 # Simple ask - eval - tell API
 configs = strategy.ask(batch_size=1)
-values = func_to_eval(configs)
+values = [func_to_eval(c) for c in configs]
 strategy.tell(configs, values)
+```
 
+```python
 # Storing & reloading of results from .pkl
-strategy.save("random_search_log.pkl")
-strategy.load("random_search_log.pkl")
-strategy = RandomSearch(reload_path="random_search_log.pkl")
+strategy.save("search_log.pkl")
+strategy = RandomSearch(reload_path="search_log.pkl")
+
+# Or manually add info after class instantiation
+strategy = RandomSearch(hyperspace={})
+strategy.load("search_log.pkl")
 ```
 
 - List of implemented/wrapped algorithms.
 - Example with different types of variables and priors over distributions.
-- Note that we assume that the objective is minimized (multiple by -1 is this is not the case).
+- Note that we assume that the objective is minimized (multiple by -1 if this is not the case).
 
 ## Installation ⏳
 
@@ -46,17 +51,33 @@ cd mle-logging
 pip install -e .
 ```
 
+## Advanced Options 🚴
+
+### Refining the Search Space
+
+### Retrieving Top Performers
+
+### Visualizing Results
+
 ## Development & Milestones for Next Release
 
 You can run the test suite via `python -m pytest -vv tests/`. If you find a bug or are missing your favourite feature, feel free to contact me [@RobertTLange](https://twitter.com/RobertTLange) or create an issue :hugs:. Here are some features I want to implement for the next release:
 
 - [ ] Implement tell API for all strategies
-- [ ] Add assert checks for space dictionaries
-- [ ] Add "variable" wrappers (Real, Integer, Categorical)
+- [ ] Add a simple coordinate descent style optimization
+  - First optimize one variable for fixed others
+  - Input: Order, range, budget and default of parameters to go through
 - [ ] Setup general parameter spaces (log uniform)
+  - Add assert checks for space dictionaries
+  - Add "variable" wrappers (Real, Integer, Categorical)
 - [ ] Add tests for core functionality
-- [ ] Add github workflow (tests, pypi publish)
+  - Variable/space classes
+  - Individual search strategies (boundary refinement, etc.)
+  - Adding new data in `tell` method
+  - Top-k subselection
+  - Storing + reloading data
 - [ ] Integrate back into `mle-toolbox`
 - [ ] Add basic plotting utilities
   - [ ] Grid search plot
-- [ ] Think about easy storing of log results in `MLELogger`, `multi_update` method?
+- [ ] Easy storage of log results in `MLELogger`, `multi_update` method?
+  - Or do simply via log.update(extra_obj=strategy.log, save=True) which would store log in extra/ dir

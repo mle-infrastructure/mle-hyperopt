@@ -95,7 +95,8 @@ def nevergrad_space(real, integer, categorical) -> dict:  # noqa:C901
                     lower=float(v["begin"]), upper=float(v["end"])
                 )
             elif v["prior"] == "log-uniform":
-                param_dict[k] = ng.p.Log(lower=float(v["begin"]), upper=float(v["end"]))
+                param_dict[k] = ng.p.Log(lower=float(v["begin"]),
+                                         upper=float(v["end"]))
     if integer is not None:
         for k, v in integer.items():
             if v["prior"] == "uniform":
