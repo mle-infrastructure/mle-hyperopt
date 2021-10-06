@@ -55,6 +55,7 @@ class GridSearch(HyperOpt):
 
     def plot_grid(self):
         """Plot 2D heatmap of evaluations."""
+        # TODO Add example with simple square optimization
         raise NotImplementedError
 
 

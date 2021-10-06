@@ -6,6 +6,7 @@ from .strategies import (
     NevergradSearch,
     CoordinateSearch,
 )
+from .hyperopt import hyperopt
 
 __all__ = [
     "__version__",
@@ -14,4 +15,5 @@ __all__ = [
     "SMBOSearch",
     "NevergradSearch",
     "CoordinateSearch",
+    "hyperopt",
 ]

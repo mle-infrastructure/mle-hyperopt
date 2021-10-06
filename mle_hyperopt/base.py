@@ -45,7 +45,7 @@ class HyperOpt(object):
 
     def ask(
         self,
-        batch_size: int,
+        batch_size: int = 1,
         store: bool = False,
         config_fnames: Union[None, List[str]] = None,
     ):

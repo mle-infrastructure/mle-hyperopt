@@ -58,6 +58,7 @@ class RandomSearch(HyperOpt):
         """Perform post-iteration clean-up by updating surrogate model."""
         # Refine search space boundaries after set of search iterations
         if self.refine_after is not None:
+            # TODO: Ensure works even if eval_counter not exactly == refine_counter
             if self.eval_counter == self.refine_after[self.refine_counter]:
                 self.refine(self.refine_top_k)
                 self.refine_counter += 1
