@@ -42,6 +42,10 @@ def hyperopt(
         strategy = NevergradSearch(
             real, integer, categorical, search_config, fixed_params
         )
+    elif strategy_type == "coordinate":
+        strategy = CoordinateSearch(
+            real, integer, categorical, search_config, fixed_params
+        )
 
     def decorator(function):
         @functools.wraps(function)

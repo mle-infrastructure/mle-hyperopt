@@ -1,7 +1,7 @@
 from typing import Union
 from ..base import HyperOpt
-from ..hyperspace import grid_space
-from .grid import ParameterGrid
+from ..spaces import GridSpace
+from ..spaces.grid import ParameterGrid
 import numpy as np
 
 
@@ -52,10 +52,10 @@ class CoordinateSearch(HyperOpt):
         # Sample a new configuration for each eval in the batch
         while (
             len(param_batch) < batch_size
-            and self.grid_var_counter < self.num_param_configs
+            and self.grid_var_counter < len(self.space)
         ):
             # Get parameter batch from the grid
-            proposal_params = self.param_grid[self.grid_var_counter]
+            proposal_params = self.space.param_grid[self.grid_var_counter]
             if proposal_params not in (self.all_evaluated_params + param_batch):
                 # Add parameter proposal to the batch list
                 param_batch.append(proposal_params)
@@ -73,7 +73,7 @@ class CoordinateSearch(HyperOpt):
         self.grid_var_counter = (
             self.eval_counter - self.range_per_coord[self.var_counter]
         )
-        if self.grid_var_counter == self.num_param_configs:
+        if self.grid_var_counter == len(self.space):
             if self.var_counter < len(self.search_config["order"]):
                 self.var_counter += 1
                 self.construct_active_space()
@@ -115,6 +115,4 @@ class CoordinateSearch(HyperOpt):
                     categorical_sub[k] = [self.search_config["defaults"][k]]
 
         # Construct new grid space with fixed coordinates!
-        self.param_range = grid_space(real_sub, integer_sub, categorical_sub)
-        self.param_grid = list(ParameterGrid(self.param_range))
-        self.num_param_configs = len(self.param_grid)
+        self.space = GridSpace(real_sub, integer_sub, categorical_sub)

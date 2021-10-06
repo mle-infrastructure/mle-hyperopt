@@ -1,7 +1,8 @@
 from typing import Union
 import numpy as np
 from ..base import HyperOpt
-from ..hyperspace import smbo_space
+from ..spaces import SMBOSpace
+from skopt import Optimizer
 
 
 class SMBOSearch(HyperOpt):
@@ -20,25 +21,16 @@ class SMBOSearch(HyperOpt):
         reload_list: Union[list, None] = None,
         seed_id: int = 42,
     ):
-        try:
-            from skopt import Optimizer
-        except ModuleNotFoundError as err:
-            raise ModuleNotFoundError(
-                f"{err}. You need to"
-                "install `scikit-optimize` to use "
-                "the `mle_toolbox.hyperopt.smbo` module."
-            )
-
         # Check that SMBO uses synchronous scheduling
         HyperOpt.__init__(
             self, real, integer, categorical, fixed_params, reload_path, reload_list
         )
-        self.param_range = smbo_space(real, integer, categorical)
+        self.space = SMBOSpace(real, integer, categorical)
 
         # Initialize the surrogate model/hyperparam config proposer
         self.smbo_config = search_config
         self.hyper_optimizer = Optimizer(
-            dimensions=list(self.param_range.values()),
+            dimensions=self.space.dimensions,
             random_state=self.seed_id,
             base_estimator=self.smbo_config["base_estimator"],
             acq_func=self.smbo_config["acq_function"],
@@ -52,7 +44,7 @@ class SMBOSearch(HyperOpt):
         # Generate list of dictionaries with different hyperparams to evaluate
         for prop in proposals:
             proposal_params = {}
-            for i, p_name in enumerate(self.param_range.keys()):
+            for i, p_name in enumerate(self.space.param_range.keys()):
                 if type(prop[i]) == np.int64:
                     proposal_params[p_name] = int(prop[i])
                 else:

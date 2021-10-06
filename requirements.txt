@@ -1,4 +1,5 @@
 numpy
+pandas
 matplotlib
 seaborn
 scikit-optimize

@@ -1,6 +1,7 @@
 from ..base import HyperOpt
-from ..hyperspace import nevergrad_space
+from ..spaces import NevergradSpace
 from typing import Union
+import nevergrad as ng
 
 
 class NevergradSearch(HyperOpt):
@@ -18,30 +19,21 @@ class NevergradSearch(HyperOpt):
         reload_path: Union[str, None] = None,
         reload_list: Union[list, None] = None,
     ):
-        try:
-            import nevergrad as ng
-        except ModuleNotFoundError as err:
-            raise ModuleNotFoundError(
-                f"{err}. You need to"
-                "install `nevergrad` to use "
-                "the `mle_toolbox.hyperopt.nevergrad` module."
-            )
-
         HyperOpt.__init__(
             self, real, integer, categorical, fixed_params, reload_path, reload_list
         )
-        self.param_range = nevergrad_space(real, integer, categorical)
+        self.space = NevergradSpace(real, integer, categorical)
         # Initialize the surrogate model/hyperparam config proposer
         self.nevergrad_config = search_config
         if self.nevergrad_config["optimizer"] == "CMA":
             self.hyper_optimizer = ng.optimizers.CMA(
-                parametrization=self.param_range,
+                parametrization=self.space.dimensions,
                 budget=self.nevergrad_config["budget_size"],
                 num_workers=self.nevergrad_config["num_workers"],
             )
         elif self.nevergrad_config["optimizer"] == "NGOpt":
             self.hyper_optimizer = ng.optimizers.NGOpt(
-                parametrization=self.param_range,
+                parametrization=self.space.dimensions,
                 budget=self.nevergrad_config["budget_size"],
                 num_workers=self.nevergrad_config["num_workers"],
             )

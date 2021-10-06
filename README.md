@@ -12,24 +12,43 @@ Simple and intuitive hyperparameter optimization API for your Machine Learning E
 ```python
 from mle_hyperopt import RandomSearch
 
-# Instantiate random search class
-strategy = RandomSearch(hyperspace={})
-
-# Simple ask - eval - tell API
 configs = strategy.ask(batch_size=1)
 values = [train_network(c) for c in configs]
+strategy.tell(configs, values)
+from mle_hyperopt import RandomSearch
+
+# Instantiate random search class
+strategy = RandomSearch(real={"lrate": {"begin": 0.1,
+                                        "end": 0.5}},
+                        integer={"batch_size": {"begin": 32,
+                                                "end": 128,
+                                                "spacing": 32}},
+                        categorical={"arch": ["mlp", "cnn"]})
+
+# Simple ask - eval - tell API
+configs = strategy.ask(5)
+values = [train_network(**c) for c in configs]
 strategy.tell(configs, values)
 ```
 
 ```python
 # Storing & reloading of results from .pkl
 strategy.save("search_log.pkl")
-strategy = RandomSearch(reload_path="search_log.pkl")
+strategy = RandomSearch(..., reload_path="search_log.pkl")
 
 # Or manually add info after class instantiation
-strategy = RandomSearch(hyperspace={})
+strategy = RandomSearch(...)
 strategy.load("search_log.pkl")
 ```
+
+|              | Search Types  |             |
+| -------------|-------------- | ----------- |
+| 📄  |  `GridSearch`          |                    |
+| 📄  |  `RandomSearch`        |                    |
+| 📄  |  `SMBOSearch`          |                    |
+| 📄  |  `CoordinateSearch`    |                    |
+| 📄  |  `NevergradSearch`     |                    |
+
 
 - List of implemented/wrapped algorithms.
 - Example with different types of variables and priors over distributions.
@@ -56,10 +75,18 @@ pip install -e .
 ### Search Decorators
 
 ```python
-@hyperopt("random")
-def train_network(config):
-    val_score = 0.9
-    return val_score
+from mle_hyperopt import hyperopt
+
+@hyperopt(strategy_type="grid",
+          num_search_iters=25,
+          real={"x": {"begin": 0., "end": 0.5, "bins": 5},
+                "y": {"begin": 0, "end": 0.5, "bins": 5}})
+def circle_objective(config):
+    distance = abs((config["x"] ** 2 + config["y"] ** 2))
+    return distance
+
+strategy = circle_objective()
+strategy.log
 ```
 
 ### Storing Configuration Files
@@ -79,6 +106,7 @@ You can run the test suite via `python -m pytest -vv tests/`. If you find a bug 
   - Adding new data in `tell` method
   - Top-k subselection
   - Storing + reloading data
+- [ ] Add rich pretty update and start-up message
 - [ ] Integrate back into `mle-toolbox`
 - [ ] Add basic plotting utilities
   - [ ] Grid search plot
@@ -88,23 +116,4 @@ You can run the test suite via `python -m pytest -vv tests/`. If you find a bug 
 - [ ] Add text to notebook
   - [ ] Add visualization for what is implemented
   - [ ] Add grid plot example and decorator routine
-- [ ] Add simple MNIST learning rate grid search
-
-- Thoughts on space configuration:
-  - Real: [begin, end, prior]
-  - Integer: [begin, end, prior]
-  - Categorical: [c1, c2, ...]
-  - Specify discrete sets as categoricals? Vs separate input to class?
-
-
-```python
-from mle_hyperopt import GridSearch, RandomSearch
-# Instantiate grid search class
-strategy = GridSearch(real={"lrate": [0.1, 0.5, 5]},
-                      integer={"batch_size": [1, 5, 1]},
-                      categorical={"arch": ["mlp", "cnn"]})
-
-strategy = RandomSearch(real={"lrate": [0.1, 0.5, "log-uniform"]},
-                        integer={"batch_size": [1, 5, 1]},
-                        categorical={"arch": ["mlp", "cnn"]})
-```
+- [ ] Add simple MNIST learning rate grid search as .py

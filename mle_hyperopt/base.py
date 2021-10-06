@@ -1,8 +1,9 @@
 from typing import Union, List
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-from .utils import load_pkl_object, save_pkl_object, write_configs_to_file
+from .utils.helpers import load_pkl_object, save_pkl_object, write_configs_to_file
 
 
 sns.set(
@@ -40,7 +41,7 @@ class HyperOpt(object):
         self.all_evaluated_params = []
         self.load(reload_path, reload_list)
 
-        # TODO: Set random seed for reproduction for all strategies
+        # Set random seed for reproduction for all strategies
         np.random.seed(self.seed_id)
 
     def ask(
@@ -50,7 +51,9 @@ class HyperOpt(object):
         config_fnames: Union[None, List[str]] = None,
     ):
         """Get proposals to eval - implemented by specific hyperopt algo"""
+        # Ask the specific strategy for a batch of configs to evaluate
         param_batch = self.ask_search(batch_size)
+
         # If fixed params are not none add them to config dicts
         if self.fixed_params is not None:
             for i in range(len(param_batch)):
@@ -183,3 +186,15 @@ class HyperOpt(object):
         ax.set_ylabel("Objective")
         fig.tight_layout()
         return fig, ax
+
+    def to_df(self):
+        """Return log as pandas dataframe."""
+        flat_log = []
+        for l in self.log:
+            sub_log = {}
+            sub_log["eval_id"] = l["eval_id"]
+            # TODO: Add if-clause for multi-objective list case
+            sub_log["objective"] = l["objective"]
+            sub_log.update(l["params"])
+            flat_log.append(sub_log)
+        return pd.DataFrame(flat_log)

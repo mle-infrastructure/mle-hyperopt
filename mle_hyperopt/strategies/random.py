@@ -1,7 +1,7 @@
-from typing import Union, List
+from typing import Union
 import numpy as np
 from ..base import HyperOpt
-from ..hyperspace import random_space
+from ..spaces import RandomSpace
 
 
 class RandomSearch(HyperOpt):
@@ -18,7 +18,7 @@ class RandomSearch(HyperOpt):
         HyperOpt.__init__(
             self, real, integer, categorical, fixed_params, reload_path, reload_list
         )
-        self.param_range = random_space(real, integer, categorical)
+        self.space = RandomSpace(real, integer, categorical)
         self.search_config = search_config
 
         if self.search_config is not None:
@@ -35,17 +35,7 @@ class RandomSearch(HyperOpt):
         param_batch = []
         # Sample a new configuration for each eval in the batch
         while len(param_batch) < batch_size:
-            proposal_params = {}
-            # Sample the parameters individually at random from the ranges
-            for p_name, p_range in self.param_range.items():
-                if p_range["value_type"] in ["integer", "categorical"]:
-                    eval_param = np.random.choice(p_range["values"])
-                    if type(eval_param) == np.int64:
-                        eval_param = int(eval_param)
-                elif p_range["value_type"] == "real":
-                    eval_param = np.random.uniform(*p_range["values"])
-                proposal_params[p_name] = eval_param
-
+            proposal_params = self.space.sample()
             if proposal_params not in (self.all_evaluated_params + param_batch):
                 # Add parameter proposal to the batch list
                 param_batch.append(proposal_params)
@@ -99,7 +89,7 @@ class RandomSearch(HyperOpt):
         else:
             integer_refined = None
 
-        self.param_range = random_space(
+        self.space = RandomSpace(
             real_refined, integer_refined, categorical_refined
         )
         print("Refined the random search space:")
