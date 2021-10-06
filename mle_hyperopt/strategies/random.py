@@ -29,6 +29,8 @@ class RandomSearch(HyperOpt):
             if type(self.refine_after) == int:
                 self.refine_after = [self.refine_after]
             self.refine_top_k = self.search_config["refine_top_k"]
+        else:
+            self.refine_after = None
 
     def ask_search(self, batch_size: int):
         """Get proposals to eval next (in batches) - Random Sampling."""

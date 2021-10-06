@@ -53,8 +53,9 @@ class NevergradSearch(HyperOpt):
         for i, prop in enumerate(batch_proposals):
             # Need to update hyperoptimizer with ng Instrumentation candidate
             prop_conf = dict(prop)
-            for k in self.fixed_params.keys():
-                del prop_conf[k]
+            if self.fixed_params is not None:
+                for k in self.fixed_params.keys():
+                    del prop_conf[k]
             for last_prop in self.last_batch_params:
                 if last_prop.value[1] == prop_conf:
                     x = last_prop

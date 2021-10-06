@@ -4,3 +4,4 @@ matplotlib
 seaborn
 scikit-optimize
 nevergrad
+sklearn==0.24.2
