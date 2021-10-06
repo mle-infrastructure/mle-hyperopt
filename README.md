@@ -5,7 +5,7 @@
 [![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/RobertTLange/mle-hyperopt/blob/main/examples/getting_started.ipynb)
 <a href="docs/logo_transparent.png_2"><img src="docs/logo_transparent.png" width="200" align="right" /></a>
 
-Simple and intuitive hyperparameter optimization API for your Machine Learning Experiments (MLE). For a quickstart checkout the [notebook blog](https://github.com/RobertTLange/mle-hyperopt/blob/main/examples/getting_started.ipynb).
+Simple and intuitive hyperparameter optimization API for your Machine Learning Experiments (MLE). We assume that the objective is minimized (multiple by -1 if this is not the case). For a quickstart checkout the [notebook blog](https://github.com/RobertTLange/mle-hyperopt/blob/main/examples/getting_started.ipynb).
 
 ## The API 🎮
 
@@ -31,28 +31,14 @@ values = [train_network(**c) for c in configs]
 strategy.tell(configs, values)
 ```
 
-```python
-# Storing & reloading of results from .pkl
-strategy.save("search_log.pkl")
-strategy = RandomSearch(..., reload_path="search_log.pkl")
+|     | Search Types           |   Description          |
+| --- |----------------------- | ----------- |
+| 📄  |  `GridSearch`          |  Grid search  over list of discrete values               |
+| 📄  |  `RandomSearch`        |  Random search over variable ranges                 |
+| 📄  |  `SMBOSearch`          |  Sequential model-based optimization                  |
+| 📄  |  `CoordinateSearch`    |  Coordinate-wise optimization with defaults                  |
+| 📄  |  `NevergradSearch`     |  Multi-objective optimization wrapper of nevergrad                  |
 
-# Or manually add info after class instantiation
-strategy = RandomSearch(...)
-strategy.load("search_log.pkl")
-```
-
-|              | Search Types  |             |
-| -------------|-------------- | ----------- |
-| 📄  |  `GridSearch`          |                    |
-| 📄  |  `RandomSearch`        |                    |
-| 📄  |  `SMBOSearch`          |                    |
-| 📄  |  `CoordinateSearch`    |                    |
-| 📄  |  `NevergradSearch`     |                    |
-
-
-- List of implemented/wrapped algorithms.
-- Example with different types of variables and priors over distributions.
-- Note that we assume that the objective is minimized (multiple by -1 if this is not the case).
 
 ## Installation ⏳
 
@@ -70,7 +56,19 @@ cd mle-logging
 pip install -e .
 ```
 
-## Advanced Options 🚴
+## Further Options 🚴
+
+### Saving & Reloading Logs
+
+```python
+# Storing & reloading of results from .pkl
+strategy.save("search_log.pkl")
+strategy = RandomSearch(..., reload_path="search_log.pkl")
+
+# Or manually add info after class instantiation
+strategy = RandomSearch(...)
+strategy.load("search_log.pkl")
+```
 
 ### Search Decorators
 
@@ -91,10 +89,18 @@ strategy.log
 
 ### Storing Configuration Files
 
+
+```python
+# Store 2 proposed configurations - eval_0.yaml, eval_1.yaml
+strategy.ask(2, store=True)
+```
+
 ### Retrieving Top Performers & Visualizing Results
 
-```
+```python
 # Get the top k best configurations
+# Retrieving the best performing configuration
+strategy.get_best(top_k=4)
 ```
 
 ## Development & Milestones for Next Release
@@ -121,3 +127,4 @@ You can run the test suite via `python -m pytest -vv tests/`. If you find a bug 
   - [ ] Add visualization for what is implemented
   - [ ] Add grid plot example and decorator routine
 - [ ] Add simple MNIST learning rate grid search as .py
+- [ ] Example with different types of variables and priors over distributions.
