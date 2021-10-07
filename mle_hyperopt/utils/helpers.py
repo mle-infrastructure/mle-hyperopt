@@ -20,13 +20,15 @@ def save_pkl_object(obj, filename: str):
 
 
 def save_json(obj, filename: str):
-    with open(filename, 'w') as fout:
+    with open(filename, "w") as fout:
         json.dump(obj, fout, indent=1)
 
 
 def load_json(filename):
     # Opening JSON file
-    f = open(filename,)
+    f = open(
+        filename,
+    )
     data = json.load(f)
     return data
 

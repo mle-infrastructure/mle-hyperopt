@@ -1,5 +1,5 @@
 from typing import Union
-from ..base import HyperOpt
+from ..search import HyperOpt
 from ..spaces import GridSpace
 import numpy as np
 
@@ -17,8 +17,14 @@ class CoordinateSearch(HyperOpt):
         seed_id: int = 42,
     ):
         HyperOpt.__init__(
-            self, real, integer, categorical, fixed_params,
-            reload_path, reload_list, seed_id
+            self,
+            real,
+            integer,
+            categorical,
+            fixed_params,
+            reload_path,
+            reload_list,
+            seed_id,
         )
         self.search_config = search_config
         self.evals_per_coord = [0]
@@ -51,10 +57,7 @@ class CoordinateSearch(HyperOpt):
         """Get proposals to eval next (in batches) - Coordinate Search"""
         param_batch = []
         # Sample a new configuration for each eval in the batch
-        while (
-            len(param_batch) < batch_size
-            and self.grid_var_counter < len(self.space)
-        ):
+        while len(param_batch) < batch_size and self.grid_var_counter < len(self.space):
             # Get parameter batch from the grid
             proposal_params = self.space.param_grid[self.grid_var_counter]
             if proposal_params not in (self.all_evaluated_params + param_batch):

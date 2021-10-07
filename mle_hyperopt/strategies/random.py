@@ -1,6 +1,6 @@
 from typing import Union
 import numpy as np
-from ..base import HyperOpt
+from ..search import HyperOpt
 from ..spaces import RandomSpace
 
 
@@ -17,8 +17,14 @@ class RandomSearch(HyperOpt):
         seed_id: int = 42,
     ):
         HyperOpt.__init__(
-            self, real, integer, categorical, fixed_params,
-            reload_path, reload_list, seed_id
+            self,
+            real,
+            integer,
+            categorical,
+            fixed_params,
+            reload_path,
+            reload_list,
+            seed_id,
         )
         self.space = RandomSpace(real, integer, categorical)
         self.search_config = search_config
@@ -77,6 +83,7 @@ class RandomSearch(HyperOpt):
                 real_refined[var] = {
                     "begin": np.min(top_k_var),
                     "end": np.max(top_k_var),
+                    "prior": self.real[var]["prior"],
                 }
         else:
             real_refined = None
@@ -88,14 +95,12 @@ class RandomSearch(HyperOpt):
                 integer_refined[var] = {
                     "begin": int(np.min(top_k_var)),
                     "end": int(np.max(top_k_var)),
-                    "spacing": self.integer[var]["spacing"],
+                    "prior": self.integer[var]["prior"],
                 }
         else:
             integer_refined = None
 
-        self.space = RandomSpace(
-            real_refined, integer_refined, categorical_refined
-        )
+        self.space = RandomSpace(real_refined, integer_refined, categorical_refined)
         print("Refined the random search space:")
         print(f"Real: {real_refined}")
         print(f"Integer: {integer_refined}")

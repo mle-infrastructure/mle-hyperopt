@@ -16,10 +16,11 @@ def fake_train(lrate, batch_size, arch):
 
 def test_random():
     strategy = RandomSearch(real={"lrate": {"begin": 0.1,
-                                            "end": 0.5}},
+                                            "end": 0.5,
+                                            "prior": "uniform"}},
                             integer={"batch_size": {"begin": 1,
                                                     "end": 5,
-                                                    "spacing": 1}},
+                                                    "prior": "uniform"}},
                             categorical={"arch": ["mlp", "cnn"]})
     configs = strategy.ask(5)
     values = [fake_train(**c) for c in configs]
@@ -32,8 +33,8 @@ def test_grid():
                                           "end": 0.5,
                                           "bins": 5}},
                           integer={"batch_size": {"begin": 1,
-                                              "end": 5,
-                                              "spacing": 1}},
+                                                  "end": 5,
+                                                  "spacing": 1}},
                           categorical={"arch": ["mlp", "cnn"]})
     configs = strategy.ask(5)
     values = [fake_train(**c) for c in configs]
@@ -81,7 +82,7 @@ def test_coordinate():
                                                 "bins": 5}},
                                 integer={"batch_size": {"begin": 1,
                                                         "end": 5,
-                                                        "spacing": "1"}},
+                                                        "spacing": 1}},
                                 categorical={"arch": ["mlp", "cnn"]},
                                 search_config={"order": ["lrate", "batch_size", "arch"],
                                                "defaults": {"lrate": 0.1,

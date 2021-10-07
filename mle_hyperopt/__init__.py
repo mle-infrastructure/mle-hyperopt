@@ -6,7 +6,7 @@ from .strategies import (
     NevergradSearch,
     CoordinateSearch,
 )
-from .hyperopt import hyperopt
+from .decorator import hyperopt
 
 __all__ = [
     "__version__",

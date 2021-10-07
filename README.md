@@ -19,10 +19,11 @@ from mle_hyperopt import RandomSearch
 
 # Instantiate random search class
 strategy = RandomSearch(real={"lrate": {"begin": 0.1,
-                                        "end": 0.5}},
+                                        "end": 0.5,
+                                        "prior": "log-normal"}},
                         integer={"batch_size": {"begin": 32,
                                                 "end": 128,
-                                                "spacing": 32}},
+                                                "prior": "uniform"}},
                         categorical={"arch": ["mlp", "cnn"]})
 
 # Simple ask - eval - tell API
@@ -31,13 +32,16 @@ values = [train_network(**c) for c in configs]
 strategy.tell(configs, values)
 ```
 
-|     | Search Types           | Description | `search_config` |
-| --- |----------------------- | ----------- | --------------- |
-| 📄  |  `GridSearch`          |  Grid search  over list of discrete values  | - |
-| 📄  |  `RandomSearch`        |  Random search over variable ranges         | `refine_after`, `refine_top_k` |
-| 📄  |  `SMBOSearch`          |  Sequential model-based optimization        | `base_estimator`, `acq_function`, `n_initial_points`
-| 📄  |  `CoordinateSearch`    |  Coordinate-wise optimization with defaults | `order`, `defaults`
-| 📄  |  `NevergradSearch`     |  Multi-objective wrapper for [nevergrad](https://facebookresearch.github.io/nevergrad/) | `optimizer`, `budget_size`, `num_workers`
+
+## Implemented Search Types 🎮
+
+| Search Type           | Description | `search_config` |
+|----------------------- | ----------- | --------------- |
+|  `GridSearch`          |  Grid search over list of discrete values  | - |
+|  `RandomSearch`        |  Random search over variable ranges         | `refine_after`, `refine_top_k` |
+|  `SMBOSearch`          |  Sequential model-based optimization        | `base_estimator`, `acq_function`, `n_initial_points`
+|  `CoordinateSearch`    |  Coordinate-wise optimization with defaults | `order`, `defaults`
+|  `NevergradSearch`     |  Multi-objective wrapper for [nevergrad](https://facebookresearch.github.io/nevergrad/) | `optimizer`, `budget_size`, `num_workers`
 
 
 ## Installation ⏳
@@ -79,12 +83,11 @@ from mle_hyperopt import hyperopt
           num_search_iters=25,
           real={"x": {"begin": 0., "end": 0.5, "bins": 5},
                 "y": {"begin": 0, "end": 0.5, "bins": 5}})
-def circle_objective(config):
+def circle(config):
     distance = abs((config["x"] ** 2 + config["y"] ** 2))
     return distance
 
-strategy = circle_objective()
-strategy.log
+strategy = circle()
 ```
 
 ### Storing Configuration Files 📑
@@ -98,8 +101,7 @@ strategy.ask(2, store=True)
 ### Retrieving Top Performers & Visualizing Results 📉
 
 ```python
-# Get the top k best configurations
-# Retrieving the best performing configuration
+# Get the top k best performing configurations
 strategy.get_best(top_k=4)
 ```
 
@@ -107,24 +109,18 @@ strategy.get_best(top_k=4)
 
 You can run the test suite via `python -m pytest -vv tests/`. If you find a bug or are missing your favourite feature, feel free to contact me [@RobertTLange](https://twitter.com/RobertTLange) or create an issue :hugs:. Here are some features I want to implement for the next release:
 
-- [ ] Setup general parameter spaces (log uniform)
-  - Add assert checks for space dictionaries
-  - Add "variable" wrappers (Real, Integer, Categorical)
+
 - [ ] Add tests for core functionality
   - Variable/space classes
   - Individual search strategies (boundary refinement, etc.)
   - Adding new data in `tell` method
   - Top-k subselection
   - Storing + reloading data
+
 - [ ] Add rich pretty update and start-up message
-- [ ] Integrate back into `mle-toolbox`
 - [ ] Add basic plotting utilities
   - [ ] Grid search plot
-- [ ] Easy storage of log results in `MLELogger`, `multi_update` method?
-  - Or do simply via log.update(extra_obj=strategy.log, save=True) which would store log in extra/ dir
-- [ ] Think about adding search decorators (runs loop with different configs)
 - [ ] Add text to notebook
   - [ ] Add visualization for what is implemented
   - [ ] Add grid plot example and decorator routine
 - [ ] Add simple MNIST learning rate grid search as .py
-- [ ] Example with different types of variables and priors over distributions.

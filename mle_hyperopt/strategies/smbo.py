@@ -1,6 +1,6 @@
 from typing import Union
 import numpy as np
-from ..base import HyperOpt
+from ..search import HyperOpt
 from ..spaces import SMBOSpace
 from skopt import Optimizer
 
@@ -23,8 +23,14 @@ class SMBOSearch(HyperOpt):
     ):
         # Check that SMBO uses synchronous scheduling
         HyperOpt.__init__(
-            self, real, integer, categorical, fixed_params,
-            reload_path, reload_list, seed_id
+            self,
+            real,
+            integer,
+            categorical,
+            fixed_params,
+            reload_path,
+            reload_list,
+            seed_id,
         )
         self.space = SMBOSpace(real, integer, categorical)
 

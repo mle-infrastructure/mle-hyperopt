@@ -1,5 +1,5 @@
 from typing import Union
-from ..base import HyperOpt
+from ..search import HyperOpt
 from ..spaces import GridSpace
 
 
@@ -15,8 +15,14 @@ class GridSearch(HyperOpt):
         seed_id: int = 42,
     ):
         HyperOpt.__init__(
-            self, real, integer, categorical, fixed_params,
-            reload_path, reload_list, seed_id
+            self,
+            real,
+            integer,
+            categorical,
+            fixed_params,
+            reload_path,
+            reload_list,
+            seed_id,
         )
         # Generate all possible combinations of param configs in list & loop
         # over the list when doing the grid search

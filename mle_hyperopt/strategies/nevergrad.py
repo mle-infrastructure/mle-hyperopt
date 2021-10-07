@@ -1,4 +1,4 @@
-from ..base import HyperOpt
+from ..search import HyperOpt
 from ..spaces import NevergradSpace
 from typing import Union
 import nevergrad as ng
@@ -21,8 +21,14 @@ class NevergradSearch(HyperOpt):
         seed_id: int = 42,
     ):
         HyperOpt.__init__(
-            self, real, integer, categorical, fixed_params,
-            reload_path, reload_list, seed_id
+            self,
+            real,
+            integer,
+            categorical,
+            fixed_params,
+            reload_path,
+            reload_list,
+            seed_id,
         )
         self.space = NevergradSpace(real, integer, categorical)
         # Initialize the surrogate model/hyperparam config proposer
@@ -51,7 +57,6 @@ class NevergradSearch(HyperOpt):
 
     def tell_search(self, batch_proposals, perf_measures):
         """Perform post-iteration clean-up by updating surrogate model."""
-
         for i, prop in enumerate(batch_proposals):
             # Need to update hyperoptimizer with ng Instrumentation candidate
             prop_conf = dict(prop)

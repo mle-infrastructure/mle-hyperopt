@@ -3,7 +3,7 @@ from collections.abc import Mapping, Iterable
 from functools import partial, reduce
 import operator
 from itertools import product
-from ..hyperspace import HyperSpace
+from ..space import HyperSpace
 
 
 class GridSpace(HyperSpace):
@@ -11,7 +11,25 @@ class GridSpace(HyperSpace):
         """For grid hyperopt generate numpy lists with desired resolution"""
         HyperSpace.__init__(self, real, integer, categorical)
 
+    def check(self):
+        """Check that all inputs are provided correctly."""
+        if self.real is not None:
+            real_keys = ["begin", "end", "bins"]
+            for key in real_keys:
+                for k, v in self.real.items():
+                    assert key in v
+                    assert v["begin"] <= v["end"]
+
+        if self.integer is not None:
+            integer_keys = ["begin", "end", "spacing"]
+            for key in integer_keys:
+                for k, v in self.integer.items():
+                    assert key in v
+                    assert v["begin"] <= v["end"]
+                    assert type(v[key]) == int
+
     def sample(self, grid_counter):
+        """'Sample' from the hyperparameter space. - Return next config."""
         return self.param_grid[grid_counter]
 
     def construct(self):
