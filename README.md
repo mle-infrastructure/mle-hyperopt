@@ -31,13 +31,13 @@ values = [train_network(**c) for c in configs]
 strategy.tell(configs, values)
 ```
 
-|     | Search Types           |   Description          |
-| --- |----------------------- | ----------- |
-| 📄  |  `GridSearch`          |  Grid search  over list of discrete values               |
-| 📄  |  `RandomSearch`        |  Random search over variable ranges                 |
-| 📄  |  `SMBOSearch`          |  Sequential model-based optimization                  |
-| 📄  |  `CoordinateSearch`    |  Coordinate-wise optimization with defaults                  |
-| 📄  |  `NevergradSearch`     |  Multi-objective optimization wrapper of nevergrad                  |
+|     | Search Types           | Description | `search_config` |
+| --- |----------------------- | ----------- | --------------- |
+| 📄  |  `GridSearch`          |  Grid search  over list of discrete values  | - |
+| 📄  |  `RandomSearch`        |  Random search over variable ranges         | `refine_after`, `refine_top_k` |
+| 📄  |  `SMBOSearch`          |  Sequential model-based optimization        | `base_estimator`, `acq_function`, `n_initial_points`
+| 📄  |  `CoordinateSearch`    |  Coordinate-wise optimization with defaults | `order`, `defaults`
+| 📄  |  `NevergradSearch`     |  Multi-objective wrapper for [nevergrad](https://facebookresearch.github.io/nevergrad/) | `optimizer`, `budget_size`, `num_workers`
 
 
 ## Installation ⏳
@@ -52,13 +52,13 @@ Alternatively, you can clone this repository and afterwards 'manually' install i
 
 ```
 git clone https://github.com/RobertTLange/mle-hyperopt.git
-cd mle-logging
+cd mle-hyperopt
 pip install -e .
 ```
 
 ## Further Options 🚴
 
-### Saving & Reloading Logs
+### Saving & Reloading Logs 🏪
 
 ```python
 # Storing & reloading of results from .pkl
@@ -70,7 +70,7 @@ strategy = RandomSearch(...)
 strategy.load("search_log.pkl")
 ```
 
-### Search Decorators
+### Search Decorator 🧶
 
 ```python
 from mle_hyperopt import hyperopt
@@ -87,7 +87,7 @@ strategy = circle_objective()
 strategy.log
 ```
 
-### Storing Configuration Files
+### Storing Configuration Files 📑
 
 
 ```python
@@ -95,7 +95,7 @@ strategy.log
 strategy.ask(2, store=True)
 ```
 
-### Retrieving Top Performers & Visualizing Results
+### Retrieving Top Performers & Visualizing Results 📉
 
 ```python
 # Get the top k best configurations

@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-from .utils.helpers import load_pkl_object, save_pkl_object, write_configs_to_file
+from .utils.helpers import load_json, save_json, write_configs_to_file
 
 
 sns.set(
@@ -112,7 +112,7 @@ class HyperOpt(object):
 
     def save(self, save_path: str = "search_log.pkl"):
         """Store the state of the optimizer (parameters, values) as .pkl."""
-        save_pkl_object(self.log, save_path)
+        save_json(self.log, save_path)
         print(f"Stored {self.eval_counter} search iterations.")
 
     def load(
@@ -124,7 +124,7 @@ class HyperOpt(object):
         # Simply loop over param, value pairs and `tell` the strategy.
         prev_evals = int(self.eval_counter)
         if reload_path is not None:
-            reloaded = load_pkl_object(reload_path)
+            reloaded = load_json(reload_path)
             for iter in reloaded:
                 self.tell([iter["params"]], [iter["objective"]])
 

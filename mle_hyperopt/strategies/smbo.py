@@ -23,18 +23,19 @@ class SMBOSearch(HyperOpt):
     ):
         # Check that SMBO uses synchronous scheduling
         HyperOpt.__init__(
-            self, real, integer, categorical, fixed_params, reload_path, reload_list
+            self, real, integer, categorical, fixed_params,
+            reload_path, reload_list, seed_id
         )
         self.space = SMBOSpace(real, integer, categorical)
 
         # Initialize the surrogate model/hyperparam config proposer
-        self.smbo_config = search_config
+        self.search_config = search_config
         self.hyper_optimizer = Optimizer(
             dimensions=self.space.dimensions,
             random_state=self.seed_id,
-            base_estimator=self.smbo_config["base_estimator"],
-            acq_func=self.smbo_config["acq_function"],
-            n_initial_points=self.smbo_config["n_initial_points"],
+            base_estimator=self.search_config["base_estimator"],
+            acq_func=self.search_config["acq_function"],
+            n_initial_points=self.search_config["n_initial_points"],
         )
 
     def ask_search(self, batch_size: int):

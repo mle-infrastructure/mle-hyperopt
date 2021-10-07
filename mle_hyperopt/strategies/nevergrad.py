@@ -18,24 +18,26 @@ class NevergradSearch(HyperOpt):
         fixed_params: Union[dict, None] = None,
         reload_path: Union[str, None] = None,
         reload_list: Union[list, None] = None,
+        seed_id: int = 42,
     ):
         HyperOpt.__init__(
-            self, real, integer, categorical, fixed_params, reload_path, reload_list
+            self, real, integer, categorical, fixed_params,
+            reload_path, reload_list, seed_id
         )
         self.space = NevergradSpace(real, integer, categorical)
         # Initialize the surrogate model/hyperparam config proposer
-        self.nevergrad_config = search_config
-        if self.nevergrad_config["optimizer"] == "CMA":
+        self.search_config = search_config
+        if self.search_config["optimizer"] == "CMA":
             self.hyper_optimizer = ng.optimizers.CMA(
                 parametrization=self.space.dimensions,
-                budget=self.nevergrad_config["budget_size"],
-                num_workers=self.nevergrad_config["num_workers"],
+                budget=self.search_config["budget_size"],
+                num_workers=self.search_config["num_workers"],
             )
-        elif self.nevergrad_config["optimizer"] == "NGOpt":
+        elif self.search_config["optimizer"] == "NGOpt":
             self.hyper_optimizer = ng.optimizers.NGOpt(
                 parametrization=self.space.dimensions,
-                budget=self.nevergrad_config["budget_size"],
-                num_workers=self.nevergrad_config["num_workers"],
+                budget=self.search_config["budget_size"],
+                num_workers=self.search_config["num_workers"],
             )
         else:
             raise ValueError("Please provide valid nevergrad optimizer type.")

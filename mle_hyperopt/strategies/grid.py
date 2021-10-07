@@ -12,9 +12,11 @@ class GridSearch(HyperOpt):
         fixed_params: Union[dict, None] = None,
         reload_path: Union[str, None] = None,
         reload_list: Union[list, None] = None,
+        seed_id: int = 42,
     ):
         HyperOpt.__init__(
-            self, real, integer, categorical, fixed_params, reload_path, reload_list
+            self, real, integer, categorical, fixed_params,
+            reload_path, reload_list, seed_id
         )
         # Generate all possible combinations of param configs in list & loop
         # over the list when doing the grid search

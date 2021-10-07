@@ -1,7 +1,6 @@
 from typing import Union
 from ..base import HyperOpt
 from ..spaces import GridSpace
-from ..spaces.grid import ParameterGrid
 import numpy as np
 
 
@@ -15,9 +14,11 @@ class CoordinateSearch(HyperOpt):
         fixed_params: Union[dict, None] = None,
         reload_path: Union[str, None] = None,
         reload_list: Union[list, None] = None,
+        seed_id: int = 42,
     ):
         HyperOpt.__init__(
-            self, real, integer, categorical, fixed_params, reload_path, reload_list
+            self, real, integer, categorical, fixed_params,
+            reload_path, reload_list, seed_id
         )
         self.search_config = search_config
         self.evals_per_coord = [0]

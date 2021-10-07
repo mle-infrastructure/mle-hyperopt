@@ -19,6 +19,18 @@ def save_pkl_object(obj, filename: str):
         pickle.dump(obj, output, pickle.HIGHEST_PROTOCOL)
 
 
+def save_json(obj, filename: str):
+    with open(filename, 'w') as fout:
+        json.dump(obj, fout, indent=1)
+
+
+def load_json(filename):
+    # Opening JSON file
+    f = open(filename,)
+    data = json.load(f)
+    return data
+
+
 def write_configs_to_file(params_batch: List[dict], config_fnames: List[str]):
     """Take batch-list of configs & write to jsons. Return fnames."""
     for s_id in range(len(params_batch)):

@@ -14,9 +14,11 @@ class RandomSearch(HyperOpt):
         fixed_params: Union[dict, None] = None,
         reload_path: Union[str, None] = None,
         reload_list: Union[list, None] = None,
+        seed_id: int = 42,
     ):
         HyperOpt.__init__(
-            self, real, integer, categorical, fixed_params, reload_path, reload_list
+            self, real, integer, categorical, fixed_params,
+            reload_path, reload_list, seed_id
         )
         self.space = RandomSpace(real, integer, categorical)
         self.search_config = search_config
