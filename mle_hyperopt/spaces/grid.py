@@ -3,11 +3,17 @@ from collections.abc import Mapping, Iterable
 from functools import partial, reduce
 import operator
 from itertools import product
+from typing import Union
 from ..space import HyperSpace
 
 
 class GridSpace(HyperSpace):
-    def __init__(self, real, integer, categorical):
+    def __init__(
+        self,
+        real: Union[dict, None] = None,
+        integer: Union[dict, None] = None,
+        categorical: Union[dict, None] = None,
+    ):
         """For grid hyperopt generate numpy lists with desired resolution"""
         HyperSpace.__init__(self, real, integer, categorical)
 

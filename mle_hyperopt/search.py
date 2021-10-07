@@ -198,3 +198,7 @@ class HyperOpt(object):
             sub_log.update(l["params"])
             flat_log.append(sub_log)
         return pd.DataFrame(flat_log)
+
+    def __len__(self) -> int:
+        """Return number of evals stored in log."""
+        return self.eval_counter

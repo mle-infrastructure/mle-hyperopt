@@ -1,9 +1,15 @@
+from typing import Union
 from ..space import HyperSpace
 from skopt.space import Real, Integer, Categorical
 
 
 class SMBOSpace(HyperSpace):
-    def __init__(self, real, integer, categorical):
+    def __init__(
+        self,
+        real: Union[dict, None] = None,
+        integer: Union[dict, None] = None,
+        categorical: Union[dict, None] = None,
+    ):
         """For SMBO-based hyperopt generate spaces with skopt classes"""
         HyperSpace.__init__(self, real, integer, categorical)
         self.dimensions = list(self.param_range.values())

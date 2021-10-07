@@ -20,7 +20,7 @@ from mle_hyperopt import RandomSearch
 # Instantiate random search class
 strategy = RandomSearch(real={"lrate": {"begin": 0.1,
                                         "end": 0.5,
-                                        "prior": "log-normal"}},
+                                        "prior": "log-uniform"}},
                         integer={"batch_size": {"begin": 32,
                                                 "end": 128,
                                                 "prior": "uniform"}},
@@ -118,9 +118,7 @@ You can run the test suite via `python -m pytest -vv tests/`. If you find a bug 
   - Storing + reloading data
 
 - [ ] Add rich pretty update and start-up message
-- [ ] Add basic plotting utilities
-  - [ ] Grid search plot
+  - [ ] Add search space/strategy description to print
 - [ ] Add text to notebook
   - [ ] Add visualization for what is implemented
-  - [ ] Add grid plot example and decorator routine
 - [ ] Add simple MNIST learning rate grid search as .py

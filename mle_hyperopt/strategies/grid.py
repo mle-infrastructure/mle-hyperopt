@@ -1,6 +1,7 @@
-from typing import Union
+from typing import Union, List
 from ..search import HyperOpt
 from ..spaces import GridSpace
+from ..utils.plotting import visualize_2D_grid
 
 
 class GridSearch(HyperOpt):
@@ -56,7 +57,28 @@ class GridSearch(HyperOpt):
         # This is only relevant if we load in new log data mid-search
         self.grid_counter = self.eval_counter
 
-    def plot_grid(self):
+    def plot_grid(
+        self,
+        fixed_params: Union[None, dict] = None,
+        params_to_plot: list = [],
+        target_to_plot: str = "objective",
+        plot_title: str = "Temp Title",
+        plot_subtitle: Union[None, str] = None,
+        xy_labels: Union[None, List[str]] = ["x-label", "y-label"],
+        variable_name: Union[None, str] = "Var Label",
+        every_nth_tick: int = 1,
+    ):
         """Plot 2D heatmap of evaluations."""
-        # TODO Add example with simple square optimization
-        raise NotImplementedError
+        df = self.to_df()
+        fig, ax = visualize_2D_grid(
+            df,
+            fixed_params,
+            params_to_plot,
+            target_to_plot,
+            plot_title,
+            plot_subtitle,
+            xy_labels,
+            variable_name,
+            every_nth_tick,
+        )
+        return fig, ax

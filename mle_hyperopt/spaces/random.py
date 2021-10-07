@@ -1,9 +1,15 @@
+from typing import Union
 import numpy as np
 from ..space import HyperSpace
 
 
 class RandomSpace(HyperSpace):
-    def __init__(self, real, integer, categorical):
+    def __init__(
+        self,
+        real: Union[dict, None] = None,
+        integer: Union[dict, None] = None,
+        categorical: Union[dict, None] = None,
+    ):
         """For random hyperopt generate list/1d-line range to sample from."""
         HyperSpace.__init__(self, real, integer, categorical)
 

@@ -1,9 +1,15 @@
+from typing import Union
 from ..space import HyperSpace
 import nevergrad as ng
 
 
 class NevergradSpace(HyperSpace):
-    def __init__(self, real, integer, categorical):
+    def __init__(
+        self,
+        real: Union[dict, None] = None,
+        integer: Union[dict, None] = None,
+        categorical: Union[dict, None] = None,
+    ):
         """For SMBO-based hyperopt generate spaces with skopt classes"""
         HyperSpace.__init__(self, real, integer, categorical)
 
