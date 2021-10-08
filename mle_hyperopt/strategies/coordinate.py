@@ -15,6 +15,7 @@ class CoordinateSearch(HyperOpt):
         reload_path: Union[str, None] = None,
         reload_list: Union[list, None] = None,
         seed_id: int = 42,
+        verbose: bool = False,
     ):
         HyperOpt.__init__(
             self,
@@ -25,6 +26,7 @@ class CoordinateSearch(HyperOpt):
             reload_path,
             reload_list,
             seed_id,
+            verbose,
         )
         self.search_config = search_config
         self.evals_per_coord = [0]
@@ -51,7 +53,10 @@ class CoordinateSearch(HyperOpt):
         self.grid_var_counter = 0
         self.var_counter = 0
         self.construct_active_space()
-        # TODO: Add start-up message printing the search space
+
+        # Add start-up message printing the search space
+        if self.verbose:
+            self.print_hello()
 
     def ask_search(self, batch_size: int):
         """Get proposals to eval next (in batches) - Coordinate Search"""

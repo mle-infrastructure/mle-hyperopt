@@ -14,6 +14,7 @@ class GridSearch(HyperOpt):
         reload_path: Union[str, None] = None,
         reload_list: Union[list, None] = None,
         seed_id: int = 42,
+        verbose: bool = False,
     ):
         HyperOpt.__init__(
             self,
@@ -24,6 +25,7 @@ class GridSearch(HyperOpt):
             reload_path,
             reload_list,
             seed_id,
+            verbose,
         )
         # Generate all possible combinations of param configs in list & loop
         # over the list when doing the grid search
@@ -31,7 +33,9 @@ class GridSearch(HyperOpt):
         self.num_param_configs = len(self.space)
         self.grid_counter = self.eval_counter
 
-        # TODO: Add start-up message printing the search space
+        # Add start-up message printing the search space
+        if self.verbose:
+            self.print_hello()
 
     def ask_search(self, batch_size: int):
         """Get proposals to eval next (in batches) - Grid Search"""

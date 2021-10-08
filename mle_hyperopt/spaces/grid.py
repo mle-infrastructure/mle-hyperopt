@@ -61,6 +61,33 @@ class GridSpace(HyperSpace):
         """Return number of runs stored in meta_log."""
         return len(self.param_grid)
 
+    def describe(self):
+        """Get space statistics/parameters printed out."""
+        all_vars = []
+        if self.categorical is not None:
+            for k, v in self.categorical.items():
+                data_dict = {"name": k, "type": "categorical", "extra": str(v)}
+                all_vars.append(data_dict)
+
+        if self.real is not None:
+            for k, v in self.real.items():
+                data_dict = {
+                    "name": k,
+                    "type": "real",
+                    "extra": f'Begin: {v["begin"]}, End: {v["end"]}, Bins: {v["bins"]}',
+                }
+                all_vars.append(data_dict)
+
+        if self.integer is not None:
+            for k, v in self.integer.items():
+                data_dict = {
+                    "name": k,
+                    "type": "integer",
+                    "extra": f'Begin: {v["begin"]}, End: {v["end"]}, Spacing: {v["spacing"]}',
+                }
+                all_vars.append(data_dict)
+        return all_vars
+
 
 class ParameterGrid:
     """Param Grid Class taken from sklearn: https://tinyurl.com/yj53efc9"""

@@ -19,6 +19,7 @@ class NevergradSearch(HyperOpt):
         reload_path: Union[str, None] = None,
         reload_list: Union[list, None] = None,
         seed_id: int = 42,
+        verbose: bool = False,
     ):
         HyperOpt.__init__(
             self,
@@ -29,6 +30,7 @@ class NevergradSearch(HyperOpt):
             reload_path,
             reload_list,
             seed_id,
+            verbose,
         )
         self.space = NevergradSpace(real, integer, categorical)
         # Initialize the surrogate model/hyperparam config proposer
@@ -47,6 +49,10 @@ class NevergradSearch(HyperOpt):
             )
         else:
             raise ValueError("Please provide valid nevergrad optimizer type.")
+
+        # Add start-up message printing the search space
+        if self.verbose:
+            self.print_hello()
 
     def ask_search(self, batch_size: int):
         """Get proposals to eval next (in batches) - Random Sampling."""

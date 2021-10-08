@@ -37,11 +37,11 @@ strategy.tell(configs, values)
 
 | Search Type           | Description | `search_config` |
 |----------------------- | ----------- | --------------- |
-|  `GridSearch`          |  Grid search over list of discrete values  | - |
+|  `GridSearch`          |  Search over list of discrete values  | - |
 |  `RandomSearch`        |  Random search over variable ranges         | `refine_after`, `refine_top_k` |
-|  `SMBOSearch`          |  Sequential model-based optimization        | `base_estimator`, `acq_function`, `n_initial_points`
-|  `CoordinateSearch`    |  Coordinate-wise optimization with defaults | `order`, `defaults`
-|  `NevergradSearch`     |  Multi-objective wrapper for [nevergrad](https://facebookresearch.github.io/nevergrad/) | `optimizer`, `budget_size`, `num_workers`
+|  `SMBOSearch`          |  Sequential model-based optim.        | `base_estimator`, `acq_function`, `n_initial_points`
+|  `CoordinateSearch`    |  Coordinate-wise optim. with defaults | `order`, `defaults`
+|  `NevergradSearch`     |  Multi-objective [nevergrad](https://facebookresearch.github.io/nevergrad/) wrapper | `optimizer`, `budget_size`, `num_workers`
 
 
 ## Installation ⏳
@@ -116,7 +116,10 @@ You can run the test suite via `python -m pytest -vv tests/`. If you find a bug 
   - Adding new data in `tell` method
   - Top-k subselection
   - Storing + reloading data
+- [ ] Add min vs max objective?!
+- [ ] Add bounds static method to search spaces
 
+- [ ] Talk about 3 types of variables.
 - [ ] Add rich pretty update and start-up message
   - [ ] Add search space/strategy description to print
 - [ ] Add text to notebook

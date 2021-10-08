@@ -20,6 +20,7 @@ class SMBOSearch(HyperOpt):
         reload_path: Union[str, None] = None,
         reload_list: Union[list, None] = None,
         seed_id: int = 42,
+        verbose: bool = False,
     ):
         # Check that SMBO uses synchronous scheduling
         HyperOpt.__init__(
@@ -31,6 +32,7 @@ class SMBOSearch(HyperOpt):
             reload_path,
             reload_list,
             seed_id,
+            verbose,
         )
         self.space = SMBOSpace(real, integer, categorical)
 
@@ -43,6 +45,10 @@ class SMBOSearch(HyperOpt):
             acq_func=self.search_config["acq_function"],
             n_initial_points=self.search_config["n_initial_points"],
         )
+
+        # Add start-up message printing the search space
+        if self.verbose:
+            self.print_hello()
 
     def ask_search(self, batch_size: int):
         """Get proposals to eval next (in batches) - Random Sampling."""

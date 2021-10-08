@@ -4,6 +4,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 from .utils.helpers import load_json, save_json, write_configs_to_file
+from .comms import welcome_message, update_message, ranking_message
 
 
 sns.set(
@@ -29,13 +30,15 @@ class HyperOpt(object):
         reload_path: Union[str, None] = None,
         reload_list: Union[list, None] = None,
         seed_id: int = 42,
+        verbose: bool = True,
     ):
         # Key Input: Specify which params to optimize & in which ranges (dict)
         self.real = real
         self.integer = integer
         self.categorical = categorical
         self.fixed_params = fixed_params
-        self.seed_id = 42
+        self.seed_id = seed_id
+        self.verbose = verbose
         self.eval_counter = 0
         self.log = []
         self.all_evaluated_params = []
@@ -80,9 +83,16 @@ class HyperOpt(object):
     def tell(
         self,
         batch_proposals: Union[List[dict], dict],
-        perf_measures: Union[List[float], float],
+        perf_measures: Union[List[Union[float, int]], float],
+        reload: bool = False,
     ):
         """Perform post-iteration clean-up. (E.g. update surrogate model)"""
+        # Ensure that update data is list to loop over
+        if type(batch_proposals) == dict:
+            batch_proposals = [batch_proposals]
+        if type(perf_measures) in [float, int]:
+            perf_measures = [perf_measures]
+
         for i in range(len(batch_proposals)):
             # Check whether proposals were already previously added
             # If so -- ignore (and print message?)
@@ -106,6 +116,10 @@ class HyperOpt(object):
 
         self.tell_search(batch_proposals, perf_measures)
 
+        # Print update message
+        if self.verbose and not reload:
+            self.print_update(batch_proposals, perf_measures)
+
     def tell_search(self, batch_proposals: list, perf_measures: list):
         """Search method-specific strategy update."""
         raise NotImplementedError
@@ -126,11 +140,11 @@ class HyperOpt(object):
         if reload_path is not None:
             reloaded = load_json(reload_path)
             for iter in reloaded:
-                self.tell([iter["params"]], [iter["objective"]])
+                self.tell([iter["params"]], [iter["objective"]], True)
 
         if reload_list is not None:
             for iter in reload_list:
-                self.tell([iter["params"]], [iter["objective"]])
+                self.tell([iter["params"]], [iter["objective"]], True)
 
         if reload_path is not None or reload_list is not None:
             print(
@@ -159,10 +173,8 @@ class HyperOpt(object):
 
     def print_ranking(self, top_k: int = 5):
         """Pretty print archive of best configurations."""
-        # TODO: Add nice rich-style print statement!
         best_configs, best_evals = self.get_best(top_k)
-        for i in range(len(best_configs)):
-            print(best_evals[i], best_configs[i])
+        ranking_message(best_configs, best_evals)
 
     def store_configs(
         self,
@@ -202,3 +214,22 @@ class HyperOpt(object):
     def __len__(self) -> int:
         """Return number of evals stored in log."""
         return self.eval_counter
+
+    def print_hello(self):
+        """Print start-up message."""
+        # Get search data in table format
+        space_data = self.space.describe()
+        welcome_message(space_data)
+
+    def print_update(
+        self, batch_proposals: List[dict], perf_measures: List[Union[float, int]]
+    ):
+        """Print strategy update."""
+        best_config, best_eval = self.get_best(top_k=1)
+        best_batch_idx = np.argmin(perf_measures)
+        best_batch_config, best_batch_eval = (
+            batch_proposals[best_batch_idx],
+            perf_measures[best_batch_idx],
+        )
+        # Print best data in log - and best data in last batch
+        update_message(best_config, best_eval, best_batch_config, best_batch_eval)
