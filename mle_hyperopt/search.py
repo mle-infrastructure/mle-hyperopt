@@ -156,7 +156,7 @@ class HyperOpt(object):
         """Return top-k best performing parameter configurations."""
         assert top_k <= self.eval_counter
         # Mono-objective case - get best objective evals
-        if type(self.log[0]["objective"]) in [float, int]:
+        if type(self.log[0]["objective"]) in [float, int, np.int64]:
             objective_evals = [it["objective"] for it in self.log]
             best_idx = np.argsort(objective_evals)[:top_k]
             best_iters = [self.log[idx] for idx in best_idx]
@@ -166,15 +166,16 @@ class HyperOpt(object):
         else:
             pareto_configs, pareto_evals = self.get_pareto_front()
             best_configs, best_evals = pareto_configs[:top_k], pareto_evals[:top_k]
+            best_idx = top_k * ["-"]
         if top_k == 1:
-            return best_configs[0], best_evals[0]
+            return best_idx[0], best_configs[0], best_evals[0]
         else:
-            return best_configs, best_evals
+            return best_idx, best_configs, best_evals
 
     def print_ranking(self, top_k: int = 5):
         """Pretty print archive of best configurations."""
-        best_configs, best_evals = self.get_best(top_k)
-        ranking_message(best_configs, best_evals)
+        best_idx, best_configs, best_evals = self.get_best(top_k)
+        ranking_message(best_idx, best_configs, best_evals)
 
     def store_configs(
         self,
@@ -215,21 +216,23 @@ class HyperOpt(object):
         """Return number of evals stored in log."""
         return self.eval_counter
 
-    def print_hello(self):
+    def print_hello(self, search_type: str):
         """Print start-up message."""
         # Get search data in table format
         space_data = self.space.describe()
-        welcome_message(space_data)
+        welcome_message(space_data, search_type)
 
     def print_update(
         self, batch_proposals: List[dict], perf_measures: List[Union[float, int]]
     ):
         """Print strategy update."""
-        best_config, best_eval = self.get_best(top_k=1)
+        best_eval_id, best_config, best_eval = self.get_best(top_k=1)
         best_batch_idx = np.argmin(perf_measures)
+        best_batch_eval_id = self.eval_counter - len(perf_measures) + best_batch_idx
         best_batch_config, best_batch_eval = (
             batch_proposals[best_batch_idx],
             perf_measures[best_batch_idx],
         )
         # Print best data in log - and best data in last batch
-        update_message(best_config, best_eval, best_batch_config, best_batch_eval)
+        update_message(self.eval_counter, best_eval_id, best_config, best_eval,
+                       best_batch_eval_id, best_batch_config, best_batch_eval)

@@ -71,7 +71,7 @@ class RandomSearch(HyperOpt):
 
     def refine(self, top_k: int):
         """Refine the space boundaries based on top-k performers."""
-        top_k_configs, top_k_evals = self.get_best(top_k)
+        top_idx, top_k_configs, top_k_evals = self.get_best(top_k)
         # Loop over real, integer and categorical variable keys
         # Get boundaries and re-define the search space
         if self.categorical is not None:

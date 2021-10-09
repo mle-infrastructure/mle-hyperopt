@@ -120,8 +120,6 @@ You can run the test suite via `python -m pytest -vv tests/`. If you find a bug 
 - [ ] Add bounds static method to search spaces
 
 - [ ] Talk about 3 types of variables.
-- [ ] Add rich pretty update and start-up message
-  - [ ] Add search space/strategy description to print
 - [ ] Add text to notebook
   - [ ] Add visualization for what is implemented
 - [ ] Add simple MNIST learning rate grid search as .py

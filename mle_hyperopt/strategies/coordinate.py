@@ -92,7 +92,7 @@ class CoordinateSearch(HyperOpt):
         """Construct the active search space."""
         # Update the parameter defaults with the best performers
         if self.eval_counter > 0:
-            config, eval = self.get_best()
+            idx, config, eval = self.get_best()
             for k, v in config.items():
                 self.search_config["defaults"][k] = v
 
