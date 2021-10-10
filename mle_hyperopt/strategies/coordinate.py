@@ -60,6 +60,12 @@ class CoordinateSearch(HyperOpt):
 
     def ask_search(self, batch_size: int):
         """Get proposals to eval next (in batches) - Coordinate Search"""
+        # Set grid counter to eval_counter in order ensure while
+        # That results for grid configuration are collected before continuation
+        self.grid_var_counter = (
+            self.eval_counter - self.range_per_coord[self.var_counter]
+        )
+
         param_batch = []
         # Sample a new configuration for each eval in the batch
         while len(param_batch) < batch_size and self.grid_var_counter < len(self.space):

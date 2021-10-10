@@ -72,9 +72,15 @@ class HyperOpt(object):
             else:
                 assert len(config_fnames) == len(param_batch)
             self.store_configs(param_batch, config_fnames)
-            return param_batch, config_fnames
+            if batch_size == 1:
+                return param_batch[0], config_fnames[0]
+            else:
+                return param_batch, config_fnames
         else:
-            return param_batch
+            if batch_size == 1:
+                return param_batch[0]
+            else:
+                return param_batch
 
     def ask_search(self, batch_size: int):
         """Search method-specific proposal generation."""

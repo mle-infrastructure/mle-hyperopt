@@ -39,6 +39,9 @@ class GridSearch(HyperOpt):
 
     def ask_search(self, batch_size: int):
         """Get proposals to eval next (in batches) - Grid Search"""
+        # Set grid counter to eval_counter in order ensure while
+        # That results for grid configuration are collected before continuation
+        self.grid_counter = self.eval_counter
         param_batch = []
         # Sample a new configuration for each eval in the batch
         while (

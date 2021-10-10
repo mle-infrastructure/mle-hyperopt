@@ -33,7 +33,7 @@ strategy.tell(configs, values)
 ```
 
 
-## Implemented Search Types 🎮
+### Implemented Search Types 🎮
 
 | Search Type           | Description | `search_config` |
 |----------------------- | ----------- | --------------- |
@@ -43,6 +43,9 @@ strategy.tell(configs, values)
 |  `CoordinateSearch`    |  Coordinate-wise optim. with defaults | `order`, `defaults`
 |  `NevergradSearch`     |  Multi-objective [nevergrad](https://facebookresearch.github.io/nevergrad/) wrapper | `optimizer`, `budget_size`, `num_workers`
 
+### Variable Types & Hyperparameter Spaces 🌍
+
+TBC
 
 ## Installation ⏳
 
@@ -120,6 +123,5 @@ You can run the test suite via `python -m pytest -vv tests/`. If you find a bug 
 - [ ] Add bounds static method to search spaces
 
 - [ ] Talk about 3 types of variables.
-- [ ] Add text to notebook
-  - [ ] Add visualization for what is implemented
+- [ ] Add text to notebook + visualization for what is implemented
 - [ ] Add simple MNIST learning rate grid search as .py
