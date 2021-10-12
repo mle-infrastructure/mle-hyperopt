@@ -130,10 +130,11 @@ class HyperOpt(object):
         """Search method-specific strategy update."""
         raise NotImplementedError
 
-    def save(self, save_path: str = "search_log.pkl"):
+    def save(self, save_path: str = "search_log.json", verbose: bool = False):
         """Store the state of the optimizer (parameters, values) as .pkl."""
         save_json(self.log, save_path)
-        print(f"Stored {self.eval_counter} search iterations.")
+        if verbose:
+            print(f"Stored {self.eval_counter} search iterations --> {save_path}.")
 
     def load(
         self,

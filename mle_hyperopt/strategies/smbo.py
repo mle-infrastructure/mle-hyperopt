@@ -48,7 +48,7 @@ class SMBOSearch(HyperOpt):
 
         # Add start-up message printing the search space
         if self.verbose:
-            self.print_hello()
+            self.print_hello("SMBO Search")
 
     def ask_search(self, batch_size: int):
         """Get proposals to eval next (in batches) - Random Sampling."""

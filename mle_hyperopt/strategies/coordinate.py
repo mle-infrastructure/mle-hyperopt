@@ -56,7 +56,7 @@ class CoordinateSearch(HyperOpt):
 
         # Add start-up message printing the search space
         if self.verbose:
-            self.print_hello()
+            self.print_hello("Coordinate-Wise Search")
 
     def ask_search(self, batch_size: int):
         """Get proposals to eval next (in batches) - Coordinate Search"""

@@ -39,12 +39,13 @@ class RandomSearch(HyperOpt):
             if type(self.refine_after) == int:
                 self.refine_after = [self.refine_after]
             self.refine_top_k = self.search_config["refine_top_k"]
+            self.last_refined = 0
         else:
             self.refine_after = None
 
         # Add start-up message printing the search space
         if self.verbose:
-            self.print_hello()
+            self.print_hello("Random Search")
 
     def ask_search(self, batch_size: int):
         """Get proposals to eval next (in batches) - Random Sampling."""
@@ -64,10 +65,16 @@ class RandomSearch(HyperOpt):
         """Perform post-iteration clean-up by updating surrogate model."""
         # Refine search space boundaries after set of search iterations
         if self.refine_after is not None:
-            # TODO: Ensure works even if eval_counter not exactly == refine_counter
-            if self.eval_counter == self.refine_after[self.refine_counter]:
-                self.refine(self.refine_top_k)
-                self.refine_counter += 1
+            # Check whether there are still refinements open
+            # And whether we have already passed last refinement point
+            if len(self.refine_after) > self.refine_counter:
+                exact = self.eval_counter == self.refine_after[self.refine_counter]
+                skip = (self.eval_counter > self.refine_after[self.refine_counter]
+                        and self.last_refined != self.refine_after[self.refine_counter])
+                if exact or skip:
+                    self.refine(self.refine_top_k)
+                    self.refine_counter += 1
+                    self.last_refined = int(self.eval_counter)
 
     def refine(self, top_k: int):
         """Refine the space boundaries based on top-k performers."""
@@ -107,7 +114,5 @@ class RandomSearch(HyperOpt):
             integer_refined = None
 
         self.space = RandomSpace(real_refined, integer_refined, categorical_refined)
-        print("Refined the random search space:")
-        print(f"Real: {real_refined}")
-        print(f"Integer: {integer_refined}")
-        print(f"Categorical: {categorical_refined}")
+        if self.verbose:
+            self.print_hello(f"Refined Random Search Space: After {self.eval_counter} Evals")
