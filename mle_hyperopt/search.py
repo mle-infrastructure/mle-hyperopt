@@ -241,5 +241,12 @@ class HyperOpt(object):
             perf_measures[best_batch_idx],
         )
         # Print best data in log - and best data in last batch
-        update_message(self.eval_counter, best_eval_id, best_config, best_eval,
-                       best_batch_eval_id, best_batch_config, best_batch_eval)
+        update_message(
+            self.eval_counter,
+            best_eval_id,
+            best_config,
+            best_eval,
+            best_batch_eval_id,
+            best_batch_config,
+            best_batch_eval,
+        )

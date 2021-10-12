@@ -6,7 +6,7 @@ from rich.align import Align
 
 
 def welcome_message(space_data, search_type: str):
-    """ Print startup configuration of search space. """
+    """Print startup configuration of search space."""
     console = Console()
     table = Table(show_footer=False)
     table.add_column("Variable", no_wrap=True)
@@ -23,9 +23,16 @@ def welcome_message(space_data, search_type: str):
     console.print(Align.center(table))
 
 
-def update_message(total_eval_id, best_eval_id, best_config, best_eval,
-                   best_batch_eval_id, best_batch_config, best_batch_eval):
-    """ Print current best performing configurations. """
+def update_message(
+    total_eval_id,
+    best_eval_id,
+    best_config,
+    best_eval,
+    best_batch_eval_id,
+    best_batch_config,
+    best_batch_eval,
+):
+    """Print current best performing configurations."""
     console = Console()
     table = Table(show_header=True)
     table.add_column(f"Total Evals: {total_eval_id}", style="dim")
@@ -41,15 +48,20 @@ def update_message(total_eval_id, best_eval_id, best_config, best_eval,
     for k, v in best_batch_config.items():
         if type(v) == float:
             best_batch_config[k] = round(v, 3)
-    table.add_row("Best Overall", str(best_eval_id),
-                  str(best_eval), str(best_config)[1:-1])
-    table.add_row("Best in Batch", str(best_batch_eval_id),
-                  str(best_batch_eval), str(best_batch_config)[1:-1])
+    table.add_row(
+        "Best Overall", str(best_eval_id), str(best_eval), str(best_config)[1:-1]
+    )
+    table.add_row(
+        "Best in Batch",
+        str(best_batch_eval_id),
+        str(best_batch_eval),
+        str(best_batch_config)[1:-1],
+    )
     console.print(Align.center(table))
 
 
 def ranking_message(best_eval_ids, best_configs, best_evals):
-    """ Print top-k performing configurations. """
+    """Print top-k performing configurations."""
     # Ensure that update data is list to loop over
     if type(best_eval_ids) in [int, np.int64]:
         best_eval_ids = [best_eval_ids]
@@ -74,6 +86,7 @@ def ranking_message(best_eval_ids, best_configs, best_evals):
         for k, v in best_configs[i].items():
             if type(v) == float:
                 best_configs[i][k] = round(v, 3)
-        table.add_row(f"{i+1}", str(best_eval_ids[i]),
-                      str(best_eval), str(best_configs[i])[1:-1])
+        table.add_row(
+            f"{i+1}", str(best_eval_ids[i]), str(best_eval), str(best_configs[i])[1:-1]
+        )
     console.print(Align.center(table))

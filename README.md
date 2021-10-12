@@ -48,7 +48,7 @@ strategy.tell(configs, values)
 | Variable            | Type | Space Specification |
 |----------------------- | ----------- | --------------- |
 |  **`real`**          |  Real-valued  | `Dict`: `begin`, `end`, `prior`/`bins` (grid) |
-|  **`integer`**        |  Integer-valued         | ` `Dict`: `begin`, `end`, `prior`/`spacing` (grid) |
+|  **`integer`**        |  Integer-valued         | `Dict`: `begin`, `end`, `prior`/`spacing` (grid) |
 |  **`categorical`**  |  Categorical        | `List`: Values to search over
 
 
@@ -119,11 +119,9 @@ You can run the test suite via `python -m pytest -vv tests/`. If you find a bug 
 
 
 - [ ] Add tests for core functionality
-  - Variable/space classes
   - Individual search strategies (boundary refinement, etc.)
   - Adding new data in `tell` method
   - Top-k subselection
   - Storing + reloading data
 - [ ] Add min vs max objective?!
-- [ ] Add bounds static method to search spaces
 - [ ] Add text to notebook + visualization for what is implemented

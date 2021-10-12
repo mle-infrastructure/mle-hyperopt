@@ -69,8 +69,10 @@ class RandomSearch(HyperOpt):
             # And whether we have already passed last refinement point
             if len(self.refine_after) > self.refine_counter:
                 exact = self.eval_counter == self.refine_after[self.refine_counter]
-                skip = (self.eval_counter > self.refine_after[self.refine_counter]
-                        and self.last_refined != self.refine_after[self.refine_counter])
+                skip = (
+                    self.eval_counter > self.refine_after[self.refine_counter]
+                    and self.last_refined != self.refine_after[self.refine_counter]
+                )
                 if exact or skip:
                     self.refine(self.refine_top_k)
                     self.refine_counter += 1
@@ -115,4 +117,6 @@ class RandomSearch(HyperOpt):
 
         self.space = RandomSpace(real_refined, integer_refined, categorical_refined)
         if self.verbose:
-            self.print_hello(f"Refined Random Search Space: After {self.eval_counter} Evals")
+            self.print_hello(
+                f"Refined Random Search Space: After {self.eval_counter} Evals"
+            )

@@ -52,7 +52,7 @@ def hyperopt(
         def wrapper(*args, **kwargs):
             for iter_id in range(num_search_iters):
                 config = strategy.ask()
-                result = function(config[0])
+                result = function(config)
                 strategy.tell(config, [result])
             return strategy
 
