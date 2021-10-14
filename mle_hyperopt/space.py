@@ -1,13 +1,7 @@
 class HyperSpace(object):
     def __init__(self, real, integer, categorical):
         """General Class Wrapper for HyperSpace configuration setup."""
-        self.real = real
-        self.integer = integer
-        self.categorical = categorical
-        # Check for correctness of search space
-        self.check()
-        # Run the space setup
-        self.construct()
+        self.update(real, integer, categorical)
 
     def check(self):
         """Check that all inputs are provided correctly."""
@@ -20,6 +14,16 @@ class HyperSpace(object):
     def construct(self):
         """Setup/construct the search space."""
         raise NotImplementedError
+
+    def update(self, real, integer, categorical):
+        """Update the search variables and update the space."""
+        self.real = real
+        self.integer = integer
+        self.categorical = categorical
+        # Check for correctness of search space
+        self.check()
+        # Run the space setup
+        self.construct()
 
     @property
     def bounds(self):

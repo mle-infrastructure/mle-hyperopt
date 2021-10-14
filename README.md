@@ -5,7 +5,7 @@
 [![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/RobertTLange/mle-hyperopt/blob/main/examples/getting_started.ipynb)
 <a href="docs/logo_transparent.png_2"><img src="docs/logo_transparent.png" width="200" align="right" /></a>
 
-Simple and intuitive hyperparameter optimization API for your Machine Learning Experiments (MLE). This includes simple grid and random search as well as sequential model-based optimization and a set of more unorthodox search algorithms. Hyperparameter spaces include real, integer and categorical-valued variables. We assume that the objective is minimized (multiple by -1 if this is not the case). For a quickstart checkout the [notebook blog](https://github.com/RobertTLange/mle-hyperopt/blob/main/examples/getting_started.ipynb).
+Simple and intuitive hyperparameter optimization API for your Machine Learning Experiments (MLE). This includes simple grid and random search as well as sequential model-based optimization (SMBO) and a set of more unorthodox search algorithms (multi-objective via `nevergrad` and a coordinate-wise search). Portable hyperparameter spaces are available for real, integer and categorical-valued variables. The search strategies assume that the underlying objective is minimized (multiple by -1 if this is not the case). For a quickstart checkout the [notebook blog](https://github.com/RobertTLange/mle-hyperopt/blob/main/examples/getting_started.ipynb).
 
 ## The API 🎮
 
@@ -32,8 +32,7 @@ values = [train_network(**c) for c in configs]
 strategy.tell(configs, values)
 ```
 
-
-### Implemented Search Types 🎮
+### Implemented Search Types 	🔭
 
 | Search Type           | Description | `search_config` |
 |----------------------- | ----------- | --------------- |
@@ -74,12 +73,12 @@ pip install -e .
 
 ```python
 # Storing & reloading of results from .pkl
-strategy.save("search_log.pkl")
-strategy = RandomSearch(..., reload_path="search_log.pkl")
+strategy.save("search_log.json")
+strategy = RandomSearch(..., reload_path="search_log.json")
 
 # Or manually add info after class instantiation
 strategy = RandomSearch(...)
-strategy.load("search_log.pkl")
+strategy.load("search_log.json")
 ```
 
 ### Search Decorator 🧶
@@ -104,6 +103,8 @@ strategy = circle()
 ```python
 # Store 2 proposed configurations - eval_0.yaml, eval_1.yaml
 strategy.ask(2, store=True)
+# Store with explicit configuration filenames - conf_0.yaml, conf_1.yaml
+strategy.ask(2, store=True, config_fnames=["conf_0.yaml", "conf_1.yaml"])
 ```
 
 ### Retrieving Top Performers & Visualizing Results 📉
@@ -113,15 +114,28 @@ strategy.ask(2, store=True)
 strategy.get_best(top_k=4)
 ```
 
+### Refining the Search Space of Your Strategy 🪓
+
+```python
+# Refine the search space after 5 iterations based on top 2 configurations
+strategy = RandomSearch(real={"lrate": {"begin": 0.1,
+                                        "end": 0.5,
+                                        "prior": "uniform"}},
+                        integer={"batch_size": {"begin": 1,
+                                                "end": 5,
+                                                "prior": "log-uniform"}},
+                        categorical={"arch": ["mlp", "cnn"]},
+                        search_config={"refine_after": 5,
+                                       "refine_top_k": 2})
+```
+
+
 ## Development & Milestones for Next Release
 
 You can run the test suite via `python -m pytest -vv tests/`. If you find a bug or are missing your favourite feature, feel free to contact me [@RobertTLange](https://twitter.com/RobertTLange) or create an issue :hugs:. Here are some features I want to implement for the next release:
 
-
-- [ ] Add tests for core functionality
-  - Individual search strategies (boundary refinement, etc.)
-  - Adding new data in `tell` method
-  - Top-k subselection
-  - Storing + reloading data
-- [ ] Add min vs max objective?!
+- [ ] Add min vs max objective option to choose at strategy init
 - [ ] Add text to notebook + visualization for what is implemented
+- [ ] Allow space refinement for other strategies
+- [ ] Make rich print left aligned and fixed in width
+- [ ] Bins/spacing should be one

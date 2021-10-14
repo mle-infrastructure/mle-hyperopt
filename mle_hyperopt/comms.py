@@ -4,14 +4,16 @@ from rich.table import Table
 from rich import box
 from rich.align import Align
 
+console_width = 80
+
 
 def welcome_message(space_data, search_type: str):
     """Print startup configuration of search space."""
-    console = Console()
+    console = Console(width=console_width)
     table = Table(show_footer=False)
-    table.add_column("Variable", no_wrap=True)
+    table.add_column(":sunflower: Variable", no_wrap=True)
     table.add_column("Type")
-    table.add_column("Search Range")
+    table.add_column("Search Range :left_right_arrow:")
     table.title = "MLE-Hyperopt " + search_type + " Hyperspace :rocket:"
     for row in space_data:
         table.add_row(*list(row.values()))
@@ -33,12 +35,12 @@ def update_message(
     best_batch_eval,
 ):
     """Print current best performing configurations."""
-    console = Console()
+    console = Console(width=console_width)
     table = Table(show_header=True)
-    table.add_column(f"Total Evals: {total_eval_id}", style="dim")
+    table.add_column(f":inbox_tray: Total: {total_eval_id}", style="dim")
     table.add_column("ID")
-    table.add_column("Obj.")
-    table.add_column("Configuration")
+    table.add_column("Obj. :chart_with_downwards_trend:")
+    table.add_column("Configuration :bookmark:")
     # Round all the values for prettier printing
     best_eval = round(best_eval, 3)
     best_batch_eval = round(best_batch_eval, 3)
@@ -72,10 +74,10 @@ def ranking_message(best_eval_ids, best_configs, best_evals):
 
     console = Console()
     table = Table(show_header=True)
-    table.add_column(f"Rank", style="dim")
+    table.add_column(f":1st_place_medal: Rank", style="dim")
     table.add_column("ID")
-    table.add_column("Obj.")
-    table.add_column("Configuration")
+    table.add_column("Obj. :chart_with_downwards_trend:")
+    table.add_column("Configuration :bookmark:")
     for i in range(len(best_configs)):
         # Round all the values for prettier printing
         if type(best_evals[i]) == np.ndarray:

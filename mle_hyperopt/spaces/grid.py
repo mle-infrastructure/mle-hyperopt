@@ -39,23 +39,23 @@ class GridSpace(HyperSpace):
         return self.param_grid[grid_counter]
 
     def construct(self):
-        param_range = {}
+        self.param_range = {}
         if self.categorical is not None:
             for k, v in self.categorical.items():
-                param_range[k] = v
+                self.param_range[k] = v
 
         if self.real is not None:
             for k, v in self.real.items():
-                param_range[k] = np.linspace(
+                self.param_range[k] = np.linspace(
                     float(v["begin"]), float(v["end"]), int(v["bins"])
                 ).tolist()
 
         if self.integer is not None:
             for k, v in self.integer.items():
-                param_range[k] = np.arange(
+                self.param_range[k] = np.arange(
                     int(v["begin"]), int(v["end"]) + 1, int(v["spacing"])
                 ).tolist()
-        self.param_grid = list(ParameterGrid(param_range))
+        self.param_grid = list(ParameterGrid(self.param_range))
 
     def __len__(self) -> int:
         """Return number of runs stored in meta_log."""
@@ -87,6 +87,14 @@ class GridSpace(HyperSpace):
                 }
                 all_vars.append(data_dict)
         return all_vars
+
+    def contains(self, candidate):
+        """Check whether a candidate is in the search space."""
+        # Define a separate function for discrete grid case!
+        for k, v in candidate.items():
+            if not (v in self.param_range[k]):
+                return False
+        return True
 
 
 class ParameterGrid:

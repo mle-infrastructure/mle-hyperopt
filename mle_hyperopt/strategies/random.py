@@ -75,8 +75,8 @@ class RandomSearch(HyperOpt):
                 )
                 if exact or skip:
                     self.refine(self.refine_top_k)
+                    self.last_refined = self.refine_after[self.refine_counter]
                     self.refine_counter += 1
-                    self.last_refined = int(self.eval_counter)
 
     def refine(self, top_k: int):
         """Refine the space boundaries based on top-k performers."""
@@ -115,8 +115,8 @@ class RandomSearch(HyperOpt):
         else:
             integer_refined = None
 
-        self.space = RandomSpace(real_refined, integer_refined, categorical_refined)
+        self.space.update(real_refined, integer_refined, categorical_refined)
         if self.verbose:
             self.print_hello(
-                f"Refined Random Search Space: After {self.eval_counter} Evals"
+                f"After {self.eval_counter} Evals - Refined Random Search"
             )
