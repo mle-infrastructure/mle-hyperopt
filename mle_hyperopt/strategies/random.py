@@ -22,6 +22,7 @@ class RandomSearch(HyperOpt):
             real,
             integer,
             categorical,
+            search_config,
             fixed_params,
             reload_path,
             reload_list,
@@ -29,19 +30,6 @@ class RandomSearch(HyperOpt):
             verbose,
         )
         self.space = RandomSpace(real, integer, categorical)
-        self.search_config = search_config
-
-        if self.search_config is not None:
-            self.refine_counter = 0
-            assert self.search_config["refine_top_k"] > 1
-            self.refine_after = self.search_config["refine_after"]
-            # Make sure that refine iteration is list
-            if type(self.refine_after) == int:
-                self.refine_after = [self.refine_after]
-            self.refine_top_k = self.search_config["refine_top_k"]
-            self.last_refined = 0
-        else:
-            self.refine_after = None
 
         # Add start-up message printing the search space
         if self.verbose:
@@ -62,61 +50,8 @@ class RandomSearch(HyperOpt):
         return param_batch
 
     def tell_search(self, batch_proposals: list, perf_measures: list):
-        """Perform post-iteration clean-up by updating surrogate model."""
-        # Refine search space boundaries after set of search iterations
-        if self.refine_after is not None:
-            # Check whether there are still refinements open
-            # And whether we have already passed last refinement point
-            if len(self.refine_after) > self.refine_counter:
-                exact = self.eval_counter == self.refine_after[self.refine_counter]
-                skip = (
-                    self.eval_counter > self.refine_after[self.refine_counter]
-                    and self.last_refined != self.refine_after[self.refine_counter]
-                )
-                if exact or skip:
-                    self.refine(self.refine_top_k)
-                    self.last_refined = self.refine_after[self.refine_counter]
-                    self.refine_counter += 1
+        """Perform post-iteration clean-up - no surrogate model."""
 
-    def refine(self, top_k: int):
-        """Refine the space boundaries based on top-k performers."""
-        top_idx, top_k_configs, top_k_evals = self.get_best(top_k)
-        # Loop over real, integer and categorical variable keys
-        # Get boundaries and re-define the search space
-        if self.categorical is not None:
-            categorical_refined = {}
-            for var in self.categorical.keys():
-                top_k_var = [config[var] for config in top_k_configs]
-                categorical_refined[var] = list(set(top_k_var))
-        else:
-            categorical_refined = None
-
-        if self.real is not None:
-            real_refined = {}
-            for var in self.real.keys():
-                top_k_var = [config[var] for config in top_k_configs]
-                real_refined[var] = {
-                    "begin": np.min(top_k_var),
-                    "end": np.max(top_k_var),
-                    "prior": self.real[var]["prior"],
-                }
-        else:
-            real_refined = None
-
-        if self.integer is not None:
-            integer_refined = {}
-            for var in self.integer.keys():
-                top_k_var = [config[var] for config in top_k_configs]
-                integer_refined[var] = {
-                    "begin": int(np.min(top_k_var)),
-                    "end": int(np.max(top_k_var)),
-                    "prior": self.integer[var]["prior"],
-                }
-        else:
-            integer_refined = None
-
-        self.space.update(real_refined, integer_refined, categorical_refined)
-        if self.verbose:
-            self.print_hello(
-                f"After {self.eval_counter} Evals - Refined Random Search"
-            )
+    def refine_space(self, real, integer, categorical):
+        """Update the random search space."""
+        self.space.update(real, integer, categorical)

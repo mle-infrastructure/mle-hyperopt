@@ -22,13 +22,13 @@ class CoordinateSearch(HyperOpt):
             real,
             integer,
             categorical,
+            search_config,
             fixed_params,
             reload_path,
             reload_list,
             seed_id,
             verbose,
         )
-        self.search_config = search_config
         self.evals_per_coord = [0]
         for k in self.search_config["order"]:
             if self.real is not None:

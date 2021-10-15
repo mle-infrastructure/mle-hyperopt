@@ -28,6 +28,7 @@ class SMBOSearch(HyperOpt):
             real,
             integer,
             categorical,
+            search_config,
             fixed_params,
             reload_path,
             reload_list,
@@ -37,7 +38,6 @@ class SMBOSearch(HyperOpt):
         self.space = SMBOSpace(real, integer, categorical)
 
         # Initialize the surrogate model/hyperparam config proposer
-        self.search_config = search_config
         self.hyper_optimizer = Optimizer(
             dimensions=self.space.dimensions,
             random_state=self.seed_id,

@@ -37,8 +37,7 @@ def test_core():
     os.remove("eval_5.yaml")
     os.remove("eval_6.yaml")
 
-    configs = strategy.ask(2, store=True, config_fnames=["conf_0.yaml",
-                                                         "conf_1.yaml"])
+    configs = strategy.ask(2, store=True, config_fnames=["conf_0.yaml", "conf_1.yaml"])
     assert os.path.exists("conf_0.yaml")
     assert os.path.exists("conf_1.yaml")
     os.remove("conf_0.yaml")
@@ -48,8 +47,16 @@ def test_core():
     best_id, best_config, best_value = strategy.get_best(2)
     assert (best_id == [4, 3]).all()
     assert (np.array(best_value) == [10.005996236277564, 11.00112114105261]).all()
-    assert best_config[0] == {'arch': 'cnn', 'lrate': 0.12256463161084011, 'batch_size': 4}
-    assert best_config[1] == {'arch': 'cnn', 'lrate': 0.23348344445560876, 'batch_size': 3}
+    assert best_config[0] == {
+        "arch": "cnn",
+        "lrate": 0.12256463161084011,
+        "batch_size": 4,
+    }
+    assert best_config[1] == {
+        "arch": "cnn",
+        "lrate": 0.23348344445560876,
+        "batch_size": 3,
+    }
 
 
 def test_fixed_params():
@@ -57,7 +64,7 @@ def test_fixed_params():
         real={"lrate": {"begin": 0.1, "end": 0.5, "prior": "uniform"}},
         integer={"batch_size": {"begin": 1, "end": 5, "prior": "uniform"}},
         categorical={"arch": ["mlp", "cnn"]},
-        fixed_params={"momentum": 0.9}
+        fixed_params={"momentum": 0.9},
     )
     configs = strategy.ask(5)
     for c in configs:
@@ -77,16 +84,13 @@ def test_random():
 
 
 def test_refinement():
-    strategy = RandomSearch(real={"lrate": {"begin": 0.1,
-                                            "end": 0.5,
-                                            "prior": "uniform"}},
-                            integer={"batch_size": {"begin": 1,
-                                                    "end": 5,
-                                                    "prior": "log-uniform"}},
-                            categorical={"arch": ["mlp", "cnn"]},
-                            search_config={"refine_after": 5,
-                                           "refine_top_k": 2},
-                            seed_id=42)
+    strategy = RandomSearch(
+        real={"lrate": {"begin": 0.1, "end": 0.5, "prior": "uniform"}},
+        integer={"batch_size": {"begin": 1, "end": 5, "prior": "log-uniform"}},
+        categorical={"arch": ["mlp", "cnn"]},
+        search_config={"refine_after": 5, "refine_top_k": 2},
+        seed_id=42,
+    )
 
     configs = strategy.ask(5)
     values = [fake_train(**c) for c in configs]

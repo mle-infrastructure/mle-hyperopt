@@ -26,6 +26,7 @@ class NevergradSearch(HyperOpt):
             real,
             integer,
             categorical,
+            search_config,
             fixed_params,
             reload_path,
             reload_list,
@@ -34,7 +35,6 @@ class NevergradSearch(HyperOpt):
         )
         self.space = NevergradSpace(real, integer, categorical)
         # Initialize the surrogate model/hyperparam config proposer
-        self.search_config = search_config
         if self.search_config["optimizer"] == "CMA":
             self.hyper_optimizer = ng.optimizers.CMA(
                 parametrization=self.space.dimensions,
