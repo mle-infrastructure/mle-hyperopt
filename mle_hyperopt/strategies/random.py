@@ -1,5 +1,4 @@
 from typing import Union
-import numpy as np
 from ..search import HyperOpt
 from ..spaces import RandomSpace
 

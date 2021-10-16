@@ -27,7 +27,7 @@ class GridSpace(HyperSpace):
                     assert v["begin"] <= v["end"]
 
         if self.integer is not None:
-            integer_keys = ["begin", "end", "spacing"]
+            integer_keys = ["begin", "end", "bins"]
             for key in integer_keys:
                 for k, v in self.integer.items():
                     assert key in v
@@ -52,9 +52,8 @@ class GridSpace(HyperSpace):
 
         if self.integer is not None:
             for k, v in self.integer.items():
-                self.param_range[k] = np.arange(
-                    int(v["begin"]), int(v["end"]) + 1, int(v["spacing"])
-                ).tolist()
+                self.param_range[k] = np.linspace(v["begin"], v["end"],
+                v["bins"]).astype(int).tolist()
         self.param_grid = list(ParameterGrid(self.param_range))
 
     def __len__(self) -> int:
@@ -83,7 +82,7 @@ class GridSpace(HyperSpace):
                 data_dict = {
                     "name": k,
                     "type": "integer",
-                    "extra": f'Begin: {v["begin"]}, End: {v["end"]}, Spacing: {v["spacing"]}',
+                    "extra": f'Begin: {v["begin"]}, End: {v["end"]}, Bins: {v["bins"]}',
                 }
                 all_vars.append(data_dict)
         return all_vars

@@ -11,7 +11,7 @@ def fake_train(lrate, batch_size, arch):
 def test_save_and_load():
     strategy = GridSearch(
         real={"lrate": {"begin": 0.1, "end": 0.5, "bins": 5}},
-        integer={"batch_size": {"begin": 1, "end": 5, "spacing": 1}},
+        integer={"batch_size": {"begin": 1, "end": 5, "bins": 1}},
         categorical={"arch": ["mlp", "cnn"]},
     )
     configs = strategy.ask(batch_size=2)
@@ -22,7 +22,7 @@ def test_save_and_load():
 
     strategy = GridSearch(
         real={"lrate": {"begin": 0.1, "end": 0.5, "bins": 5}},
-        integer={"batch_size": {"begin": 1, "end": 5, "spacing": 1}},
+        integer={"batch_size": {"begin": 1, "end": 5, "bins": 1}},
         categorical={"arch": ["mlp", "cnn"]},
         reload_path="search_log.json",
     )

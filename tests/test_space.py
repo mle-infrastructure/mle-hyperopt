@@ -19,7 +19,7 @@ def test_random_space():
 
 def test_grid_space():
     real = {"lrate": {"begin": 0.1, "end": 0.5, "bins": 5}}
-    integer = {"batch_size": {"begin": 1, "end": 5, "spacing": 1}}
+    integer = {"batch_size": {"begin": 1, "end": 5, "bins": 1}}
     categorical = {"arch": ["mlp", "cnn"]}
     space = GridSpace(real, integer, categorical)
     candidate_pos = space.sample(grid_counter=0)

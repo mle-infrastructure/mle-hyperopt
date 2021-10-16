@@ -107,7 +107,7 @@ def test_refinement():
 def test_grid():
     strategy = GridSearch(
         real={"lrate": {"begin": 0.1, "end": 0.5, "bins": 5}},
-        integer={"batch_size": {"begin": 1, "end": 5, "spacing": 1}},
+        integer={"batch_size": {"begin": 1, "end": 5, "bins": 1}},
         categorical={"arch": ["mlp", "cnn"]},
     )
     configs = strategy.ask(5)
@@ -149,7 +149,7 @@ def test_nevergrad():
 def test_coordinate():
     strategy = CoordinateSearch(
         real={"lrate": {"begin": 0.1, "end": 0.5, "bins": 5}},
-        integer={"batch_size": {"begin": 1, "end": 5, "spacing": 1}},
+        integer={"batch_size": {"begin": 1, "end": 5, "bins": 2}},
         categorical={"arch": ["mlp", "cnn"]},
         search_config={
             "order": ["lrate", "batch_size", "arch"],

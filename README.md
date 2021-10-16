@@ -12,11 +12,6 @@ Simple and intuitive hyperparameter optimization API for your Machine Learning E
 ```python
 from mle_hyperopt import RandomSearch
 
-configs = strategy.ask(batch_size=1)
-values = [train_network(c) for c in configs]
-strategy.tell(configs, values)
-from mle_hyperopt import RandomSearch
-
 # Instantiate random search class
 strategy = RandomSearch(real={"lrate": {"begin": 0.1,
                                         "end": 0.5,
@@ -47,7 +42,7 @@ strategy.tell(configs, values)
 | Variable            | Type | Space Specification |
 |----------------------- | ----------- | --------------- |
 |  **`real`**          |  Real-valued  | `Dict`: `begin`, `end`, `prior`/`bins` (grid) |
-|  **`integer`**        |  Integer-valued         | `Dict`: `begin`, `end`, `prior`/`spacing` (grid) |
+|  **`integer`**        |  Integer-valued         | `Dict`: `begin`, `end`, `prior`/`bins` (grid) |
 |  **`categorical`**  |  Categorical        | `List`: Values to search over
 
 
@@ -137,5 +132,3 @@ You can run the test suite via `python -m pytest -vv tests/`. If you find a bug 
 - [ ] Add min vs max objective option to choose at strategy init
 - [ ] Add text to notebook + visualization for what is implemented
 - [ ] Allow space refinement for other strategies
-- [ ] Make rich print left aligned and fixed in width
-- [ ] Bins/spacing should be one
