@@ -36,8 +36,14 @@ class SMBOSearch(HyperOpt):
             verbose,
         )
         self.space = SMBOSpace(real, integer, categorical)
+        self.init_optimizer()
 
-        # Initialize the surrogate model/hyperparam config proposer
+        # Add start-up message printing the search space
+        if self.verbose:
+            self.print_hello("SMBO Search")
+
+    def init_optimizer(self):
+        """ Initialize the surrogate model/hyperparam config proposer. """
         self.hyper_optimizer = Optimizer(
             dimensions=self.space.dimensions,
             random_state=self.seed_id,
@@ -45,10 +51,6 @@ class SMBOSearch(HyperOpt):
             acq_func=self.search_config["acq_function"],
             n_initial_points=self.search_config["n_initial_points"],
         )
-
-        # Add start-up message printing the search space
-        if self.verbose:
-            self.print_hello("SMBO Search")
 
     def ask_search(self, batch_size: int):
         """Get proposals to eval next (in batches) - Random Sampling."""
@@ -72,6 +74,15 @@ class SMBOSearch(HyperOpt):
             prop_conf = dict(prop)
             if self.fixed_params is not None:
                 for k in self.fixed_params.keys():
-                    del prop_conf[k]
+                    if k in prop_conf.keys():
+                        del prop_conf[k]
             x.append(list(prop_conf.values()))
         self.hyper_optimizer.tell(x, perf_measures)
+
+    def refine_space(self, real, integer, categorical):
+        """Update the SMBO search space."""
+        self.space.update(real, integer, categorical)
+        # Reinitialize the optimizer and provide data from previous updates
+        self.init_optimizer()
+        for iter in self.log:
+            self.tell_search([iter["params"]], [iter["objective"]])

@@ -62,7 +62,7 @@ class GridSearch(HyperOpt):
 
     def tell_search(self, batch_proposals: list, perf_measures: list):
         """Update search log data - Grid Search"""
-        # Make sure that the grid_counter equals the eval eval_counter
+        # Make sure that the grid_counter equals the eval_counter
         # This is only relevant if we load in new log data mid-search
         self.grid_counter = self.eval_counter
 

@@ -93,8 +93,8 @@ class CoordinateSearch(HyperOpt):
             self.eval_counter - self.range_per_coord[self.var_counter]
         )
         if self.grid_var_counter == len(self.space):
+            self.var_counter += 1
             if self.var_counter < len(self.search_config["order"]):
-                self.var_counter += 1
                 self.construct_active_space()
                 self.grid_var_counter = 0
 

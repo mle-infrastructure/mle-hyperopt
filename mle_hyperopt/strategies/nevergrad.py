@@ -34,7 +34,14 @@ class NevergradSearch(HyperOpt):
             verbose,
         )
         self.space = NevergradSpace(real, integer, categorical)
-        # Initialize the surrogate model/hyperparam config proposer
+        self.init_optimizer()
+
+        # Add start-up message printing the search space
+        if self.verbose:
+            self.print_hello("Nevergrad Wrapper Search")
+
+    def init_optimizer(self):
+        """ Initialize the surrogate model/hyperparam config proposer. """
         if self.search_config["optimizer"] == "CMA":
             self.hyper_optimizer = ng.optimizers.CMA(
                 parametrization=self.space.dimensions,
@@ -50,15 +57,11 @@ class NevergradSearch(HyperOpt):
         else:
             raise ValueError("Please provide valid nevergrad optimizer type.")
 
-        # Add start-up message printing the search space
-        if self.verbose:
-            self.print_hello("Nevergrad Wrapper Search")
-
     def ask_search(self, batch_size: int):
         """Get proposals to eval next (in batches) - Random Sampling."""
         # Generate list of dictionaries with different hyperparams to evaluate
-        self.last_batch_params = [self.hyper_optimizer.ask() for i in range(batch_size)]
-        param_batch = [params.value[1] for params in self.last_batch_params]
+        last_batch_params = [self.hyper_optimizer.ask() for i in range(batch_size)]
+        param_batch = [params.value[1] for params in last_batch_params]
         return param_batch
 
     def tell_search(self, batch_proposals, perf_measures):
@@ -68,13 +71,21 @@ class NevergradSearch(HyperOpt):
             prop_conf = dict(prop)
             if self.fixed_params is not None:
                 for k in self.fixed_params.keys():
-                    del prop_conf[k]
-            for last_prop in self.last_batch_params:
-                if last_prop.value[1] == prop_conf:
-                    x = last_prop
-                    break
-            # Get performance for each objective - tell individually to optim
-            self.hyper_optimizer.tell(x, perf_measures[i])
+                    if k in prop_conf.keys():
+                        del prop_conf[k]
+            # Only update space if candidate is in bounds
+            if self.space.contains(prop_conf):
+                x = self.hyper_optimizer.parametrization.spawn_child(new_value=((), prop_conf))
+                # Get performance for each objective - tell individually to optim
+                self.hyper_optimizer.tell(x, perf_measures[i])
+
+    def refine_space(self, real, integer, categorical):
+        """Update the nevergrad search space."""
+        self.space.update(real, integer, categorical)
+        # Reinitialize the optimizer and provide data from previous updates
+        self.init_optimizer()
+        for iter in self.log:
+            self.tell_search([iter["params"]], [iter["objective"]])
 
     def get_pareto_front(self):
         """Get the pareto-front of the optimizer."""

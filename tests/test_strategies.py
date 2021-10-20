@@ -83,27 +83,6 @@ def test_random():
     return
 
 
-def test_refinement():
-    strategy = RandomSearch(
-        real={"lrate": {"begin": 0.1, "end": 0.5, "prior": "uniform"}},
-        integer={"batch_size": {"begin": 1, "end": 5, "prior": "log-uniform"}},
-        categorical={"arch": ["mlp", "cnn"]},
-        search_config={"refine_after": 5, "refine_top_k": 2},
-        seed_id=42,
-    )
-
-    configs = strategy.ask(5)
-    values = [fake_train(**c) for c in configs]
-    strategy.tell(configs, values)
-    assert strategy.last_refined == 5
-    assert strategy.space.bounds["lrate"][1] == 0.12256463161084011
-    assert strategy.space.bounds["lrate"][2] == 0.34044600469728353
-    assert strategy.space.bounds["batch_size"][1] == 3
-    assert strategy.space.bounds["batch_size"][2] == 3
-    assert strategy.space.bounds["arch"][1] in ["mlp", "cnn"]
-    assert strategy.space.bounds["arch"][2] in ["mlp", "cnn"]
-
-
 def test_grid():
     strategy = GridSearch(
         real={"lrate": {"begin": 0.1, "end": 0.5, "bins": 5}},

@@ -29,23 +29,24 @@ strategy.tell(configs, values)
 
 ### Implemented Search Types 	🔭
 
-![](https://github.com/RobertTLange/mle-hyperopt/blob/main/docs/mle_hyperopt_structure.png?raw=true)
+<!--
+![](https://github.com/RobertTLange/mle-hyperopt/blob/main/docs/mle_hyperopt_structure.png?raw=true) -->
 
 | | Search Type           | Description | `search_config` |
 |----|----------------------- | ----------- | --------------- |
-|![](docs/grid.png)|  `GridSearch`          |  Search over list of discrete values  | - |
-|![](docs/random.png)|  `RandomSearch`        |  Random search over variable ranges         | `refine_after`, `refine_top_k` |
-|![](docs/coordinate.png)|  `CoordinateSearch`    |  Coordinate-wise optim. with defaults | `order`, `defaults`
-|![](docs/smbo.png)|  `SMBOSearch`          |  Sequential model-based optim.        | `base_estimator`, `acq_function`, `n_initial_points`
-|![](docs/nevergrad.png)|  `NevergradSearch`     |  Multi-objective [nevergrad](https://facebookresearch.github.io/nevergrad/) wrapper | `optimizer`, `budget_size`, `num_workers`
+|<img src="https://github.com/RobertTLange/mle-hyperopt/blob/main/docs/grid.png?raw=true" alt="drawing" width="50"/>|  `GridSearch`          |  Search over list of discrete values  | - |
+|<img src="https://github.com/RobertTLange/mle-hyperopt/blob/main/docs/random.png?raw=true" alt="drawing" width="50"/>|  `RandomSearch`        |  Random search over variable ranges         | `refine_after`, `refine_top_k` |
+|<img src="https://github.com/RobertTLange/mle-hyperopt/blob/main/docs/coordinate.png?raw=true" alt="drawing" width="50"/>|  `CoordinateSearch`    |  Coordinate-wise optim. with defaults | `order`, `defaults`
+|<img src="https://github.com/RobertTLange/mle-hyperopt/blob/main/docs/smbo.png?raw=true" alt="drawing" width="50"/>|  `SMBOSearch`          |  Sequential model-based optim.        | `base_estimator`, `acq_function`, `n_initial_points`
+|<img src="https://github.com/RobertTLange/mle-hyperopt/blob/main/docs/nevergrad.png?raw=true" alt="drawing" width="50"/>|  `NevergradSearch`     |  Multi-objective [nevergrad](https://facebookresearch.github.io/nevergrad/) wrapper | `optimizer`, `budget_size`, `num_workers`
 
 ### Variable Types & Hyperparameter Spaces 🌍
 
 | | Variable            | Type | Space Specification |
 | --- |----------------------- | ----------- | --------------- |
-|![](docs/real.png) |  **`real`**          |  Real-valued  | `Dict`: `begin`, `end`, `prior`/`bins` (grid) |
-|![](docs/integer.png) |  **`integer`**        |  Integer-valued         | `Dict`: `begin`, `end`, `prior`/`bins` (grid) |
-|![](docs/categorical.png)|  **`categorical`**  |  Categorical        | `List`: Values to search over
+|<img src="https://github.com/RobertTLange/mle-hyperopt/blob/main/docs/real.png?raw=true" alt="drawing" width="50"/> |  **`real`**          |  Real-valued  | `Dict`: `begin`, `end`, `prior`/`bins` (grid) |
+|<img src="https://github.com/RobertTLange/mle-hyperopt/blob/main/docs/integer.png?raw=true" alt="drawing" width="50"/>  |  **`integer`**        |  Integer-valued         | `Dict`: `begin`, `end`, `prior`/`bins` (grid) |
+|<img src="https://github.com/RobertTLange/mle-hyperopt/blob/main/docs/categorical.png?raw=true" alt="drawing" width="50"/> |  **`categorical`**  |  Categorical        | `List`: Values to search over
 
 
 ## Installation ⏳
@@ -132,5 +133,5 @@ strategy = RandomSearch(real={"lrate": {"begin": 0.1,
 You can run the test suite via `python -m pytest -vv tests/`. If you find a bug or are missing your favourite feature, feel free to contact me [@RobertTLange](https://twitter.com/RobertTLange) or create an issue :hugs:. Here are some features I want to implement for the next release:
 
 - [ ] Add min vs max objective option to choose at strategy init
-- [ ] Add text to notebook + visualization for what is implemented
-- [ ] Allow space refinement for other strategies
+- [ ] Add text to notebook for what is implemented
+- [ ] Update mle-toolbox webpage intro

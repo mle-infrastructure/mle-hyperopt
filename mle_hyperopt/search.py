@@ -309,8 +309,13 @@ class HyperOpt(object):
                 real_refined[var] = {
                     "begin": np.min(top_k_var),
                     "end": np.max(top_k_var),
-                    "prior": self.real[var]["prior"],
                 }
+                # Copy prior/number of bins to loop over
+                if "prior" in self.real[var].keys():
+                    real_refined[var]["prior"] = self.real[var]["prior"]
+                # elif "bins" in self.real[var].keys():
+                #     # TODO: Will increase the grid resolution! Do we want this?
+                #     real_refined[var]["bins"] = self.real[var]["bins"]
         else:
             real_refined = None
 
@@ -321,8 +326,13 @@ class HyperOpt(object):
                 integer_refined[var] = {
                     "begin": int(np.min(top_k_var)),
                     "end": int(np.max(top_k_var)),
-                    "prior": self.integer[var]["prior"],
                 }
+            # Copy prior/number of bins to loop over
+            if "prior" in self.integer[var].keys():
+                integer_refined[var]["prior"] = self.integer[var]["prior"]
+            # elif "bins" in self.integer[var].keys():
+            #     # TODO: Will increase the grid resolution! Do we want this?
+            #     integer_refined[var]["bins"] = self.integer[var]["bins"]
         else:
             integer_refined = None
 
