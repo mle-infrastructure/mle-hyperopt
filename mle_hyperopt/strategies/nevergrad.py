@@ -37,27 +37,20 @@ class NevergradSearch(HyperOpt):
         )
         self.space = NevergradSpace(real, integer, categorical)
         self.init_optimizer()
+        self.search_name = "Nevergrad Wrapper Search"
 
         # Add start-up message printing the search space
         if self.verbose:
-            self.print_hello("Nevergrad Wrapper Search")
+            self.print_hello()
 
     def init_optimizer(self):
         """Initialize the surrogate model/hyperparam config proposer."""
-        if self.search_config["optimizer"] == "CMA":
-            self.hyper_optimizer = ng.optimizers.CMA(
+        assert self.search_config["optimizer"] in list(dict(ng.optimizers.registry).keys())
+        self.hyper_optimizer = ng.optimizers.registry[self.search_config["optimizer"]](
                 parametrization=self.space.dimensions,
                 budget=self.search_config["budget_size"],
                 num_workers=self.search_config["num_workers"],
             )
-        elif self.search_config["optimizer"] == "NGOpt":
-            self.hyper_optimizer = ng.optimizers.NGOpt(
-                parametrization=self.space.dimensions,
-                budget=self.search_config["budget_size"],
-                num_workers=self.search_config["num_workers"],
-            )
-        else:
-            raise ValueError("Please provide valid nevergrad optimizer type.")
 
     def ask_search(self, batch_size: int):
         """Get proposals to eval next (in batches) - Random Sampling."""

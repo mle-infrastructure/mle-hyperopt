@@ -39,10 +39,11 @@ class SMBOSearch(HyperOpt):
         )
         self.space = SMBOSpace(real, integer, categorical)
         self.init_optimizer()
+        self.search_name = "SMBO Search"
 
         # Add start-up message printing the search space
         if self.verbose:
-            self.print_hello("SMBO Search")
+            self.print_hello()
 
     def init_optimizer(self):
         """Initialize the surrogate model/hyperparam config proposer."""

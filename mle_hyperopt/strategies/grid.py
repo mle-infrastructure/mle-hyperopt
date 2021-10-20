@@ -36,10 +36,11 @@ class GridSearch(HyperOpt):
         self.space = GridSpace(real, integer, categorical)
         self.num_param_configs = len(self.space)
         self.grid_counter = self.eval_counter
+        self.search_name = "Gird Search"
 
         # Add start-up message printing the search space
         if self.verbose:
-            self.print_hello("Gird Search")
+            self.print_hello()
 
     def ask_search(self, batch_size: int):
         """Get proposals to eval next (in batches) - Grid Search"""

@@ -5,7 +5,17 @@
 [![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/RobertTLange/mle-hyperopt/blob/main/examples/getting_started.ipynb)
 <a href="docs/logo_transparent.png_2"><img src="docs/logo_transparent.png" width="200" align="right" /></a>
 
-Simple and intuitive hyperparameter optimization API for your Machine Learning Experiments (MLE). This includes simple grid and random search as well as sequential model-based optimization (SMBO) and a set of more unorthodox search algorithms (multi-objective via `nevergrad` and a coordinate-wise search). Portable hyperparameter spaces are available for real, integer and categorical-valued variables. For a quickstart checkout the [notebook blog](https://github.com/RobertTLange/mle-hyperopt/blob/main/examples/getting_started.ipynb).
+The `mle-hyperopt` package provides a simple and intuitive API for hyperparameter optimization of your Machine Learning Experiment (MLE) pipeline. It supports real, integer & categorical search variables and single- or multi-objective optimization.
+
+Core features include the following:
+
+- **API Simplicity**: `strategy.ask()`, `strategy.tell()` interface & space definition.
+- **Strategy Diversity**: Grid, random, coordinate search, SMBO & wrapping around FAIR's nevergrad.
+- **Search Space Refinement** based on the top performing configs via `strategy.refine(top_k=10)`.
+- **Export of configurations** to execute via e.g. `python train.py --config_fname config.yaml`.
+- **Storage & reload search logs** via `strategy.save(<log_fname>)`,  `strategy.load(<log_fname>)`.
+
+For a quickstart check out the [notebook blog](https://github.com/RobertTLange/mle-hyperopt/blob/main/examples/getting_started.ipynb) 📖.
 
 ## The API 🎮
 
@@ -29,24 +39,21 @@ strategy.tell(configs, values)
 
 ### Implemented Search Types 	🔭
 
-<!--
-![](https://github.com/RobertTLange/mle-hyperopt/blob/main/docs/mle_hyperopt_structure.png?raw=true) -->
-
 | | Search Type           | Description | `search_config` |
 |----|----------------------- | ----------- | --------------- |
-|<img src="https://github.com/RobertTLange/mle-hyperopt/blob/main/docs/grid.png?raw=true" alt="drawing" width="50"/>|  `GridSearch`          |  Search over list of discrete values  | - |
-|<img src="https://github.com/RobertTLange/mle-hyperopt/blob/main/docs/random.png?raw=true" alt="drawing" width="50"/>|  `RandomSearch`        |  Random search over variable ranges         | `refine_after`, `refine_top_k` |
-|<img src="https://github.com/RobertTLange/mle-hyperopt/blob/main/docs/coordinate.png?raw=true" alt="drawing" width="50"/>|  `CoordinateSearch`    |  Coordinate-wise optim. with defaults | `order`, `defaults`
-|<img src="https://github.com/RobertTLange/mle-hyperopt/blob/main/docs/smbo.png?raw=true" alt="drawing" width="50"/>|  `SMBOSearch`          |  Sequential model-based optim.        | `base_estimator`, `acq_function`, `n_initial_points`
-|<img src="https://github.com/RobertTLange/mle-hyperopt/blob/main/docs/nevergrad.png?raw=true" alt="drawing" width="50"/>|  `NevergradSearch`     |  Multi-objective [nevergrad](https://facebookresearch.github.io/nevergrad/) wrapper | `optimizer`, `budget_size`, `num_workers`
+|<img src="https://github.com/RobertTLange/mle-hyperopt/blob/main/docs/grid.png?raw=true" alt="drawing" width="65"/>|  `GridSearch`          |  Search over list of discrete values  | - |
+|<img src="https://github.com/RobertTLange/mle-hyperopt/blob/main/docs/random.png?raw=true" alt="drawing" width="65"/>|  `RandomSearch`        |  Random search over variable ranges         | `refine_after`, `refine_top_k` |
+|<img src="https://github.com/RobertTLange/mle-hyperopt/blob/main/docs/coordinate.png?raw=true" alt="drawing" width="65"/>|  `CoordinateSearch`    |  Coordinate-wise optimization with fixed defaults | `order`, `defaults`
+|<img src="https://github.com/RobertTLange/mle-hyperopt/blob/main/docs/smbo.png?raw=true" alt="drawing" width="65"/>|  `SMBOSearch`          |  Sequential model-based optimization        | `base_estimator`, `acq_function`, `n_initial_points`
+|<img src="https://github.com/RobertTLange/mle-hyperopt/blob/main/docs/nevergrad.png?raw=true" alt="drawing" width="65"/>|  `NevergradSearch`     |  Multi-objective [nevergrad](https://facebookresearch.github.io/nevergrad/) wrapper | `optimizer`, `budget_size`, `num_workers`
 
 ### Variable Types & Hyperparameter Spaces 🌍
 
 | | Variable            | Type | Space Specification |
 | --- |----------------------- | ----------- | --------------- |
-|<img src="https://github.com/RobertTLange/mle-hyperopt/blob/main/docs/real.png?raw=true" alt="drawing" width="50"/> |  **`real`**          |  Real-valued  | `Dict`: `begin`, `end`, `prior`/`bins` (grid) |
-|<img src="https://github.com/RobertTLange/mle-hyperopt/blob/main/docs/integer.png?raw=true" alt="drawing" width="50"/>  |  **`integer`**        |  Integer-valued         | `Dict`: `begin`, `end`, `prior`/`bins` (grid) |
-|<img src="https://github.com/RobertTLange/mle-hyperopt/blob/main/docs/categorical.png?raw=true" alt="drawing" width="50"/> |  **`categorical`**  |  Categorical        | `List`: Values to search over
+|<img src="https://github.com/RobertTLange/mle-hyperopt/blob/main/docs/real.png?raw=true" alt="drawing" width="65"/> |  **`real`**          |  Real-valued  | `Dict`: `begin`, `end`, `prior`/`bins` (grid) |
+|<img src="https://github.com/RobertTLange/mle-hyperopt/blob/main/docs/integer.png?raw=true" alt="drawing" width="65"/>  |  **`integer`**        |  Integer-valued         | `Dict`: `begin`, `end`, `prior`/`bins` (grid) |
+|<img src="https://github.com/RobertTLange/mle-hyperopt/blob/main/docs/categorical.png?raw=true" alt="drawing" width="65"/> |  **`categorical`**  |  Categorical        | `List`: Values to search over
 
 
 ## Installation ⏳

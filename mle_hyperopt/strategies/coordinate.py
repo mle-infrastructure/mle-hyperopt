@@ -59,10 +59,11 @@ class CoordinateSearch(HyperOpt):
         self.grid_var_counter = 0
         self.var_counter = 0
         self.construct_active_space()
+        self.search_name = "Coordinate-Wise Search"
 
         # Add start-up message printing the search space
         if self.verbose:
-            self.print_hello("Coordinate-Wise Search")
+            self.print_hello()
 
     def ask_search(self, batch_size: int):
         """Get proposals to eval next (in batches) - Coordinate Search"""

@@ -31,10 +31,11 @@ class RandomSearch(HyperOpt):
             verbose,
         )
         self.space = RandomSpace(real, integer, categorical)
+        self.search_name = "Random Search"
 
         # Add start-up message printing the search space
         if self.verbose:
-            self.print_hello("Random Search")
+            self.print_hello()
 
     def ask_search(self, batch_size: int):
         """Get proposals to eval next (in batches) - Random Sampling."""

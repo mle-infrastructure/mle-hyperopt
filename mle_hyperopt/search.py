@@ -279,11 +279,15 @@ class HyperOpt(object):
         """Return number of evals stored in log."""
         return self.eval_counter
 
-    def print_hello(self, search_type: str):
+    def print_hello(self, message: Union[str, None] = None):
         """Print start-up message."""
         # Get search data in table format
         space_data = self.space.describe()
-        welcome_message(space_data, search_type)
+        if message is not None:
+            print_out = self.search_name + " - " + message
+        else:
+            print_out = self.search_name
+        welcome_message(space_data, print_out)
 
     def print_update(
         self, batch_proposals: List[dict], perf_measures: List[Union[float, int]]
@@ -364,7 +368,7 @@ class HyperOpt(object):
 
         self.refine_space(real_refined, integer_refined, categorical_refined)
         if self.verbose:
-            self.print_hello(f"After {self.eval_counter} Evals - Top {top_k} - Refined")
+            self.print_hello(f"{self.eval_counter} Evals - Top {top_k} - Refined")
 
     def get_pareto_front(self):
         """Get pareto front for multi-objective problems."""
