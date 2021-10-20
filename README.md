@@ -10,7 +10,7 @@ The `mle-hyperopt` package provides a simple and intuitive API for hyperparamete
 Core features include the following:
 
 - **API Simplicity**: `strategy.ask()`, `strategy.tell()` interface & space definition.
-- **Strategy Diversity**: Grid, random, coordinate search, SMBO & wrapping around FAIR's nevergrad.
+- **Strategy Diversity**: Grid, random, coordinate search, SMBO & wrapping around FAIR's [`nevergrad`](https://facebookresearch.github.io/nevergrad/).
 - **Search Space Refinement** based on the top performing configs via `strategy.refine(top_k=10)`.
 - **Export of configurations** to execute via e.g. `python train.py --config_fname config.yaml`.
 - **Storage & reload search logs** via `strategy.save(<log_fname>)`,  `strategy.load(<log_fname>)`.
