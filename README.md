@@ -5,7 +5,7 @@
 [![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/RobertTLange/mle-hyperopt/blob/main/examples/getting_started.ipynb)
 <a href="docs/logo_transparent.png_2"><img src="docs/logo_transparent.png" width="200" align="right" /></a>
 
-Simple and intuitive hyperparameter optimization API for your Machine Learning Experiments (MLE). This includes simple grid and random search as well as sequential model-based optimization (SMBO) and a set of more unorthodox search algorithms (multi-objective via `nevergrad` and a coordinate-wise search). Portable hyperparameter spaces are available for real, integer and categorical-valued variables. The search strategies assume that the underlying objective is minimized (multiple by -1 if this is not the case). For a quickstart checkout the [notebook blog](https://github.com/RobertTLange/mle-hyperopt/blob/main/examples/getting_started.ipynb).
+Simple and intuitive hyperparameter optimization API for your Machine Learning Experiments (MLE). This includes simple grid and random search as well as sequential model-based optimization (SMBO) and a set of more unorthodox search algorithms (multi-objective via `nevergrad` and a coordinate-wise search). Portable hyperparameter spaces are available for real, integer and categorical-valued variables. For a quickstart checkout the [notebook blog](https://github.com/RobertTLange/mle-hyperopt/blob/main/examples/getting_started.ipynb).
 
 ## The API 🎮
 
@@ -109,13 +109,19 @@ strategy.ask(2, store=True, config_fnames=["conf_0.yaml", "conf_1.yaml"])
 
 ```python
 # Get the top k best performing configurations
-strategy.get_best(top_k=4)
+id, configs, values = strategy.get_best(top_k=4)
+
+# Plot timeseries of best performing score over search iterations
+strategy.plot_best()
+
+# Print out ranking of best performers
+strategy.print_ranking(top_k=3)
 ```
 
 ### Refining the Search Space of Your Strategy 🪓
 
 ```python
-# Refine the search space after 5 iterations based on top 2 configurations
+# Refine the search space after 5 & 10 iterations based on top 2 configurations
 strategy = RandomSearch(real={"lrate": {"begin": 0.1,
                                         "end": 0.5,
                                         "prior": "uniform"}},
@@ -123,15 +129,23 @@ strategy = RandomSearch(real={"lrate": {"begin": 0.1,
                                                 "end": 5,
                                                 "prior": "log-uniform"}},
                         categorical={"arch": ["mlp", "cnn"]},
-                        search_config={"refine_after": 5,
+                        search_config={"refine_after": [5, 10],
                                        "refine_top_k": 2})
+
+# Or do so manually using `refine` method
+strategy.tell(...)
+strategy.refine(top_k=2)
 ```
 
+Note the search space refinement is only implemented for random, SMBO and nevergrad-based search strategies.
 
 ## Development & Milestones for Next Release
 
 You can run the test suite via `python -m pytest -vv tests/`. If you find a bug or are missing your favourite feature, feel free to contact me [@RobertTLange](https://twitter.com/RobertTLange) or create an issue :hugs:. Here are some features I want to implement for the next release:
 
-- [ ] Add min vs max objective option to choose at strategy init
 - [ ] Add text to notebook for what is implemented
+- [ ] Update Readme text
 - [ ] Update mle-toolbox webpage intro
+- [ ] Release and make sure installation works
+- [ ] Draft tweet for release
+- [ ] Synergies with mle-logging

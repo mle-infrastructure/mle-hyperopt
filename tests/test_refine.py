@@ -42,7 +42,8 @@ def test_refinement_smbo():
             "acq_function": "gp_hedge",
             "n_initial_points": 5,
             "refine_after": 5,
-            "refine_top_k": 2},
+            "refine_top_k": 2,
+        },
         seed_id=42,
     )
 
@@ -62,11 +63,13 @@ def test_refinement_nevergrad():
         real={"lrate": {"begin": 0.1, "end": 0.5, "prior": "uniform"}},
         integer={"batch_size": {"begin": 1, "end": 5, "prior": "uniform"}},
         categorical={"arch": ["mlp", "cnn"]},
-        search_config={"optimizer": "NGOpt",
-                       "budget_size": 100,
-                       "num_workers": 5,
-                       "refine_after": 5,
-                       "refine_top_k": 2},
+        search_config={
+            "optimizer": "NGOpt",
+            "budget_size": 100,
+            "num_workers": 5,
+            "refine_after": 5,
+            "refine_top_k": 2,
+        },
         seed_id=42,
     )
 

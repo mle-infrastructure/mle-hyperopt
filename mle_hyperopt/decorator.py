@@ -16,6 +16,7 @@ def hyperopt(
     integer: Union[dict, None] = None,
     categorical: Union[dict, None] = None,
     search_config: Union[dict, None] = None,
+    maximize_objective: bool = False,
     fixed_params: Union[dict, None] = None,
 ):
     """
@@ -33,18 +34,22 @@ def hyperopt(
     """
 
     if strategy_type == "random":
-        strategy = RandomSearch(real, integer, categorical, search_config, fixed_params)
+        strategy = RandomSearch(
+            real, integer, categorical, search_config, maximize_objective, fixed_params
+        )
     elif strategy_type == "grid":
         strategy = GridSearch(real, integer, categorical, fixed_params)
     elif strategy_type == "smbo":
-        strategy = SMBOSearch(real, integer, categorical, search_config, fixed_params)
+        strategy = SMBOSearch(
+            real, integer, categorical, search_config, maximize_objective, fixed_params
+        )
     elif strategy_type == "nevergrad":
         strategy = NevergradSearch(
-            real, integer, categorical, search_config, fixed_params
+            real, integer, categorical, search_config, maximize_objective, fixed_params
         )
     elif strategy_type == "coordinate":
         strategy = CoordinateSearch(
-            real, integer, categorical, search_config, fixed_params
+            real, integer, categorical, search_config, maximize_objective, fixed_params
         )
 
     def decorator(function):

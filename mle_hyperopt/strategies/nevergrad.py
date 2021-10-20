@@ -15,6 +15,7 @@ class NevergradSearch(HyperOpt):
             "budget_size": 100,
             "num_workers": 10,
         },
+        maximize_objective: bool = False,
         fixed_params: Union[dict, None] = None,
         reload_path: Union[str, None] = None,
         reload_list: Union[list, None] = None,
@@ -27,6 +28,7 @@ class NevergradSearch(HyperOpt):
             integer,
             categorical,
             search_config,
+            maximize_objective,
             fixed_params,
             reload_path,
             reload_list,
@@ -41,7 +43,7 @@ class NevergradSearch(HyperOpt):
             self.print_hello("Nevergrad Wrapper Search")
 
     def init_optimizer(self):
-        """ Initialize the surrogate model/hyperparam config proposer. """
+        """Initialize the surrogate model/hyperparam config proposer."""
         if self.search_config["optimizer"] == "CMA":
             self.hyper_optimizer = ng.optimizers.CMA(
                 parametrization=self.space.dimensions,
@@ -75,9 +77,14 @@ class NevergradSearch(HyperOpt):
                         del prop_conf[k]
             # Only update space if candidate is in bounds
             if self.space.contains(prop_conf):
-                x = self.hyper_optimizer.parametrization.spawn_child(new_value=((), prop_conf))
-                # Get performance for each objective - tell individually to optim
-                self.hyper_optimizer.tell(x, perf_measures[i])
+                x = self.hyper_optimizer.parametrization.spawn_child(
+                    new_value=((), prop_conf)
+                )
+                # Get performance for each objective - Negate values for max
+                if not self.maximize_objective:
+                    self.hyper_optimizer.tell(x, perf_measures[i])
+                else:
+                    self.hyper_optimizer.tell(x, [-1 * p for p in perf_measures[i]])
 
     def refine_space(self, real, integer, categorical):
         """Update the nevergrad search space."""

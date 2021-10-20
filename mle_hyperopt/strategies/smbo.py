@@ -16,6 +16,7 @@ class SMBOSearch(HyperOpt):
             "acq_function": "gp_hedge",
             "n_initial_points": 5,
         },
+        maximize_objective: bool = False,
         fixed_params: Union[dict, None] = None,
         reload_path: Union[str, None] = None,
         reload_list: Union[list, None] = None,
@@ -29,6 +30,7 @@ class SMBOSearch(HyperOpt):
             integer,
             categorical,
             search_config,
+            maximize_objective,
             fixed_params,
             reload_path,
             reload_list,
@@ -43,7 +45,7 @@ class SMBOSearch(HyperOpt):
             self.print_hello("SMBO Search")
 
     def init_optimizer(self):
-        """ Initialize the surrogate model/hyperparam config proposer. """
+        """Initialize the surrogate model/hyperparam config proposer."""
         self.hyper_optimizer = Optimizer(
             dimensions=self.space.dimensions,
             random_state=self.seed_id,
@@ -77,7 +79,12 @@ class SMBOSearch(HyperOpt):
                     if k in prop_conf.keys():
                         del prop_conf[k]
             x.append(list(prop_conf.values()))
-        self.hyper_optimizer.tell(x, perf_measures)
+
+        # Negate function values for maximization
+        if not self.maximize_objective:
+            self.hyper_optimizer.tell(x, perf_measures)
+        else:
+            self.hyper_optimizer.tell(x, [-1 * p for p in perf_measures])
 
     def refine_space(self, real, integer, categorical):
         """Update the SMBO search space."""

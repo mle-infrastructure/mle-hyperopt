@@ -59,6 +59,20 @@ def test_core():
     }
 
 
+def test_maximize_objective():
+    strategy = RandomSearch(
+        real={"lrate": {"begin": 0.1, "end": 0.5, "prior": "uniform"}},
+        maximize_objective=True
+    )
+    configs = [{"lrate": 0.2}, {"lrate": 0.3}, {"lrate": 0.4}]
+    values = [0.25, 0.35, 0.45]
+    strategy.tell(configs, values)
+    id, conf, val = strategy.get_best()
+    assert id == 2
+    assert conf == {"lrate": 0.4}
+    assert val == 0.45
+
+
 def test_fixed_params():
     strategy = RandomSearch(
         real={"lrate": {"begin": 0.1, "end": 0.5, "prior": "uniform"}},

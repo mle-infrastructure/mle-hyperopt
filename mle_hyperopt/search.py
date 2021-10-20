@@ -26,6 +26,7 @@ class HyperOpt(object):
         integer: Union[dict, None] = None,
         categorical: Union[dict, None] = None,
         search_config: Union[dict, None] = None,
+        maximize_objective: bool = False,
         fixed_params: Union[dict, None] = None,
         reload_path: Union[str, None] = None,
         reload_list: Union[list, None] = None,
@@ -37,6 +38,7 @@ class HyperOpt(object):
         self.integer = integer
         self.categorical = categorical
         self.search_config = search_config
+        self.maximize_objective = maximize_objective
         self.fixed_params = fixed_params
         self.seed_id = seed_id
         self.verbose = verbose
@@ -196,18 +198,33 @@ class HyperOpt(object):
     def get_best(self, top_k: int = 1):
         """Return top-k best performing parameter configurations."""
         assert top_k <= self.eval_counter
+
         # Mono-objective case - get best objective evals
         if type(self.log[0]["objective"]) in [float, int, np.int64]:
             objective_evals = [it["objective"] for it in self.log]
-            best_idx = np.argsort(objective_evals)[:top_k]
+            sorted_idx = np.argsort(objective_evals)
+            if not self.maximize_objective:
+                best_idx = sorted_idx[:top_k]
+            else:
+                best_idx = sorted_idx[::-1][:top_k]
             best_iters = [self.log[idx] for idx in best_idx]
             best_configs = [it["params"] for it in best_iters]
             best_evals = [it["objective"] for it in best_iters]
+
         # Multi-objective case - get pareto front
         else:
             pareto_configs, pareto_evals = self.get_pareto_front()
-            best_configs, best_evals = pareto_configs[:top_k], pareto_evals[:top_k]
+            if not self.maximize_objective:
+                best_configs, best_evals = pareto_configs[:top_k], pareto_evals[:top_k]
+            else:
+                best_configs, best_evals = (
+                    pareto_configs[::-1][:top_k],
+                    pareto_evals[::-1][:top_k],
+                )
+
             best_idx = top_k * ["-"]
+
+        # Unravel retrieved lists if there is only single config
         if top_k == 1:
             return best_idx[0], best_configs[0], best_evals[0]
         else:
@@ -230,7 +247,12 @@ class HyperOpt(object):
         """Plot the evolution of best model performance over evaluations."""
         assert type(self.log[0]["objective"]) in [float, int]
         objective_evals = [it["objective"] for it in self.log]
-        timeseries = np.minimum.accumulate(objective_evals)
+
+        if not self.maximize_objective:
+            timeseries = np.minimum.accumulate(objective_evals)
+        else:
+            timeseries = np.maximum.accumulate(objective_evals)
+
         fig, ax = plt.subplots()
         ax.plot(timeseries)
         ax.spines["top"].set_visible(False)
@@ -268,7 +290,11 @@ class HyperOpt(object):
     ):
         """Print strategy update."""
         best_eval_id, best_config, best_eval = self.get_best(top_k=1)
-        best_batch_idx = np.argmin(perf_measures)
+        if not self.maximize_objective:
+            best_batch_idx = np.argmin(perf_measures)
+        else:
+            best_batch_idx = np.argmax(perf_measures)
+
         best_batch_eval_id = self.eval_counter - len(perf_measures) + best_batch_idx
         best_batch_config, best_batch_eval = (
             batch_proposals[best_batch_idx],
@@ -339,3 +365,7 @@ class HyperOpt(object):
         self.refine_space(real_refined, integer_refined, categorical_refined)
         if self.verbose:
             self.print_hello(f"After {self.eval_counter} Evals - Top {top_k} - Refined")
+
+    def get_pareto_front(self):
+        """Get pareto front for multi-objective problems."""
+        raise NotImplementedError
