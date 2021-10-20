@@ -3,6 +3,7 @@ from typing import Any, List
 import os
 import json
 import yaml
+import numpy as np
 
 
 def load_pkl_object(filename: str) -> Any:
@@ -19,9 +20,18 @@ def save_pkl_object(obj, filename: str):
         pickle.dump(obj, output, pickle.HIGHEST_PROTOCOL)
 
 
+class CustomJSONizer(json.JSONEncoder):
+    def default(self, obj):
+        return (
+            super().encode(bool(obj))
+            if isinstance(obj, np.bool_)
+            else super().default(obj)
+        )
+
+
 def save_json(obj, filename: str):
     with open(filename, "w") as fout:
-        json.dump(obj, fout, indent=1)
+        json.dump(obj, fout, indent=1, cls=CustomJSONizer)
 
 
 def load_json(filename):

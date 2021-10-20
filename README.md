@@ -29,6 +29,8 @@ strategy.tell(configs, values)
 
 ### Implemented Search Types 	🔭
 
+![](https://github.com/RobertTLange/mle-logging/blob/main/docs/mle_hyperopt_structure.png?raw=true)
+
 | Search Type           | Description | `search_config` |
 |----------------------- | ----------- | --------------- |
 |  `GridSearch`          |  Search over list of discrete values  | - |

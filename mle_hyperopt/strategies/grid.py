@@ -1,7 +1,7 @@
 from typing import Union, List
 from ..search import HyperOpt
 from ..spaces import GridSpace
-from ..utils.plotting import visualize_2D_grid
+from ..utils import visualize_2D_grid
 
 
 class GridSearch(HyperOpt):

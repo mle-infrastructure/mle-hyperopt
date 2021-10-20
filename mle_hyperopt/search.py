@@ -1,11 +1,10 @@
 from typing import Union, List
 import numpy as np
 import pandas as pd
+from mle_hyperopt.utils import load_json, save_json, write_configs_to_file
+from mle_hyperopt.comms import welcome_message, update_message, ranking_message
 import matplotlib.pyplot as plt
 import seaborn as sns
-from .utils.helpers import load_json, save_json, write_configs_to_file
-from .comms import welcome_message, update_message, ranking_message
-
 
 sns.set(
     context="poster",
@@ -161,7 +160,6 @@ class HyperOpt(object):
                     self.last_refined = self.refine_after[self.refine_counter]
                     self.refine_counter += 1
 
-
     def tell_search(self, batch_proposals: list, perf_measures: list):
         """Search method-specific strategy update."""
         raise NotImplementedError
@@ -288,7 +286,7 @@ class HyperOpt(object):
         )
 
     def refine_space(self, top_k: int):
-        """Search method-specific strategy update."""
+        """Search method-specific search space update."""
         raise NotImplementedError
 
     def refine(self, top_k: int):
@@ -330,4 +328,4 @@ class HyperOpt(object):
 
         self.refine_space(real_refined, integer_refined, categorical_refined)
         if self.verbose:
-            self.print_hello(f"After {self.eval_counter} Evals - Refined Random Search")
+            self.print_hello(f"After {self.eval_counter} Evals - Top {top_k} - Refined")

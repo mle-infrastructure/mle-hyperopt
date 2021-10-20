@@ -37,11 +37,15 @@ class CoordinateSearch(HyperOpt):
 
             if self.integer is not None:
                 if k in self.integer.keys():
-                    range_int = np.linspace(
-                        int(self.integer[k]["begin"]),
-                        int(self.integer[k]["end"]),
-                        int(self.integer[k]["bins"]),
-                    ).astype(int).tolist()
+                    range_int = (
+                        np.linspace(
+                            int(self.integer[k]["begin"]),
+                            int(self.integer[k]["end"]),
+                            int(self.integer[k]["bins"]),
+                        )
+                        .astype(int)
+                        .tolist()
+                    )
                     self.evals_per_coord.append(len(range_int))
 
             if self.categorical is not None:

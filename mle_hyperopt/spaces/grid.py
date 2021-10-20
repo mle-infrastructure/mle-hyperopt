@@ -52,8 +52,9 @@ class GridSpace(HyperSpace):
 
         if self.integer is not None:
             for k, v in self.integer.items():
-                self.param_range[k] = np.linspace(v["begin"], v["end"],
-                v["bins"]).astype(int).tolist()
+                self.param_range[k] = (
+                    np.linspace(v["begin"], v["end"], v["bins"]).astype(int).tolist()
+                )
         self.param_grid = list(ParameterGrid(self.param_range))
 
     def __len__(self) -> int:

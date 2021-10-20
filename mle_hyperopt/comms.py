@@ -1,3 +1,4 @@
+from datetime import datetime
 import numpy as np
 from rich.console import Console
 from rich.table import Table
@@ -35,12 +36,13 @@ def update_message(
     best_batch_eval,
 ):
     """Print current best performing configurations."""
+    time_t = datetime.now().strftime("%m/%d/%Y %H:%M:%S")
     console = Console(width=console_width)
     table = Table(show_header=True)
     table.add_column(f":inbox_tray: Total: {total_eval_id}", style="dim")
     table.add_column("ID")
     table.add_column("Obj. :chart_with_downwards_trend:")
-    table.add_column("Configuration :bookmark:")
+    table.add_column(f"Configuration :bookmark: - {time_t}")
     # Round all the values for prettier printing
     best_eval = round(best_eval, 3)
     best_batch_eval = round(best_batch_eval, 3)
