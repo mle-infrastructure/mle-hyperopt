@@ -29,23 +29,23 @@ strategy.tell(configs, values)
 
 ### Implemented Search Types 	🔭
 
-![](https://github.com/RobertTLange/mle-logging/blob/main/docs/mle_hyperopt_structure.png?raw=true)
+![](https://github.com/RobertTLange/mle-hyperopt/blob/main/docs/mle_hyperopt_structure.png?raw=true)
 
-| Search Type           | Description | `search_config` |
-|----------------------- | ----------- | --------------- |
-|  `GridSearch`          |  Search over list of discrete values  | - |
-|  `RandomSearch`        |  Random search over variable ranges         | `refine_after`, `refine_top_k` |
-|  `SMBOSearch`          |  Sequential model-based optim.        | `base_estimator`, `acq_function`, `n_initial_points`
-|  `CoordinateSearch`    |  Coordinate-wise optim. with defaults | `order`, `defaults`
-|  `NevergradSearch`     |  Multi-objective [nevergrad](https://facebookresearch.github.io/nevergrad/) wrapper | `optimizer`, `budget_size`, `num_workers`
+| | Search Type           | Description | `search_config` |
+|----|----------------------- | ----------- | --------------- |
+|![](docs/grid.png)|  `GridSearch`          |  Search over list of discrete values  | - |
+|![](docs/random.png)|  `RandomSearch`        |  Random search over variable ranges         | `refine_after`, `refine_top_k` |
+|![](docs/coordinate.png)|  `CoordinateSearch`    |  Coordinate-wise optim. with defaults | `order`, `defaults`
+|![](docs/smbo.png)|  `SMBOSearch`          |  Sequential model-based optim.        | `base_estimator`, `acq_function`, `n_initial_points`
+|![](docs/nevergrad.png)|  `NevergradSearch`     |  Multi-objective [nevergrad](https://facebookresearch.github.io/nevergrad/) wrapper | `optimizer`, `budget_size`, `num_workers`
 
 ### Variable Types & Hyperparameter Spaces 🌍
 
-| Variable            | Type | Space Specification |
-|----------------------- | ----------- | --------------- |
-|  **`real`**          |  Real-valued  | `Dict`: `begin`, `end`, `prior`/`bins` (grid) |
-|  **`integer`**        |  Integer-valued         | `Dict`: `begin`, `end`, `prior`/`bins` (grid) |
-|  **`categorical`**  |  Categorical        | `List`: Values to search over
+| | Variable            | Type | Space Specification |
+| --- |----------------------- | ----------- | --------------- |
+|![](docs/real.png) |  **`real`**          |  Real-valued  | `Dict`: `begin`, `end`, `prior`/`bins` (grid) |
+|![](docs/integer.png) |  **`integer`**        |  Integer-valued         | `Dict`: `begin`, `end`, `prior`/`bins` (grid) |
+|![](docs/categorical.png)|  **`categorical`**  |  Categorical        | `List`: Values to search over
 
 
 ## Installation ⏳
