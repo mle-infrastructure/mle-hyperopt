@@ -2,6 +2,7 @@ from typing import Union
 from ..search import HyperOpt
 from ..spaces import GridSpace
 import numpy as np
+from rich.console import Console
 
 
 class CoordinateSearch(HyperOpt):
@@ -32,27 +33,22 @@ class CoordinateSearch(HyperOpt):
             verbose,
         )
         self.evals_per_coord = [0]
+        var_counter = 0
         for k in self.search_config["order"]:
             if self.real is not None:
                 if k in self.real.keys():
-                    self.evals_per_coord.append(self.real[k]["bins"])
+                    self.evals_per_coord.append(self.real[k]["bins"] + var_counter)
+                    var_counter += 1
 
             if self.integer is not None:
                 if k in self.integer.keys():
-                    range_int = (
-                        np.linspace(
-                            int(self.integer[k]["begin"]),
-                            int(self.integer[k]["end"]),
-                            int(self.integer[k]["bins"]),
-                        )
-                        .astype(int)
-                        .tolist()
-                    )
-                    self.evals_per_coord.append(len(range_int))
+                    self.evals_per_coord.append(self.integer[k]["bins"] + var_counter)
+                    var_counter += 1
 
             if self.categorical is not None:
                 for k in self.categorical.keys():
-                    self.evals_per_coord.append(len(self.categorical[k]))
+                    self.evals_per_coord.append(len(self.categorical[k]) + var_counter)
+                    var_counter += 1
         self.range_per_coord = np.cumsum(self.evals_per_coord)
 
         # Sequentially set-up different grid spaces - initialize 1st one
@@ -95,7 +91,7 @@ class CoordinateSearch(HyperOpt):
         self.grid_var_counter = (
             self.eval_counter - self.range_per_coord[self.var_counter]
         )
-        if self.grid_var_counter == len(self.space):
+        if self.grid_var_counter >= len(self.space) - self.var_counter:
             self.var_counter += 1
             if self.var_counter < len(self.search_config["order"]):
                 self.construct_active_space()
@@ -107,10 +103,15 @@ class CoordinateSearch(HyperOpt):
         if self.eval_counter > 0:
             idx, config, eval = self.get_best()
             for k, v in config.items():
-                self.search_config["defaults"][k] = v
+                if k == self.search_config["order"][self.var_counter - 1]:
+                    self.search_config["defaults"][k] = v
+                    if self.verbose:
+                        Console().log(f"Fixed `{k}` hyperparameter to {v}.")
 
         # Increase active variable counter and reset grid counter
         self.active_var = self.search_config["order"][self.var_counter]
+        if self.verbose:
+            Console().log(f"New active variable `{self.active_var}`.")
 
         # Create new grid search space - if fixed: Create categorical
         # Note: Only one variable is 'active' at every time

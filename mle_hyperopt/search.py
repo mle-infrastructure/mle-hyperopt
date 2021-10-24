@@ -5,6 +5,7 @@ from mle_hyperopt.utils import load_json, save_json, write_configs_to_file
 from mle_hyperopt.comms import welcome_message, update_message, ranking_message
 import matplotlib.pyplot as plt
 import seaborn as sns
+from rich.console import Console
 
 sns.set(
     context="poster",
@@ -129,7 +130,7 @@ class HyperOpt(object):
                     del proposal_clean[k]
 
             if proposal_clean in self.all_evaluated_params:
-                print(f"{batch_proposals[i]} was previously evaluated.")
+                Console().log(f"{batch_proposals[i]} was previously evaluated.")
             else:
                 self.log.append(
                     {
@@ -170,7 +171,9 @@ class HyperOpt(object):
         """Store the state of the optimizer (parameters, values) as .pkl."""
         save_json(self.log, save_path)
         if verbose:
-            print(f"Stored {self.eval_counter} search iterations --> {save_path}.")
+            Console().log(
+                f"Stored {self.eval_counter} search iterations --> {save_path}."
+            )
 
     def load(
         self,
@@ -190,7 +193,7 @@ class HyperOpt(object):
                 self.tell([iter["params"]], [iter["objective"]], True)
 
         if reload_path is not None or reload_list is not None:
-            print(
+            Console().log(
                 f"Reloaded {self.eval_counter - prev_evals}"
                 " previous search iterations."
             )
@@ -254,7 +257,8 @@ class HyperOpt(object):
             timeseries = np.maximum.accumulate(objective_evals)
 
         fig, ax = plt.subplots()
-        ax.plot(timeseries)
+        # Use rich logging!!!
+        ax.plot(np.arange(1, len(timeseries) + 1), timeseries)
         ax.spines["top"].set_visible(False)
         ax.spines["right"].set_visible(False)
         ax.set_title("Best Objective Value")

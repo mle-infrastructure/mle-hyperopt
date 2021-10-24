@@ -43,6 +43,11 @@ class NevergradSearch(HyperOpt):
         if self.verbose:
             self.print_hello()
 
+    @property
+    def optimizers(self):
+        """ Returns list of available nevergrad optimizers. """
+        return sorted(ng.optimizers.registry.keys())
+
     def init_optimizer(self):
         """Initialize the surrogate model/hyperparam config proposer."""
         assert self.search_config["optimizer"] in list(dict(ng.optimizers.registry).keys())
