@@ -118,7 +118,7 @@ class HyperOpt(object):
         # Ensure that update data is list to loop over
         if type(batch_proposals) == dict:
             batch_proposals = [batch_proposals]
-        if type(perf_measures) in [float, int]:
+        if isinstance(perf_measures, (float, int, np.integer, np.float)):
             perf_measures = [perf_measures]
 
         for i in range(len(batch_proposals)):
@@ -241,7 +241,7 @@ class HyperOpt(object):
     def improvement(self, score: float) -> bool:
         """Return boolean if score is better than best logged one."""
         best_idx, best_config, best_eval = self.get_best()
-        if not self.maximize_objective:
+        if self.maximize_objective:
             improved = score >= best_eval
         else:
             improved = score <= best_eval
