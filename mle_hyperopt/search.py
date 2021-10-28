@@ -167,10 +167,10 @@ class HyperOpt(object):
         """Search method-specific strategy update."""
         raise NotImplementedError
 
-    def save(self, save_path: str = "search_log.json", verbose: bool = False):
+    def save(self, save_path: str = "search_log.json"):
         """Store the state of the optimizer (parameters, values) as .pkl."""
         save_json(self.log, save_path)
-        if verbose:
+        if self.verbose:
             Console().log(
                 f"Stored {self.eval_counter} search iterations --> {save_path}."
             )
@@ -203,14 +203,7 @@ class HyperOpt(object):
         assert top_k <= self.eval_counter
 
         # Mono-objective case - get best objective evals
-        if type(self.log[0]["objective"]) in [
-            float,
-            int,
-            np.int32,
-            np.int64,
-            np.float32,
-            np.float64,
-        ]:
+        if isinstance(self.log[0]["objective"], (float, int, np.integer, np.float)):
             objective_evals = [it["objective"] for it in self.log]
             sorted_idx = np.argsort(objective_evals)
             if not self.maximize_objective:
@@ -262,16 +255,9 @@ class HyperOpt(object):
         """Store configuration as .json files to file path."""
         write_configs_to_file(config_dicts, config_fnames)
 
-    def plot_best(self):
+    def plot_best(self, fname: Union[None, str] = None):
         """Plot the evolution of best model performance over evaluations."""
-        assert type(self.log[0]["objective"]) in [
-            float,
-            int,
-            np.int32,
-            np.int64,
-            np.float32,
-            np.float64,
-        ]
+        assert isinstance(self.log[0]["objective"], (float, int, np.integer, np.float))
         objective_evals = [it["objective"] for it in self.log]
 
         if not self.maximize_objective:
@@ -280,7 +266,6 @@ class HyperOpt(object):
             timeseries = np.maximum.accumulate(objective_evals)
 
         fig, ax = plt.subplots()
-        # Use rich logging!!!
         ax.plot(np.arange(1, len(timeseries) + 1), timeseries)
         ax.spines["top"].set_visible(False)
         ax.spines["right"].set_visible(False)
@@ -288,7 +273,12 @@ class HyperOpt(object):
         ax.set_xlabel("# Config Evaluations")
         ax.set_ylabel("Objective")
         fig.tight_layout()
-        return fig, ax
+
+        # Save the figure if a filename was provided
+        if fname is not None:
+            fig.savefig(fname, dpi=300)
+        else:
+            return fig, ax
 
     def to_df(self):
         """Return log as pandas dataframe."""

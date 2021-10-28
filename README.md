@@ -150,9 +150,10 @@ Note that the search space refinement is only implemented for random, SMBO and n
 
 You can run the test suite via `python -m pytest -vv tests/`. If you find a bug or are missing your favourite feature, feel free to contact me [@RobertTLange](https://twitter.com/RobertTLange) or create an issue :hugs:.
 
+- [x] Robust type checking with `isinstance(self.log[0]["objective"], (float, int, np.integer, np.float))`
 - [x] Add `improvement` method indicating if score is better than best stored one
-- [ ] Add logging message when log is stored
+- [x] Fix logging message when log is stored
+- [x] Add save option for best plot
 - [ ] Make sure search space refinement works for different batch sizes
-- [ ] Add save option for best plot
 - [ ] Add `args, kwargs` into decorator
 - [ ] Check why SMBO can propose same config multiple times. Add Hutter reference.
