@@ -203,7 +203,14 @@ class HyperOpt(object):
         assert top_k <= self.eval_counter
 
         # Mono-objective case - get best objective evals
-        if type(self.log[0]["objective"]) in [float, int, np.int64]:
+        if type(self.log[0]["objective"]) in [
+            float,
+            int,
+            np.int32,
+            np.int64,
+            np.float32,
+            np.float64,
+        ]:
             objective_evals = [it["objective"] for it in self.log]
             sorted_idx = np.argsort(objective_evals)
             if not self.maximize_objective:
@@ -238,6 +245,15 @@ class HyperOpt(object):
         best_idx, best_configs, best_evals = self.get_best(top_k)
         ranking_message(best_idx, best_configs, best_evals)
 
+    def improvement(self, score: float) -> bool:
+        """Return boolean if score is better than best logged one."""
+        best_idx, best_config, best_eval = self.get_best()
+        if not self.maximize_objective:
+            improved = score >= best_eval
+        else:
+            improved = score <= best_eval
+        return improved
+
     def store_configs(
         self,
         config_dicts: List[dict],
@@ -248,7 +264,14 @@ class HyperOpt(object):
 
     def plot_best(self):
         """Plot the evolution of best model performance over evaluations."""
-        assert type(self.log[0]["objective"]) in [float, int]
+        assert type(self.log[0]["objective"]) in [
+            float,
+            int,
+            np.int32,
+            np.int64,
+            np.float32,
+            np.float64,
+        ]
         objective_evals = [it["objective"] for it in self.log]
 
         if not self.maximize_objective:
