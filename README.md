@@ -2,8 +2,8 @@
 [![Pyversions](https://img.shields.io/pypi/pyversions/mle-hyperopt.svg?style=flat-square)](https://pypi.python.org/pypi/mle-hyperopt)
 [![PyPI version](https://badge.fury.io/py/mle-hyperopt.svg)](https://badge.fury.io/py/mle-hyperopt)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-[![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/RobertTLange/mle-hyperopt/blob/main/examples/getting_started.ipynb)
-<a href="https://github.com/RobertTLange/mle-hyperopt/blob/main/docs/logo_transparent.png?raw=true"><img src="https://github.com/RobertTLange/mle-hyperopt/blob/main/docs/logo_transparent.png?raw=true" width="200" align="right" /></a>
+[![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/mle-infrastructure/mle-hyperopt/blob/main/examples/getting_started.ipynb)
+<a href="https://github.com/mle-infrastructure/mle-hyperopt/blob/main/docs/logo_transparent.png?raw=true"><img src="https://github.com/mle-infrastructure/mle-hyperopt/blob/main/docs/logo_transparent.png?raw=true" width="200" align="right" /></a>
 
 The `mle-hyperopt` package provides a simple and intuitive API for hyperparameter optimization of your Machine Learning Experiment (MLE) pipeline. It supports real, integer & categorical search variables and single- or multi-objective optimization.
 
@@ -15,7 +15,7 @@ Core features include the following:
 - **Export of configurations** to execute via e.g. `python train.py --config_fname config.yaml`.
 - **Storage & reload search logs** via `strategy.save(<log_fname>)`,  `strategy.load(<log_fname>)`.
 
-For a quickstart check out the [notebook blog](https://github.com/RobertTLange/mle-hyperopt/blob/main/examples/getting_started.ipynb) 📖.
+For a quickstart check out the [notebook blog](https://github.com/mle-infrastructure/mle-hyperopt/blob/main/examples/getting_started.ipynb) 📖.
 
 ## The API 🎮
 
@@ -41,19 +41,19 @@ strategy.tell(configs, values)
 
 | | Search Type           | Description | `search_config` |
 |----|----------------------- | ----------- | --------------- |
-|<img src="https://github.com/RobertTLange/mle-hyperopt/blob/main/docs/grid.png?raw=true" alt="drawing" width="65"/>|  `GridSearch`          |  Search over list of discrete values  | - |
-|<img src="https://github.com/RobertTLange/mle-hyperopt/blob/main/docs/random.png?raw=true" alt="drawing" width="65"/>|  `RandomSearch`        |  Random search over variable ranges         | `refine_after`, `refine_top_k` |
-|<img src="https://github.com/RobertTLange/mle-hyperopt/blob/main/docs/coordinate.png?raw=true" alt="drawing" width="65"/>|  `CoordinateSearch`    |  Coordinate-wise optimization with fixed defaults | `order`, `defaults`
-|<img src="https://github.com/RobertTLange/mle-hyperopt/blob/main/docs/smbo.png?raw=true" alt="drawing" width="65"/>|  `SMBOSearch`          |  Sequential model-based optimization        | `base_estimator`, `acq_function`, `n_initial_points`
-|<img src="https://github.com/RobertTLange/mle-hyperopt/blob/main/docs/nevergrad.png?raw=true" alt="drawing" width="65"/>|  `NevergradSearch`     |  Multi-objective [nevergrad](https://facebookresearch.github.io/nevergrad/) wrapper | `optimizer`, `budget_size`, `num_workers`
+|<img src="https://github.com/mle-infrastructure/mle-hyperopt/blob/main/docs/grid.png?raw=true" alt="drawing" width="65"/>|  `GridSearch`          |  Search over list of discrete values  | - |
+|<img src="https://github.com/mle-infrastructure/mle-hyperopt/blob/main/docs/random.png?raw=true" alt="drawing" width="65"/>|  `RandomSearch`        |  Random search over variable ranges         | `refine_after`, `refine_top_k` |
+|<img src="https://github.com/mle-infrastructure/mle-hyperopt/blob/main/docs/coordinate.png?raw=true" alt="drawing" width="65"/>|  `CoordinateSearch`    |  Coordinate-wise optimization with fixed defaults | `order`, `defaults`
+|<img src="https://github.com/mle-infrastructure/mle-hyperopt/blob/main/docs/smbo.png?raw=true" alt="drawing" width="65"/>|  `SMBOSearch`          |  Sequential model-based optimization        | `base_estimator`, `acq_function`, `n_initial_points`
+|<img src="https://github.com/mle-infrastructure/mle-hyperopt/blob/main/docs/nevergrad.png?raw=true" alt="drawing" width="65"/>|  `NevergradSearch`     |  Multi-objective [nevergrad](https://facebookresearch.github.io/nevergrad/) wrapper | `optimizer`, `budget_size`, `num_workers`
 
 ### Variable Types & Hyperparameter Spaces 🌍
 
 | | Variable            | Type | Space Specification |
 | --- |----------------------- | ----------- | --------------- |
-|<img src="https://github.com/RobertTLange/mle-hyperopt/blob/main/docs/real.png?raw=true" alt="drawing" width="65"/> |  **`real`**          |  Real-valued  | `Dict`: `begin`, `end`, `prior`/`bins` (grid) |
-|<img src="https://github.com/RobertTLange/mle-hyperopt/blob/main/docs/integer.png?raw=true" alt="drawing" width="65"/>  |  **`integer`**        |  Integer-valued         | `Dict`: `begin`, `end`, `prior`/`bins` (grid) |
-|<img src="https://github.com/RobertTLange/mle-hyperopt/blob/main/docs/categorical.png?raw=true" alt="drawing" width="65"/> |  **`categorical`**  |  Categorical        | `List`: Values to search over
+|<img src="https://github.com/mle-infrastructure/mle-hyperopt/blob/main/docs/real.png?raw=true" alt="drawing" width="65"/> |  **`real`**          |  Real-valued  | `Dict`: `begin`, `end`, `prior`/`bins` (grid) |
+|<img src="https://github.com/mle-infrastructure/mle-hyperopt/blob/main/docs/integer.png?raw=true" alt="drawing" width="65"/>  |  **`integer`**        |  Integer-valued         | `Dict`: `begin`, `end`, `prior`/`bins` (grid) |
+|<img src="https://github.com/mle-infrastructure/mle-hyperopt/blob/main/docs/categorical.png?raw=true" alt="drawing" width="65"/> |  **`categorical`**  |  Categorical        | `List`: Values to search over
 
 
 ## Installation ⏳
@@ -67,7 +67,7 @@ pip install mle-hyperopt
 Alternatively, you can clone this repository and afterwards 'manually' install it:
 
 ```
-git clone https://github.com/RobertTLange/mle-hyperopt.git
+git clone https://github.com/mle-infrastructure/mle-hyperopt.git
 cd mle-hyperopt
 pip install -e .
 ```
@@ -154,6 +154,7 @@ You can run the test suite via `python -m pytest -vv tests/`. If you find a bug 
 - [x] Add `improvement` method indicating if score is better than best stored one
 - [x] Fix logging message when log is stored
 - [x] Add save option for best plot
+- [x] Make json serializer more robust for numpy data types
 - [ ] Make sure search space refinement works for different batch sizes
 - [ ] Add `args, kwargs` into decorator
 - [ ] Check why SMBO can propose same config multiple times. Add Hutter reference.

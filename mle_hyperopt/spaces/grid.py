@@ -24,14 +24,14 @@ class GridSpace(HyperSpace):
             for key in real_keys:
                 for k, v in self.real.items():
                     assert key in v
-                    assert v["begin"] <= v["end"]
+                    assert float(v["begin"]) <= float(v["end"])
 
         if self.integer is not None:
             integer_keys = ["begin", "end", "bins"]
             for key in integer_keys:
                 for k, v in self.integer.items():
                     assert key in v
-                    assert v["begin"] <= v["end"]
+                    assert int(v["begin"]) <= int(v["end"])
                     assert type(v[key]) == int
 
     def sample(self, grid_counter):
@@ -53,7 +53,9 @@ class GridSpace(HyperSpace):
         if self.integer is not None:
             for k, v in self.integer.items():
                 self.param_range[k] = (
-                    np.linspace(v["begin"], v["end"], v["bins"]).astype(int).tolist()
+                    np.linspace(int(v["begin"]), int(v["end"]), int(v["bins"]))
+                    .astype(int)
+                    .tolist()
                 )
         self.param_grid = list(ParameterGrid(self.param_range))
 

@@ -20,7 +20,7 @@ class NevergradSpace(HyperSpace):
             for key in real_keys:
                 for k, v in self.real.items():
                     assert key in v
-                    assert v["begin"] <= v["end"]
+                    assert float(v["begin"]) <= float(v["end"])
                 if key == "prior":
                     assert v[key] in ["uniform", "log-uniform"]
 
@@ -29,7 +29,7 @@ class NevergradSpace(HyperSpace):
             for key in integer_keys:
                 for k, v in self.integer.items():
                     assert key in v
-                    assert v["begin"] <= v["end"]
+                    assert int(v["begin"]) <= int(v["end"])
                     if key != "prior":
                         assert type(v[key]) == int
                     else:

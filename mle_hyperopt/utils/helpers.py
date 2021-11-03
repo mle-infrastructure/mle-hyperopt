@@ -22,11 +22,15 @@ def save_pkl_object(obj, filename: str):
 
 class CustomJSONizer(json.JSONEncoder):
     def default(self, obj):
-        return (
-            super().encode(bool(obj))
-            if isinstance(obj, np.bool_)
-            else super().default(obj)
-        )
+        if isinstance(obj, np.integer):
+            return int(obj)
+        if isinstance(obj, np.floating):
+            return float(obj)
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        if isinstance(obj, np.bool_):
+            return bool(obj)
+        return super(CustomJSONizer, self).default(obj)
 
 
 def save_json(obj, filename: str):
