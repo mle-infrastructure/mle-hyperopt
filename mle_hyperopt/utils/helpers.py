@@ -3,6 +3,7 @@ from typing import Any, List
 import os
 import json
 import yaml
+import ast
 import numpy as np
 
 
@@ -53,8 +54,9 @@ def write_configs_to_file(params_batch: List[dict], config_fnames: List[str]):
         filename, config_fext = os.path.splitext(config_fnames[s_id])
         if config_fext == ".json":
             # Write config dictionary to json file
-            with open(config_fnames[s_id], "w") as f:
-                json.dump(params_batch[s_id], f)
+            save_json(params_batch[s_id], config_fnames[s_id])
         elif config_fext == ".yaml":
+            data_dump = json.dumps(params_batch[s_id], indent=1, cls=CustomJSONizer)
+            data_dump_dict = ast.literal_eval(data_dump)
             with open(config_fnames[s_id], "w") as f:
-                yaml.dump(params_batch[s_id], f, default_flow_style=False)
+                yaml.dump(data_dump_dict, f, default_flow_style=False)

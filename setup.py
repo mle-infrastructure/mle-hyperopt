@@ -28,7 +28,7 @@ if mo:
     verstr = mo.group(1)
 else:
     raise RuntimeError("Unable to find version string in %s." % (VERSIONFILE,))
-git_tar = f"https://github.com/RobertTLange/mle-hyperopt/archive/v{verstr}.tar.gz"
+git_tar = f"https://github.com/mle-infrastructure/mle-hyperopt/archive/v{verstr}.tar.gz"
 
 
 setup(
@@ -39,7 +39,7 @@ setup(
     description="Machine Learning Experiment Hyperparameter Optimization",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/RobertTLange/mle-hyperopt",
+    url="https://github.com/mle-infrastructure/mle-hyperopt",
     download_url=git_tar,
     classifiers=[
         "Programming Language :: Python :: 3.6",

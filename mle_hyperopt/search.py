@@ -1,6 +1,7 @@
 from typing import Union, List
 import numpy as np
 import pandas as pd
+import numbers
 from mle_hyperopt.utils import load_json, save_json, write_configs_to_file
 from mle_hyperopt.comms import welcome_message, update_message, ranking_message
 import matplotlib.pyplot as plt
@@ -118,7 +119,7 @@ class HyperOpt(object):
         # Ensure that update data is list to loop over
         if type(batch_proposals) == dict:
             batch_proposals = [batch_proposals]
-        if isinstance(perf_measures, (float, int, np.integer, np.float)):
+        if isinstance(perf_measures, numbers.Number):
             perf_measures = [perf_measures]
 
         for i in range(len(batch_proposals)):
@@ -203,7 +204,7 @@ class HyperOpt(object):
         assert top_k <= self.eval_counter
 
         # Mono-objective case - get best objective evals
-        if isinstance(self.log[0]["objective"], (float, int, np.integer, np.float)):
+        if isinstance(self.log[0]["objective"], numbers.Number):
             objective_evals = [it["objective"] for it in self.log]
             sorted_idx = np.argsort(objective_evals)
             if not self.maximize_objective:
@@ -257,7 +258,7 @@ class HyperOpt(object):
 
     def plot_best(self, fname: Union[None, str] = None):
         """Plot the evolution of best model performance over evaluations."""
-        assert isinstance(self.log[0]["objective"], (float, int, np.integer, np.float))
+        assert isinstance(self.log[0]["objective"], numbers.Number)
         objective_evals = [it["objective"] for it in self.log]
 
         if not self.maximize_objective:
