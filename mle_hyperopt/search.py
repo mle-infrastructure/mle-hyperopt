@@ -2,8 +2,8 @@ from typing import Union, List
 import numpy as np
 import pandas as pd
 import numbers
-from mle_hyperopt.utils import load_json, save_json, write_configs_to_file
-from mle_hyperopt.comms import welcome_message, update_message, ranking_message
+from .utils import load_json, save_json, write_configs_to_file
+from .comms import welcome_message, update_message, ranking_message
 import matplotlib.pyplot as plt
 import seaborn as sns
 from rich.console import Console
