@@ -19,7 +19,7 @@ sns.set(
 )
 
 
-class HyperOpt(object):
+class Strategy(object):
     """Base Class for Running Hyperparameter Optimisation Searches."""
 
     def __init__(

@@ -1,11 +1,11 @@
 from typing import Union
 import numpy as np
-from ..search import HyperOpt
+from ..strategy import Strategy
 from ..spaces import SMBOSpace
 from skopt import Optimizer
 
 
-class SMBOSearch(HyperOpt):
+class SMBOSearch(Strategy):
     def __init__(
         self,
         real: Union[dict, None] = None,
@@ -24,7 +24,7 @@ class SMBOSearch(HyperOpt):
         verbose: bool = False,
     ):
         # Check that SMBO uses synchronous scheduling
-        HyperOpt.__init__(
+        Strategy.__init__(
             self,
             real,
             integer,

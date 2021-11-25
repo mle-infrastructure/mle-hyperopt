@@ -1,9 +1,9 @@
 from typing import Union
-from ..search import HyperOpt
+from ..strategy import Strategy
 from ..spaces import RandomSpace
 
 
-class RandomSearch(HyperOpt):
+class RandomSearch(Strategy):
     def __init__(
         self,
         real: Union[dict, None] = None,
@@ -17,7 +17,7 @@ class RandomSearch(HyperOpt):
         seed_id: int = 42,
         verbose: bool = False,
     ):
-        HyperOpt.__init__(
+        Strategy.__init__(
             self,
             real,
             integer,

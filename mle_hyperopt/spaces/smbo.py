@@ -36,6 +36,11 @@ class SMBOSpace(HyperSpace):
                     else:
                         assert v[key] in ["uniform", "log-uniform"]
 
+        if self.categorical is not None:
+            for k, v in self.categorical.items():
+                if type(v) is not list:
+                    self.categorical[k] = [v]
+
     def construct(self):
         """Setup/construct the search space."""
         param_range = {}

@@ -1,10 +1,10 @@
-from ..search import HyperOpt
+from ..strategy import Strategy
 from ..spaces import NevergradSpace
 from typing import Union
 import nevergrad as ng
 
 
-class NevergradSearch(HyperOpt):
+class NevergradSearch(Strategy):
     def __init__(
         self,
         real: Union[dict, None] = None,
@@ -22,7 +22,7 @@ class NevergradSearch(HyperOpt):
         seed_id: int = 42,
         verbose: bool = False,
     ):
-        HyperOpt.__init__(
+        Strategy.__init__(
             self,
             real,
             integer,
@@ -45,17 +45,19 @@ class NevergradSearch(HyperOpt):
 
     @property
     def optimizers(self):
-        """ Returns list of available nevergrad optimizers. """
+        """Returns list of available nevergrad optimizers."""
         return sorted(ng.optimizers.registry.keys())
 
     def init_optimizer(self):
         """Initialize the surrogate model/hyperparam config proposer."""
-        assert self.search_config["optimizer"] in list(dict(ng.optimizers.registry).keys())
+        assert self.search_config["optimizer"] in list(
+            dict(ng.optimizers.registry).keys()
+        )
         self.hyper_optimizer = ng.optimizers.registry[self.search_config["optimizer"]](
-                parametrization=self.space.dimensions,
-                budget=self.search_config["budget_size"],
-                num_workers=self.search_config["num_workers"],
-            )
+            parametrization=self.space.dimensions,
+            budget=self.search_config["budget_size"],
+            num_workers=self.search_config["num_workers"],
+        )
 
     def ask_search(self, batch_size: int):
         """Get proposals to eval next (in batches) - Random Sampling."""

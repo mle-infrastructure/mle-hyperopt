@@ -34,6 +34,11 @@ class GridSpace(HyperSpace):
                     assert int(v["begin"]) <= int(v["end"])
                     assert type(v[key]) == int
 
+        if self.categorical is not None:
+            for k, v in self.categorical.items():
+                if type(v) is not list:
+                    self.categorical[k] = [v]
+
     def sample(self, grid_counter):
         """'Sample' from the hyperparameter space. - Return next config."""
         return self.param_grid[grid_counter]

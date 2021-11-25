@@ -1,11 +1,11 @@
 from typing import Union
-from ..search import HyperOpt
+from ..strategy import Strategy
 from ..spaces import GridSpace
 import numpy as np
 from rich.console import Console
 
 
-class CoordinateSearch(HyperOpt):
+class CoordinateSearch(Strategy):
     def __init__(
         self,
         real: Union[dict, None] = None,
@@ -19,7 +19,7 @@ class CoordinateSearch(HyperOpt):
         seed_id: int = 42,
         verbose: bool = False,
     ):
-        HyperOpt.__init__(
+        Strategy.__init__(
             self,
             real,
             integer,

@@ -1,10 +1,10 @@
 from typing import Union, List
-from ..search import HyperOpt
+from ..strategy import Strategy
 from ..spaces import GridSpace
 from ..utils import visualize_2D_grid
 
 
-class GridSearch(HyperOpt):
+class GridSearch(Strategy):
     def __init__(
         self,
         real: Union[dict, None] = None,
@@ -18,7 +18,7 @@ class GridSearch(HyperOpt):
         seed_id: int = 42,
         verbose: bool = False,
     ):
-        HyperOpt.__init__(
+        Strategy.__init__(
             self,
             real,
             integer,
