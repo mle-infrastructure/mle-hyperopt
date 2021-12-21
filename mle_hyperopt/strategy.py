@@ -113,6 +113,7 @@ class Strategy(object):
         self,
         batch_proposals: Union[List[dict], dict],
         perf_measures: Union[List[Union[float, int]], float],
+        ckpt_paths: Union[None, List[str], str] = None,
         reload: bool = False,
     ):
         """Perform post-iteration clean-up. (E.g. update surrogate model)"""
@@ -121,6 +122,8 @@ class Strategy(object):
             batch_proposals = [batch_proposals]
         if isinstance(perf_measures, numbers.Number):
             perf_measures = [perf_measures]
+        if type(ckpt_paths) == str:
+            ckpt_paths = [ckpt_paths]
 
         for i in range(len(batch_proposals)):
             # Check whether proposals were already previously added
@@ -133,13 +136,15 @@ class Strategy(object):
             if proposal_clean in self.all_evaluated_params:
                 Console().log(f"{batch_proposals[i]} was previously evaluated.")
             else:
-                self.log.append(
-                    {
-                        "eval_id": self.eval_counter,
-                        "params": proposal_clean,
-                        "objective": perf_measures[i],
-                    }
-                )
+                data_to_append = {
+                    "eval_id": self.eval_counter,
+                    "params": proposal_clean,
+                    "objective": perf_measures[i],
+                }
+                # Add checkpoint path to data if it is provided!
+                if ckpt_paths is not None:
+                    data_to_append["ckpt"] = ckpt_paths[i]
+                self.log.append(data_to_append)
                 self.all_evaluated_params.append(proposal_clean)
                 self.eval_counter += 1
 
@@ -187,11 +192,21 @@ class Strategy(object):
         if reload_path is not None:
             reloaded = load_json(reload_path)
             for iter in reloaded:
-                self.tell([iter["params"]], [iter["objective"]], True)
+                if "ckpt" in iter.keys():
+                    self.tell(
+                        [iter["params"]], [iter["objective"]], [iter["ckpt"]], True
+                    )
+                else:
+                    self.tell([iter["params"]], [iter["objective"]], None, True)
 
         if reload_list is not None:
             for iter in reload_list:
-                self.tell([iter["params"]], [iter["objective"]], True)
+                if "ckpt" in iter.keys():
+                    self.tell(
+                        [iter["params"]], [iter["objective"]], [iter["ckpt"]], True
+                    )
+                else:
+                    self.tell([iter["params"]], [iter["objective"]], None, True)
 
         if reload_path is not None or reload_list is not None:
             Console().log(
@@ -199,7 +214,7 @@ class Strategy(object):
                 " previous search iterations."
             )
 
-    def get_best(self, top_k: int = 1):
+    def get_best(self, top_k: int = 1, return_ckpt: bool = False):
         """Return top-k best performing parameter configurations."""
         assert top_k <= self.eval_counter
 
@@ -215,6 +230,11 @@ class Strategy(object):
             best_configs = [it["params"] for it in best_iters]
             best_evals = [it["objective"] for it in best_iters]
 
+            if "ckpt" in best_iters[0].keys():
+                best_ckpt = [it["ckpt"] for it in best_iters]
+            else:
+                best_ckpt = None
+
         # Multi-objective case - get pareto front
         else:
             pareto_configs, pareto_evals = self.get_pareto_front()
@@ -229,10 +249,16 @@ class Strategy(object):
             best_idx = top_k * ["-"]
 
         # Unravel retrieved lists if there is only single config
-        if top_k == 1:
-            return best_idx[0], best_configs[0], best_evals[0]
+        if return_ckpt and best_ckpt is not None:
+            if top_k == 1:
+                return best_idx[0], best_configs[0], best_evals[0], best_ckpt[0]
+            else:
+                return best_idx, best_configs, best_evals, best_ckpt
         else:
-            return best_idx, best_configs, best_evals
+            if top_k == 1:
+                return best_idx[0], best_configs[0], best_evals[0]
+            else:
+                return best_idx, best_configs, best_evals
 
     def print_ranking(self, top_k: int = 5):
         """Pretty print archive of best configurations."""

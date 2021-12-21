@@ -2,8 +2,8 @@
 [![Pyversions](https://img.shields.io/pypi/pyversions/mle-hyperopt.svg?style=flat-square)](https://pypi.python.org/pypi/mle-hyperopt)
 [![PyPI version](https://badge.fury.io/py/mle-hyperopt.svg)](https://badge.fury.io/py/mle-hyperopt)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-[![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/mle-infrastructure/mle-hyperopt/blob/main/examples/getting_started.ipynb)
 [![codecov](https://codecov.io/gh/mle-infrastructure/mle-hyperopt/branch/main/graph/badge.svg)](https://codecov.io/gh/mle-infrastructure/mle-hyperopt)
+[![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/mle-infrastructure/mle-hyperopt/blob/main/examples/getting_started.ipynb)
 <a href="https://github.com/mle-infrastructure/mle-hyperopt/blob/main/docs/logo_transparent.png?raw=true"><img src="https://github.com/mle-infrastructure/mle-hyperopt/blob/main/docs/logo_transparent.png?raw=true" width="200" align="right" /></a>
 
 The `mle-hyperopt` package provides a simple and intuitive API for hyperparameter optimization of your Machine Learning Experiment (MLE) pipeline. It supports real, integer & categorical search variables and single- or multi-objective optimization.
@@ -159,3 +159,6 @@ You can run the test suite via `python -m pytest -vv tests/`. If you find a bug 
 - [ ] Make sure search space refinement works for different batch sizes
 - [ ] Add `args, kwargs` into decorator
 - [ ] Check why SMBO can propose same config multiple times. Add Hutter reference.
+- [ ] Add HyperBand
+- [ ] Add synchronous PBT
+- [ ] Update example to include `mle-scheduler`
