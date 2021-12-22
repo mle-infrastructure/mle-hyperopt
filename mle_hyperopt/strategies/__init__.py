@@ -4,6 +4,8 @@ from .smbo import SMBOSearch
 from .nevergrad import NevergradSearch
 from .coordinate import CoordinateSearch
 from .pbt import PBTSearch
+from .halving import SuccessiveHalvingSearch
+from .hyperband import HyperbandSearch
 
 
 __all__ = [
@@ -14,4 +16,6 @@ __all__ = [
     "NevergradSearch",
     "CoordinateSearch",
     "PBTSearch",
+    "SuccessiveHalvingSearch",
+    "HyperbandSearch",
 ]
