@@ -34,14 +34,18 @@ class SuccessiveHalvingSearch(Strategy):
             verbose,
         )
         self.space = RandomSpace(real, integer, categorical)
-        for k in ["budget", "num_arms"]:
+        for k in ["budget", "num_arms", "halving_coeff"]:
             assert k in self.search_config.keys()
 
         # Pre-compute number of configs & iters per config across SH batches
         self.num_batches = math.ceil(np.log2(self.search_config["num_arms"]))
         self.evals_per_batch = [self.search_config["num_arms"]]
         for i in range(self.num_batches - 1):
-            self.evals_per_batch.append(math.floor(self.evals_per_batch[-1] / 2))
+            self.evals_per_batch.append(
+                math.floor(
+                    self.evals_per_batch[-1] / self.search_config["halving_coeff"]
+                )
+            )
         self.iters_per_batch = []
         for i in range(self.num_batches):
             self.iters_per_batch.append(
@@ -122,7 +126,6 @@ class SuccessiveHalvingSearch(Strategy):
         ckpt_paths: Union[None, List[str], str] = None,
     ):
         """Log info specific to search strategy."""
-        # TODO: Allow for more strategy-dependent customization!
         strat_data = []
         num_iters = self.iters_per_batch[self.sh_counter - 1]
         num_prev_iters = self.iters_per_batch[self.sh_counter - 2]

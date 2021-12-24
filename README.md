@@ -47,6 +47,9 @@ strategy.tell(configs, values)
 |<img src="https://github.com/mle-infrastructure/mle-hyperopt/blob/main/docs/coordinate.png?raw=true" alt="drawing" width="65"/>|  `CoordinateSearch`    |  Coordinate-wise optimization with fixed defaults | `order`, `defaults`
 |<img src="https://github.com/mle-infrastructure/mle-hyperopt/blob/main/docs/smbo.png?raw=true" alt="drawing" width="65"/>|  `SMBOSearch`          |  Sequential model-based optimization        | `base_estimator`, `acq_function`, `n_initial_points`
 |<img src="https://github.com/mle-infrastructure/mle-hyperopt/blob/main/docs/nevergrad.png?raw=true" alt="drawing" width="65"/>|  `NevergradSearch`     |  Multi-objective [nevergrad](https://facebookresearch.github.io/nevergrad/) wrapper | `optimizer`, `budget_size`, `num_workers`
+|<img src="https://github.com/mle-infrastructure/mle-hyperopt/blob/main/docs/halving.png?raw=true" alt="drawing" width="50"/>|  `SuccessiveHalvingSearch`     | Synchronous [Successive Halving](https://arxiv.org/pdf/1502.07943.pdf) | `num_arms`, `budget`
+|<img src="https://github.com/mle-infrastructure/mle-hyperopt/blob/main/docs/hyperband.png?raw=true" alt="drawing" width="50"/>|  `HyperbandSearch`     | Synchronous [Hyperband](https://arxiv.org/pdf/1603.06560.pdf) | `max_resource`, `eta`
+|<img src="https://github.com/mle-infrastructure/mle-hyperopt/blob/main/docs/pbt.png?raw=true" alt="drawing" width="50"/>|  `PBTSearch`     |  Sync. [Population-Based Training](https://arxiv.org/pdf/1711.09846.pdf) | `explore`, `exploit`
 
 ### Variable Types & Hyperparameter Spaces 🌍
 

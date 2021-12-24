@@ -67,8 +67,8 @@ def test_pbt():
             "h1": {"begin": 0.0, "end": 1.0, "prior": "uniform"},
         },
         search_config={
-            "exploit_config": {"strategy": "truncation", "truncation_selection": 0.2},
-            "explore_config": {"strategy": "additive-noise", "noise_scale": 0.1},
+            "exploit": {"strategy": "truncation", "truncation_selection": 0.2},
+            "explore": {"strategy": "additive-noise", "noise_scale": 0.1},
         },
     )
     configs = strategy.ask(2)
@@ -92,7 +92,7 @@ def test_successive_halving():
         real={"lrate": {"begin": 0.1, "end": 0.5, "prior": "uniform"}},
         integer={"batch_size": {"begin": 1, "end": 5, "prior": "log-uniform"}},
         categorical={"arch": ["mlp", "cnn"]},
-        search_config={"budget": 100, "num_arms": 20},
+        search_config={"budget": 100, "num_arms": 20, "halving_coeff": 2},
         seed_id=42,
         verbose=True,
     )
@@ -113,5 +113,15 @@ def test_successive_halving():
     strategy.tell(configs, scores, ckpts)
 
 
-# def test_hyperband():
-#     return
+def test_hyperband():
+    strategy = HyperbandSearch(
+        real={"lrate": {"begin": 0.1, "end": 0.5, "prior": "uniform"}},
+        integer={"batch_size": {"begin": 1, "end": 5, "prior": "log-uniform"}},
+        categorical={"arch": ["mlp", "cnn"]},
+        search_config={"max_resource": 81, "eta": 3},
+        seed_id=42,
+        verbose=True,
+    )
+
+    assert strategy.sh_num_arms == [81, 34, 15, 8, 5]
+    assert strategy.sh_budgets == [1, 3, 9, 27, 81]

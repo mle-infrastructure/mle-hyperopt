@@ -34,8 +34,8 @@ class PBTSearch(Strategy):
             verbose,
         )
         self.space = RandomSpace(real, integer, categorical)
-        self.explore = Explore(search_config["explore_config"], self.space)
-        self.exploit = Exploit(search_config["exploit_config"])
+        self.explore = Explore(self.search_config["explore"], self.space)
+        self.exploit = Exploit(self.search_config["exploit"])
         self.pbt_counter = 0
 
         # Add start-up message printing the search space
