@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, List
 from ...strategy import Strategy
 from ...spaces import RandomSpace
 from .exploit import Exploit
@@ -19,6 +19,7 @@ class PBTSearch(Strategy):
         seed_id: int = 42,
         verbose: bool = False,
     ):
+        self.search_name = "Population-Based Training"
         Strategy.__init__(
             self,
             real,
@@ -32,7 +33,6 @@ class PBTSearch(Strategy):
             seed_id,
             verbose,
         )
-        self.search_name = "Population-Based Training"
         self.space = RandomSpace(real, integer, categorical)
         self.explore = Explore(search_config["explore_config"], self.space)
         self.exploit = Exploit(search_config["exploit_config"])
@@ -70,7 +70,12 @@ class PBTSearch(Strategy):
                 param_batch.append(param_dict)
         return param_batch
 
-    def tell_search(self, batch_proposals: list, perf_measures: list):
+    def tell_search(
+        self,
+        batch_proposals: list,
+        perf_measures: list,
+        ckpt_paths: Union[List[str], None] = None,
+    ):
         """Update search log data - Sync PBT"""
         self.pbt_counter += 1
         self.copy_info, self.hyperparams, self.ckpt = self.exploit(

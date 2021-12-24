@@ -72,7 +72,7 @@ class Strategy(object):
 
     def ask(
         self,
-        batch_size: int = 1,
+        batch_size: Union[int, None] = 1,
         store: bool = False,
         config_fnames: Union[None, List[str]] = None,
     ):
@@ -95,12 +95,12 @@ class Strategy(object):
             else:
                 assert len(config_fnames) == len(param_batch)
             self.store_configs(param_batch, config_fnames)
-            if batch_size == 1:
+            if len(param_batch) == 1:
                 return param_batch[0], config_fnames[0]
             else:
                 return param_batch, config_fnames
         else:
-            if batch_size == 1:
+            if len(param_batch) == 1:
                 return param_batch[0]
             else:
                 return param_batch
@@ -125,6 +125,7 @@ class Strategy(object):
         if type(ckpt_paths) == str:
             ckpt_paths = [ckpt_paths]
 
+        log_data = []
         for i in range(len(batch_proposals)):
             # Check whether proposals were already previously added
             # If so -- ignore (and print message?)
@@ -132,8 +133,15 @@ class Strategy(object):
             if self.fixed_params is not None:
                 for k in self.fixed_params.keys():
                     del proposal_clean[k]
+            for k in ["ckpt", "num_total_sh_iters", "num_add_sh_iters", "sh_counter"]:
+                if k in proposal_clean.keys():
+                    del proposal_clean[k]
 
-            if proposal_clean in self.all_evaluated_params:
+            if (
+                proposal_clean in self.all_evaluated_params
+                and self.search_name
+                not in ["Successive Halving", "Hyperband", "Population-Based Training"]
+            ):
                 Console().log(f"{batch_proposals[i]} was previously evaluated.")
             else:
                 data_to_append = {
@@ -144,11 +152,27 @@ class Strategy(object):
                 # Add checkpoint path to data if it is provided!
                 if ckpt_paths is not None:
                     data_to_append["ckpt"] = ckpt_paths[i]
-                self.log.append(data_to_append)
+                log_data.append(data_to_append)
                 self.all_evaluated_params.append(proposal_clean)
                 self.eval_counter += 1
 
-        self.tell_search(batch_proposals, perf_measures)
+        # Update log before continuing with tell method of coordinate search
+        if self.search_name == "Coordinate-Wise Search":
+            for i in range(len(batch_proposals)):
+                self.log.append(log_data[i])
+
+        # Update search strategy - specific to each strategy
+        self.tell_search(batch_proposals, perf_measures, ckpt_paths)
+
+        # Update the log with additional search result data
+        if self.search_name != "Coordinate-Wise Search":
+            strat_data = self.log_search(batch_proposals, perf_measures, ckpt_paths)
+            for i in range(len(batch_proposals)):
+                if strat_data is not None:
+                    merged_dict = {**log_data[i], **strat_data[i]}
+                    self.log.append(merged_dict)
+                else:
+                    self.log.append(log_data[i])
 
         # Print update message
         if self.verbose and not reload:
@@ -169,9 +193,22 @@ class Strategy(object):
                     self.last_refined = self.refine_after[self.refine_counter]
                     self.refine_counter += 1
 
-    def tell_search(self, batch_proposals: list, perf_measures: list):
+    def tell_search(
+        self,
+        batch_proposals: list,
+        perf_measures: list,
+        ckpt_paths: Union[None, List[str], str] = None,
+    ):
         """Search method-specific strategy update."""
         raise NotImplementedError
+
+    def log_search(
+        self,
+        batch_proposals: list,
+        perf_measures: list,
+        ckpt_paths: Union[None, List[str], str] = None,
+    ):
+        """Log info specific to search strategy."""
 
     def save(self, save_path: str = "search_log.json"):
         """Store the state of the optimizer (parameters, values) as .pkl."""

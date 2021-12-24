@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, List
 from ..strategy import Strategy
 from ..spaces import RandomSpace
 
@@ -17,6 +17,7 @@ class HyperbandSearch(Strategy):
         seed_id: int = 42,
         verbose: bool = False,
     ):
+        self.search_name = "Hyperband"
         Strategy.__init__(
             self,
             real,
@@ -31,7 +32,6 @@ class HyperbandSearch(Strategy):
             verbose,
         )
         self.space = RandomSpace(real, integer, categorical)
-        self.search_name = "Succesive Halving"
 
         # Add start-up message printing the search space
         if self.verbose:
@@ -51,7 +51,12 @@ class HyperbandSearch(Strategy):
                 continue
         return param_batch
 
-    def tell_search(self, batch_proposals: list, perf_measures: list):
+    def tell_search(
+        self,
+        batch_proposals: list,
+        perf_measures: list,
+        ckpt_paths: Union[List[str], None] = None,
+    ):
         """Perform post-iteration clean-up - no surrogate model."""
 
     def refine_space(self, real, integer, categorical):

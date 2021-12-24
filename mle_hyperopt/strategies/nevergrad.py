@@ -1,6 +1,6 @@
 from ..strategy import Strategy
 from ..spaces import NevergradSpace
-from typing import Union
+from typing import Union, List
 import nevergrad as ng
 
 
@@ -22,6 +22,7 @@ class NevergradSearch(Strategy):
         seed_id: int = 42,
         verbose: bool = False,
     ):
+        self.search_name = "Nevergrad Wrapper Search"
         Strategy.__init__(
             self,
             real,
@@ -37,7 +38,6 @@ class NevergradSearch(Strategy):
         )
         self.space = NevergradSpace(real, integer, categorical)
         self.init_optimizer()
-        self.search_name = "Nevergrad Wrapper Search"
 
         # Add start-up message printing the search space
         if self.verbose:
@@ -66,7 +66,12 @@ class NevergradSearch(Strategy):
         param_batch = [params.value[1] for params in last_batch_params]
         return param_batch
 
-    def tell_search(self, batch_proposals, perf_measures):
+    def tell_search(
+        self,
+        batch_proposals: list,
+        perf_measures: list,
+        ckpt_paths: Union[List[str], None] = None,
+    ):
         """Perform post-iteration clean-up by updating surrogate model."""
         for i, prop in enumerate(batch_proposals):
             # Need to update hyperoptimizer with ng Instrumentation candidate

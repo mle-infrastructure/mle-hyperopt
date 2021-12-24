@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, List
 from ..strategy import Strategy
 from ..spaces import GridSpace
 import numpy as np
@@ -19,6 +19,7 @@ class CoordinateSearch(Strategy):
         seed_id: int = 42,
         verbose: bool = False,
     ):
+        self.search_name = "Coordinate-Wise Search"
         Strategy.__init__(
             self,
             real,
@@ -55,7 +56,6 @@ class CoordinateSearch(Strategy):
         self.grid_var_counter = 0
         self.var_counter = 0
         self.construct_active_space()
-        self.search_name = "Coordinate-Wise Search"
 
         # Add start-up message printing the search space
         if self.verbose:
@@ -84,7 +84,12 @@ class CoordinateSearch(Strategy):
                 continue
         return param_batch
 
-    def tell_search(self, batch_proposals: list, perf_measures: list):
+    def tell_search(
+        self,
+        batch_proposals: list,
+        perf_measures: list,
+        ckpt_paths: Union[List[str], None] = None,
+    ):
         """Update search log data - Coordinate Search"""
         # Update/reset variable and grid counter based on eval_counter
         # And evals per search space (makes it easier to reload)

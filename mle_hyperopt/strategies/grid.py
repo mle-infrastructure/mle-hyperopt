@@ -18,6 +18,7 @@ class GridSearch(Strategy):
         seed_id: int = 42,
         verbose: bool = False,
     ):
+        self.search_name = "Grid Search"
         Strategy.__init__(
             self,
             real,
@@ -36,8 +37,6 @@ class GridSearch(Strategy):
         self.space = GridSpace(real, integer, categorical)
         self.num_param_configs = len(self.space)
         self.grid_counter = self.eval_counter
-        self.search_name = "Gird Search"
-
         # Add start-up message printing the search space
         if self.verbose:
             self.print_hello()
@@ -63,7 +62,12 @@ class GridSearch(Strategy):
                 continue
         return param_batch
 
-    def tell_search(self, batch_proposals: list, perf_measures: list):
+    def tell_search(
+        self,
+        batch_proposals: list,
+        perf_measures: list,
+        ckpt_paths: Union[List[str], None] = None,
+    ):
         """Update search log data - Grid Search"""
         # Make sure that the grid_counter equals the eval_counter
         # This is only relevant if we load in new log data mid-search

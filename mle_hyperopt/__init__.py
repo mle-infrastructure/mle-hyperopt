@@ -5,7 +5,9 @@ from .strategies import (
     SMBOSearch,
     NevergradSearch,
     CoordinateSearch,
-    PBTSearch
+    SuccessiveHalvingSearch,
+    HyperbandSearch,
+    PBTSearch,
 )
 from .decorator import hyperopt
 
@@ -16,6 +18,8 @@ __all__ = [
     "SMBOSearch",
     "NevergradSearch",
     "CoordinateSearch",
+    "SuccessiveHalvingSearch",
+    "HyperbandSearch",
     "PBTSearch",
     "hyperopt",
 ]

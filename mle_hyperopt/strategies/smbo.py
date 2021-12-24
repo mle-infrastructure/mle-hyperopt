@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, List
 import numpy as np
 from ..strategy import Strategy
 from ..spaces import SMBOSpace
@@ -23,7 +23,7 @@ class SMBOSearch(Strategy):
         seed_id: int = 42,
         verbose: bool = False,
     ):
-        # Check that SMBO uses synchronous scheduling
+        self.search_name = "SMBO Search"
         Strategy.__init__(
             self,
             real,
@@ -39,7 +39,6 @@ class SMBOSearch(Strategy):
         )
         self.space = SMBOSpace(real, integer, categorical)
         self.init_optimizer()
-        self.search_name = "SMBO Search"
 
         # Add start-up message printing the search space
         if self.verbose:
@@ -70,7 +69,12 @@ class SMBOSearch(Strategy):
             param_batch.append(proposal_params)
         return param_batch
 
-    def tell_search(self, batch_proposals, perf_measures):
+    def tell_search(
+        self,
+        batch_proposals: list,
+        perf_measures: list,
+        ckpt_paths: Union[List[str], None] = None,
+    ):
         """Perform post-iteration clean-up by updating surrogate model."""
         x = []
         for i, prop in enumerate(batch_proposals):

@@ -1,14 +1,20 @@
 from mle_hyperopt import (
     RandomSearch,
     PBTSearch,
+    SuccessiveHalvingSearch,
+    HyperbandSearch,
 )
 import numpy as np
 
 
-def fake_train(lrate, batch_size, arch):
-    """Optimum: lrate=0.2, batch_size=4, arch='conv'."""
+def get_iteration_score(
+    epoch: int, seed_id: int, lrate: float, batch_size: int, arch: str, **kwargs
+) -> (float, float):
+    """Surrogate Objective w. optimum: lrate=0.2, batch_size=4, arch='conv'."""
     f1 = (lrate - 0.2) ** 2 + (batch_size - 4) ** 2 + (0 if arch == "conv" else 10)
-    return f1
+    train_loss = f1 + seed_id * 0.5
+    test_loss = f1 + seed_id * 0.5 + np.random.uniform(0, 0.3)
+    return train_loss / epoch, test_loss / epoch
 
 
 class QuadraticProblem(object):
@@ -79,3 +85,33 @@ def test_pbt():
     ckpts = ["ckpt1.pt", "ckpt2.pt"]
     # strategy.tell(configs, values, ckpts)
     return
+
+
+def test_successive_halving():
+    strategy = SuccessiveHalvingSearch(
+        real={"lrate": {"begin": 0.1, "end": 0.5, "prior": "uniform"}},
+        integer={"batch_size": {"begin": 1, "end": 5, "prior": "log-uniform"}},
+        categorical={"arch": ["mlp", "cnn"]},
+        search_config={"budget": 100, "num_arms": 20},
+        seed_id=42,
+        verbose=True,
+    )
+    assert strategy.num_batches == 5
+    assert strategy.evals_per_batch == [20, 10, 5, 2, 1]
+    assert strategy.iters_per_batch == [1, 2, 4, 10, 20]
+
+    configs = strategy.ask()
+    assert len(configs) == 20
+    scores = [get_iteration_score(c["num_total_sh_iters"], 0, **c)[1] for c in configs]
+    ckpts = [f"ckpt_0_{i}.pt" for i in range(len(configs))]
+    strategy.tell(configs, scores, ckpts)
+
+    configs = strategy.ask()
+    assert len(configs) == 10
+    scores = [get_iteration_score(c["num_total_sh_iters"], 0, **c)[1] for c in configs]
+    ckpts = [f"ckpt_1_{i}.pt" for i in range(len(configs))]
+    strategy.tell(configs, scores, ckpts)
+
+
+# def test_hyperband():
+#     return
