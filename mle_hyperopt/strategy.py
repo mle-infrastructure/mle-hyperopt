@@ -233,6 +233,10 @@ class Strategy(object):
         if reload_path is not None:
             fname, fext = os.path.splitext(reload_path)
             if fext in [".yaml", ".json"]:
+                if self.search_name in ["PBT", "SuccessiveHalving", "Hyperband"]:
+                    raise ValueError(
+                        "Iterative search logs can only be loaded from .pkl."
+                    )
                 reloaded = load_log(reload_path)
                 for iter in reloaded:
                     if "ckpt" in iter.keys():

@@ -42,7 +42,7 @@ class QuadraticProblem(object):
         self.step(h)
         exact = self.evaluate()
         surrogate = self.surrogate_objective(h)
-        return exact, surrogate
+        return exact, surrogate, self.theta
 
 
 def test_store_ckpt():
@@ -168,18 +168,21 @@ def test_pbt():
         search_config={
             "exploit": {"strategy": "truncation", "truncation_selection": 0.2},
             "explore": {"strategy": "additive-noise", "noise_scale": 0.1},
+            "steps_until_ready": 1,
+            "num_workers": 2,
         },
     )
-    configs = strategy.ask(2)
+    configs = strategy.ask()
     values = []
-    theta = [[np.array([[0.9, 0.9]]), np.array([[0.9, 0.9]])]]
+    theta_log = [[np.array([[0.9, 0.9]]), np.array([[0.9, 0.9]])]]
     new_theta = []
     for i in range(2):
-        problem = QuadraticProblem(theta[-1][i])
-        exact, surrogate = problem(configs[i])
+        exact, surrogate, theta = QuadraticProblem(theta_log[-1][i])(
+            configs[i]["params"]
+        )
         values.append(exact)
-        new_theta.append(problem.theta)
-    theta.append(new_theta)
+        new_theta.append(theta)
+    theta_log.append(new_theta)
 
     ckpts = ["ckpt1.pt", "ckpt2.pt"]
     # strategy.tell(configs, values, ckpts)
