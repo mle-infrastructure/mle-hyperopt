@@ -1,8 +1,8 @@
 import math
 from typing import Union, List
 from ..strategy import Strategy
-from ..spaces import RandomSpace
 from .halving import SuccessiveHalvingSearch
+from ..spaces import RandomSpace
 
 
 class HyperbandSearch(Strategy):
@@ -58,11 +58,11 @@ class HyperbandSearch(Strategy):
         self.hb_counter = 0
 
         """
-        # TODO: Add method `update_search` for refinement/coord-update/sh-switch
-        # TODO: Make reloading work for new strategies
+        # TODO: Make reloading work for new strategies - 'params', 'extra'
         # TODO: Add changelog/contributing to all mle-infrastructure packages
         # TODO: Separate hyperparams and stratparams [[{}, {}]]
-        # In loop go over individual SH loops
+        """
+        # Define first SH Loop to evaluate
         self.sub_strategy = SuccessiveHalvingSearch(
             real=self.real,
             integer=self.integer,
@@ -74,7 +74,6 @@ class HyperbandSearch(Strategy):
             },
             seed_id=self.hb_counter + self.seed_id,
         )
-        """
 
         # Add start-up message printing the search space
         if self.verbose:
@@ -82,16 +81,8 @@ class HyperbandSearch(Strategy):
 
     def ask_search(self, batch_size: int):
         """Get proposals to eval next (in batches) - Random Sampling."""
-        param_batch = []
-        # Sample a new configuration for each eval in the batch
-        while len(param_batch) < batch_size:
-            proposal_params = self.space.sample()
-            if proposal_params not in (self.all_evaluated_params + param_batch):
-                # Add parameter proposal to the batch list
-                param_batch.append(proposal_params)
-            else:
-                # Otherwise continue sampling proposals
-                continue
+        param_batch = self.sub_strategy.ask()
+        # Add Hyperband iter counter to extra dictionary
         return param_batch
 
     def tell_search(
@@ -101,9 +92,23 @@ class HyperbandSearch(Strategy):
         ckpt_paths: Union[List[str], None] = None,
     ):
         """Perform post-iteration clean-up - no surrogate model."""
+        self.sub_strategy.tell(batch_proposals, perf_measures, ckpt_paths)
 
     def update_search(self):
         """Check whether to switch to next successive halving strategy."""
+        if self.sub_strategy.completed:
+            self.hb_counter += 1
+            self.sub_strategy = SuccessiveHalvingSearch(
+                real=self.real,
+                integer=self.integer,
+                categorical=self.categorical,
+                search_config={
+                    "budget": self.sh_budgets[self.hb_counter],
+                    "num_arms": self.sh_num_arms[self.hb_counter],
+                    "halving_coeff": self.search_config["eta"],
+                },
+                seed_id=self.hb_counter + self.seed_id,
+            )
 
     def log_search(
         self,

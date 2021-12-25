@@ -1,8 +1,9 @@
 from typing import Union, List
+import os
 import numpy as np
 import pandas as pd
 import numbers
-from .utils import load_json, save_json, write_configs_to_file
+from .utils import load_log, save_log, load_strategy, save_strategy, write_configs
 from .comms import welcome_message, update_message, ranking_message
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -203,7 +204,13 @@ class Strategy(object):
 
     def save(self, save_path: str = "search_log.json"):
         """Store the state of the optimizer (parameters, values) as .pkl."""
-        save_json(self.log, save_path)
+        fname, fext = os.path.splitext(save_path)
+        if fext in [".yaml", ".json"]:
+            save_log(self.log, save_path)
+        elif fext == ".pkl":
+            save_strategy(self, save_path)
+        else:
+            raise ValueError("Only YAML, JSON or PKL file paths supported.")
         if self.verbose:
             Console().log(
                 f"Stored {self.eval_counter} search iterations --> {save_path}."
@@ -218,14 +225,18 @@ class Strategy(object):
         # Simply loop over param, value pairs and `tell` the strategy.
         prev_evals = int(self.eval_counter)
         if reload_path is not None:
-            reloaded = load_json(reload_path)
-            for iter in reloaded:
-                if "ckpt" in iter.keys():
-                    self.tell(
-                        [iter["params"]], [iter["objective"]], [iter["ckpt"]], True
-                    )
-                else:
-                    self.tell([iter["params"]], [iter["objective"]], None, True)
+            fname, fext = os.path.splitext(reload_path)
+            if fext in [".yaml", ".json"]:
+                reloaded = load_log(reload_path)
+                for iter in reloaded:
+                    if "ckpt" in iter.keys():
+                        self.tell(
+                            [iter["params"]], [iter["objective"]], [iter["ckpt"]], True
+                        )
+                    else:
+                        self.tell([iter["params"]], [iter["objective"]], None, True)
+            elif fext == ".pkl":
+                self.__dict__ = load_strategy(reload_path).__dict__
 
         if reload_list is not None:
             for iter in reload_list:
@@ -314,7 +325,7 @@ class Strategy(object):
         config_fnames: Union[str, List[str], None] = None,
     ):
         """Store configuration as .json files to file path."""
-        write_configs_to_file(config_dicts, config_fnames)
+        write_configs(config_dicts, config_fnames)
 
     def plot_best(self, fname: Union[None, str] = None):
         """Plot the evolution of best model performance over evaluations."""
@@ -348,6 +359,7 @@ class Strategy(object):
             sub_log = {}
             sub_log["eval_id"] = l["eval_id"]
             # TODO: Add if-clause for multi-objective list case
+            # TODO: Add extra data stored in log
             sub_log["objective"] = l["objective"]
             sub_log.update(l["params"])
             flat_log.append(sub_log)

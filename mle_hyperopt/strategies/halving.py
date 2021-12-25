@@ -38,7 +38,10 @@ class SuccessiveHalvingSearch(Strategy):
             assert k in self.search_config.keys()
 
         # Pre-compute number of configs & iters per config across SH batches
-        self.num_batches = math.ceil(np.log2(self.search_config["num_arms"]))
+        def logeta(x):
+            return math.log(x) / math.log(self.search_config["halving_coeff"])
+
+        self.num_batches = math.ceil(logeta(self.search_config["num_arms"]))
         self.evals_per_batch = [self.search_config["num_arms"]]
         for i in range(self.num_batches - 1):
             self.evals_per_batch.append(
@@ -82,7 +85,7 @@ class SuccessiveHalvingSearch(Strategy):
                 else:
                     # Otherwise continue sampling proposals
                     continue
-        elif self.sh_counter >= self.num_batches:
+        elif self.completed:
             raise ValueError("You already completed all Successive Halving iterations.")
         else:
             num_iters = self.iters_per_batch[self.sh_counter]
@@ -140,3 +143,8 @@ class SuccessiveHalvingSearch(Strategy):
             c_data["sh_add_iters"] = num_iters - num_prev_iters
             strat_data.append(c_data)
         return strat_data
+
+    @property
+    def completed(self):
+        """Return boolean if all SH rounds were completed."""
+        return self.sh_counter >= self.num_batches
