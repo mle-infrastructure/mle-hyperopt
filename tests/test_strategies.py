@@ -44,7 +44,7 @@ def test_core():
     os.remove("conf_1.yaml")
 
     # Check that get_best retrieves best performers
-    best_id, best_config, best_value = strategy.get_best(2)
+    best_id, best_config, best_value, _ = strategy.get_best(2)
     assert (best_id == [4, 3]).all()
     assert (np.array(best_value) == [10.005996236277564, 11.00112114105261]).all()
     assert best_config[0] == {
@@ -62,12 +62,12 @@ def test_core():
 def test_maximize_objective():
     strategy = RandomSearch(
         real={"lrate": {"begin": 0.1, "end": 0.5, "prior": "uniform"}},
-        maximize_objective=True
+        maximize_objective=True,
     )
     configs = [{"lrate": 0.2}, {"lrate": 0.3}, {"lrate": 0.4}]
     values = [0.25, 0.35, 0.45]
     strategy.tell(configs, values)
-    id, conf, val = strategy.get_best()
+    id, conf, val, _ = strategy.get_best()
     assert id == 2
     assert conf == {"lrate": 0.4}
     assert val == 0.45

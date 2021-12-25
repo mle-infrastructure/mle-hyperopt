@@ -59,6 +59,9 @@ class HyperbandSearch(Strategy):
 
         """
         # TODO: Add method `update_search` for refinement/coord-update/sh-switch
+        # TODO: Make reloading work for new strategies
+        # TODO: Add changelog/contributing to all mle-infrastructure packages
+        # TODO: Separate hyperparams and stratparams [[{}, {}]]
         # In loop go over individual SH loops
         self.sub_strategy = SuccessiveHalvingSearch(
             real=self.real,
@@ -98,6 +101,9 @@ class HyperbandSearch(Strategy):
         ckpt_paths: Union[List[str], None] = None,
     ):
         """Perform post-iteration clean-up - no surrogate model."""
+
+    def update_search(self):
+        """Check whether to switch to next successive halving strategy."""
 
     def log_search(
         self,

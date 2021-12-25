@@ -19,7 +19,7 @@ class SuccessiveHalvingSearch(Strategy):
         seed_id: int = 42,
         verbose: bool = False,
     ):
-        self.search_name = "Successive Halving"
+        self.search_name = "SuccessiveHalving"
         Strategy.__init__(
             self,
             real,

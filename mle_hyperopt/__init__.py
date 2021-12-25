@@ -11,6 +11,17 @@ from .strategies import (
 )
 from .decorator import hyperopt
 
+Strategies = {
+    "Random": RandomSearch,
+    "Grid": GridSearch,
+    "SMBO": SMBOSearch,
+    "Nevergrad": NevergradSearch,
+    "Coordinate": CoordinateSearch,
+    "SuccessiveHalving": SuccessiveHalvingSearch,
+    "Hyperband": HyperbandSearch,
+    "PBT": PBTSearch,
+}
+
 __all__ = [
     "__version__",
     "RandomSearch",
@@ -22,4 +33,5 @@ __all__ = [
     "HyperbandSearch",
     "PBTSearch",
     "hyperopt",
+    "Strategies",
 ]

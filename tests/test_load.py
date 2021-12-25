@@ -19,7 +19,6 @@ def test_save_and_load():
     strategy.tell(configs, values)
     strategy.save("search_log.json")
     assert os.path.exists("search_log.json")
-
     strategy = GridSearch(
         real={"lrate": {"begin": 0.1, "end": 0.5, "bins": 5}},
         integer={"batch_size": {"begin": 1, "end": 5, "bins": 1}},

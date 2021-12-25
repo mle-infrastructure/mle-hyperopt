@@ -22,7 +22,7 @@ class NevergradSearch(Strategy):
         seed_id: int = 42,
         verbose: bool = False,
     ):
-        self.search_name = "Nevergrad Wrapper Search"
+        self.search_name = "Nevergrad"
         Strategy.__init__(
             self,
             real,
@@ -91,6 +91,40 @@ class NevergradSearch(Strategy):
                 else:
                     self.hyper_optimizer.tell(x, [-1 * p for p in perf_measures[i]])
 
+    def update_search(self):
+        """Refine search space boundaries after set of search iterations."""
+        if self.refine_after is not None:
+            # Check whether there are still refinements open
+            # And whether we have already passed last refinement point
+            if len(self.refine_after) > self.refine_counter:
+                exact = self.eval_counter == self.refine_after[self.refine_counter]
+                skip = (
+                    self.eval_counter > self.refine_after[self.refine_counter]
+                    and self.last_refined != self.refine_after[self.refine_counter]
+                )
+                if exact or skip:
+                    self.refine(self.refine_top_k)
+                    self.last_refined = self.refine_after[self.refine_counter]
+                    self.refine_counter += 1
+
+    def setup_search(self):
+        """Initialize search settings at startup."""
+        # Set up search space refinement - random, SMBO, nevergrad
+        if self.search_config is not None:
+            if "refine_top_k" in self.search_config.keys():
+                self.refine_counter = 0
+                assert self.search_config["refine_top_k"] > 1
+                self.refine_after = self.search_config["refine_after"]
+                # Make sure that refine iteration is list
+                if type(self.refine_after) == int:
+                    self.refine_after = [self.refine_after]
+                self.refine_top_k = self.search_config["refine_top_k"]
+                self.last_refined = 0
+            else:
+                self.refine_after = None
+        else:
+            self.refine_after = None
+
     def refine_space(self, real, integer, categorical):
         """Update the nevergrad search space."""
         self.space.update(real, integer, categorical)
@@ -101,10 +135,10 @@ class NevergradSearch(Strategy):
 
     def get_pareto_front(self):
         """Get the pareto-front of the optimizer."""
-        pareto_configs, pareto_evals = [], []
+        pareto_configs, pareto_evals, pareto_ckpt = [], [], None
         for param in sorted(
             self.hyper_optimizer.pareto_front(), key=lambda p: p.losses[0]
         ):
             pareto_configs.append(param.value[1])
             pareto_evals.append(param.losses)
-        return pareto_configs, pareto_evals
+        return pareto_configs, pareto_evals, pareto_ckpt

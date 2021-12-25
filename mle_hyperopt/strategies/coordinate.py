@@ -1,4 +1,4 @@
-from typing import Union, List
+from typing import Union
 from ..strategy import Strategy
 from ..spaces import GridSpace
 import numpy as np
@@ -19,7 +19,7 @@ class CoordinateSearch(Strategy):
         seed_id: int = 42,
         verbose: bool = False,
     ):
-        self.search_name = "Coordinate-Wise Search"
+        self.search_name = "Coordinate"
         Strategy.__init__(
             self,
             real,
@@ -65,31 +65,23 @@ class CoordinateSearch(Strategy):
         """Get proposals to eval next (in batches) - Coordinate Search"""
         # Set grid counter to eval_counter in order ensure while
         # That results for grid configuration are collected before continuation
-        self.grid_var_counter = (
-            self.eval_counter - self.range_per_coord[self.var_counter]
-        )
+        grid_var_counter = self.eval_counter - self.range_per_coord[self.var_counter]
 
         param_batch = []
         # Sample a new configuration for each eval in the batch
-        while len(param_batch) < batch_size and self.grid_var_counter < len(self.space):
+        while len(param_batch) < batch_size and grid_var_counter < len(self.space):
             # Get parameter batch from the grid
-            proposal_params = self.space.param_grid[self.grid_var_counter]
+            proposal_params = self.space.param_grid[grid_var_counter]
             if proposal_params not in (self.all_evaluated_params + param_batch):
                 # Add parameter proposal to the batch list
                 param_batch.append(proposal_params)
-                self.grid_var_counter += 1
+                grid_var_counter += 1
             else:
                 # Otherwise continue sampling proposals
-                self.grid_var_counter += 1
-                continue
+                grid_var_counter += 1
         return param_batch
 
-    def tell_search(
-        self,
-        batch_proposals: list,
-        perf_measures: list,
-        ckpt_paths: Union[List[str], None] = None,
-    ):
+    def update_search(self):
         """Update search log data - Coordinate Search"""
         # Update/reset variable and grid counter based on eval_counter
         # And evals per search space (makes it easier to reload)
@@ -106,7 +98,7 @@ class CoordinateSearch(Strategy):
         """Construct the active search space."""
         # Update the parameter defaults with the best performers
         if self.eval_counter > 0:
-            idx, config, eval = self.get_best()
+            idx, config, eval, _ = self.get_best()
             for k, v in config.items():
                 if k == self.search_config["order"][self.var_counter - 1]:
                     self.search_config["defaults"][k] = v

@@ -54,7 +54,7 @@ def test_store_ckpt():
     values = [0.25, 0.35, 0.45]
     ckpts = ["ckpt1.pt", "ckpt2.pt", "ckpt3.pt"]
     strategy.tell(configs, values, ckpts)
-    id, conf, val, ck = strategy.get_best(3, return_ckpt=True)
+    id, conf, val, ck = strategy.get_best(3)
     assert ck[0] == "ckpt3.pt"
     assert ck[1] == "ckpt2.pt"
     assert ck[2] == "ckpt1.pt"

@@ -23,7 +23,7 @@ class SMBOSearch(Strategy):
         seed_id: int = 42,
         verbose: bool = False,
     ):
-        self.search_name = "SMBO Search"
+        self.search_name = "SMBO"
         Strategy.__init__(
             self,
             real,
@@ -90,6 +90,40 @@ class SMBOSearch(Strategy):
             self.hyper_optimizer.tell(x, perf_measures)
         else:
             self.hyper_optimizer.tell(x, [-1 * p for p in perf_measures])
+
+    def update_search(self):
+        """Refine search space boundaries after set of search iterations."""
+        if self.refine_after is not None:
+            # Check whether there are still refinements open
+            # And whether we have already passed last refinement point
+            if len(self.refine_after) > self.refine_counter:
+                exact = self.eval_counter == self.refine_after[self.refine_counter]
+                skip = (
+                    self.eval_counter > self.refine_after[self.refine_counter]
+                    and self.last_refined != self.refine_after[self.refine_counter]
+                )
+                if exact or skip:
+                    self.refine(self.refine_top_k)
+                    self.last_refined = self.refine_after[self.refine_counter]
+                    self.refine_counter += 1
+
+    def setup_search(self):
+        """Initialize search settings at startup."""
+        # Set up search space refinement - random, SMBO, nevergrad
+        if self.search_config is not None:
+            if "refine_top_k" in self.search_config.keys():
+                self.refine_counter = 0
+                assert self.search_config["refine_top_k"] > 1
+                self.refine_after = self.search_config["refine_after"]
+                # Make sure that refine iteration is list
+                if type(self.refine_after) == int:
+                    self.refine_after = [self.refine_after]
+                self.refine_top_k = self.search_config["refine_top_k"]
+                self.last_refined = 0
+            else:
+                self.refine_after = None
+        else:
+            self.refine_after = None
 
     def refine_space(self, real, integer, categorical):
         """Update the SMBO search space."""
