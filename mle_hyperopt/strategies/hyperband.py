@@ -58,11 +58,6 @@ class HyperbandSearch(Strategy):
         ]
         self.hb_counter = 0
 
-        """
-        # TODO: Make reloading work for new strategies - 'params', 'extra'
-        # TODO: Add changelog/contributing to all mle-infrastructure packages
-        # TODO: Separate hyperparams and stratparams [[{}, {}]]
-        """
         # Define first SH Loop to evaluate
         self.sub_strategy = SuccessiveHalvingSearch(
             real=self.real,
@@ -88,7 +83,7 @@ class HyperbandSearch(Strategy):
 
         # Add Hyperband iter counter to extra dictionary
         for c in param_batch:
-            c["hb_counter"] = self.hb_counter
+            c["extra"]["hb_counter"] = self.hb_counter
         return param_batch
 
     def tell_search(
@@ -126,6 +121,10 @@ class HyperbandSearch(Strategy):
         strat_data = []
         for i in range(len(batch_proposals)):
             c_data = {}
-            c_data["hb_counter"] = self.hb_counter - 1
+            c_data["hb_counter"] = self.hb_counter
+            if i in self.sub_strategy.haved_ids:
+                c_data["sh_continued"] = True
+            else:
+                c_data["sh_continued"] = False
             strat_data.append(c_data)
         return strat_data

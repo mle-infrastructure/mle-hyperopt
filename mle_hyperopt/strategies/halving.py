@@ -79,10 +79,15 @@ class SuccessiveHalvingSearch(Strategy):
                 proposal_params = self.space.sample()
                 if proposal_params not in param_batch:
                     # Add parameter proposal to the batch list
-                    proposal_params["num_total_sh_iters"] = num_iters
-                    proposal_params["num_add_sh_iters"] = num_iters - num_prev_iters
-                    proposal_params["sh_counter"] = self.sh_counter
-                    param_batch.append(proposal_params)
+                    proposal = {
+                        "params": proposal_params,
+                        "extra": {
+                            "sh_num_total_iters": num_iters,
+                            "sh_num_add_iters": num_iters - num_prev_iters,
+                            "sh_counter": self.sh_counter,
+                        },
+                    }
+                    param_batch.append(proposal)
                 else:
                     # Otherwise continue sampling proposals
                     continue
@@ -92,12 +97,18 @@ class SuccessiveHalvingSearch(Strategy):
             num_iters = self.iters_per_batch[self.sh_counter]
             num_prev_iters = self.iters_per_batch[self.sh_counter - 1]
             for i, c in enumerate(self.haved_configs):
+                extra_dict = {
+                    "sh_num_total_iters": num_iters,
+                    "sh_num_add_iters": num_iters - num_prev_iters,
+                    "sh_counter": self.sh_counter,
+                }
                 if self.haved_ckpt is not None:
-                    c["ckpt"] = self.haved_ckpt[i]
-                c["num_total_sh_iters"] = num_iters
-                c["num_add_sh_iters"] = num_iters - num_prev_iters
-                c["sh_counter"] = self.sh_counter
-                param_batch.append(c)
+                    extra_dict["sh_ckpt"] = self.haved_ckpt[i]
+                proposal = {
+                    "params": self.haved_configs[i],
+                    "extra": extra_dict,
+                }
+                param_batch.append(proposal)
         return param_batch
 
     def tell_search(
@@ -132,17 +143,12 @@ class SuccessiveHalvingSearch(Strategy):
     ):
         """Log info specific to search strategy."""
         strat_data = []
-        num_iters = self.iters_per_batch[self.sh_counter - 1]
-        num_prev_iters = self.iters_per_batch[self.sh_counter - 2]
         for i in range(len(batch_proposals)):
             c_data = {}
             if i in self.haved_ids:
                 c_data["sh_continued"] = True
             else:
                 c_data["sh_continued"] = False
-            c_data["sh_counter"] = self.sh_counter - 1
-            c_data["sh_total_iters"] = num_iters
-            c_data["sh_add_iters"] = num_iters - num_prev_iters
             strat_data.append(c_data)
         return strat_data
 

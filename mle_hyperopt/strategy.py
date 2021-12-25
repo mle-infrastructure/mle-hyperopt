@@ -120,10 +120,11 @@ class Strategy(object):
         strat_data = self.log_search(batch_proposals, perf_measures, ckpt_paths)
         for i in range(len(clean_prop)):
             if strat_data is not None:
-                merged_dict = {**log_data[i], **strat_data[i]}
-                self.log.append(merged_dict)
-            else:
-                self.log.append(log_data[i])
+                if "extra" in log_data[i].keys():
+                    log_data[i]["extra"] = {**log_data[i]["extra"], **strat_data[i]}
+                else:
+                    log_data[i]["extra"] = strat_data[i]
+            self.log.append(log_data[i])
 
         # Update the search strategy - space refinement/switches
         self.update_search()
@@ -144,11 +145,14 @@ class Strategy(object):
             # Check whether proposals were already previously added
             # If so -- ignore (and print message?)
             proposal_clean = dict(batch_proposals[i])
+
+            if "extra" in proposal_clean.keys():
+                extra_data = proposal_clean["extra"]
+                proposal_clean = proposal_clean["params"]
+            else:
+                extra_data = None
             if self.fixed_params is not None:
                 for k in self.fixed_params.keys():
-                    del proposal_clean[k]
-            for k in ["ckpt", "num_total_sh_iters", "num_add_sh_iters", "sh_counter"]:
-                if k in proposal_clean.keys():
                     del proposal_clean[k]
 
             if (
@@ -162,6 +166,8 @@ class Strategy(object):
                     "params": proposal_clean,
                     "objective": perf_measures[i],
                 }
+                if extra_data is not None:
+                    data_to_append["extra"] = extra_data
                 # Add checkpoint path to data if it is provided!
                 if ckpt_paths is not None:
                     data_to_append["ckpt"] = ckpt_paths[i]

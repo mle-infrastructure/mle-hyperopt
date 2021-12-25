@@ -74,13 +74,19 @@ def test_successive_halving():
 
     configs = strategy.ask()
     assert len(configs) == 20
-    scores = [get_iteration_score(c["num_total_sh_iters"], 0, **c)[1] for c in configs]
+    scores = [
+        get_iteration_score(c["extra"]["sh_num_total_iters"], 0, **c["params"])[1]
+        for c in configs
+    ]
     ckpts = [f"ckpt_0_{i}.pt" for i in range(len(configs))]
     strategy.tell(configs, scores, ckpts)
 
     configs = strategy.ask()
     assert len(configs) == 10
-    scores = [get_iteration_score(c["num_total_sh_iters"], 0, **c)[1] for c in configs]
+    scores = [
+        get_iteration_score(c["extra"]["sh_num_total_iters"], 0, **c["params"])[1]
+        for c in configs
+    ]
     ckpts = [f"ckpt_1_{i}.pt" for i in range(len(configs))]
     strategy.tell(configs, scores, ckpts)
 
@@ -99,38 +105,56 @@ def test_hyperband():
 
     configs = strategy.ask()
     assert len(configs) == 81
-    scores = [get_iteration_score(c["num_total_sh_iters"], 0, **c)[1] for c in configs]
+    scores = [
+        get_iteration_score(c["extra"]["sh_num_total_iters"], 0, **c["params"])[1]
+        for c in configs
+    ]
     ckpts = [f"ckpt_0_{i}.pt" for i in range(len(configs))]
     strategy.tell(configs, scores, ckpts)
 
     configs = strategy.ask()
     assert len(configs) == 27
-    scores = [get_iteration_score(c["num_total_sh_iters"], 0, **c)[1] for c in configs]
+    scores = [
+        get_iteration_score(c["extra"]["sh_num_total_iters"], 0, **c["params"])[1]
+        for c in configs
+    ]
     ckpts = [f"ckpt_1_{i}.pt" for i in range(len(configs))]
     strategy.tell(configs, scores, ckpts)
 
     configs = strategy.ask()
     assert len(configs) == 9
-    scores = [get_iteration_score(c["num_total_sh_iters"], 0, **c)[1] for c in configs]
+    scores = [
+        get_iteration_score(c["extra"]["sh_num_total_iters"], 0, **c["params"])[1]
+        for c in configs
+    ]
     ckpts = [f"ckpt_2_{i}.pt" for i in range(len(configs))]
     strategy.tell(configs, scores, ckpts)
 
     configs = strategy.ask()
     assert len(configs) == 3
-    scores = [get_iteration_score(c["num_total_sh_iters"], 0, **c)[1] for c in configs]
+    scores = [
+        get_iteration_score(c["extra"]["sh_num_total_iters"], 0, **c["params"])[1]
+        for c in configs
+    ]
     ckpts = [f"ckpt_3_{i}.pt" for i in range(len(configs))]
     strategy.tell(configs, scores, ckpts)
 
     configs = strategy.ask()
     assert type(configs) == dict
     configs = [configs]
-    scores = [get_iteration_score(c["num_total_sh_iters"], 0, **c)[1] for c in configs]
+    scores = [
+        get_iteration_score(c["extra"]["sh_num_total_iters"], 0, **c["params"])[1]
+        for c in configs
+    ]
     ckpts = [f"ckpt_4_{i}.pt" for i in range(len(configs))]
     strategy.tell(configs, scores, ckpts)
 
     configs = strategy.ask()
     assert len(configs) == 27
-    scores = [get_iteration_score(c["num_total_sh_iters"], 0, **c)[1] for c in configs]
+    scores = [
+        get_iteration_score(c["extra"]["sh_num_total_iters"], 0, **c["params"])[1]
+        for c in configs
+    ]
     ckpts = [f"ckpt_5_{i}.pt" for i in range(len(configs))]
     strategy.tell(configs, scores, ckpts)
 

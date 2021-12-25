@@ -27,10 +27,21 @@ def save_json(obj, filename: str):
 
 
 def save_yaml(obj, filename: str):
-    data_dump = json.dumps(obj, indent=1, cls=CustomJSONizer)
-    data_dump_dict = ast.literal_eval(data_dump)
-    with open(filename, "w") as f:
-        yaml.dump(data_dump_dict, f, default_flow_style=False)
+    # Case 1: Save list of logged data
+    if type(obj) == list:
+        data = {}
+        for i in range(len(obj)):
+            e_id = obj[i]["eval_id"]
+            data[f"{e_id}"] = obj[i]
+        data_dump = json.dumps(data, indent=1, cls=CustomJSONizer)
+        with open(filename, "w") as f:
+            yaml.dump(json.loads(data_dump), f, default_flow_style=False)
+    # Case 2: Save configuration to file
+    else:
+        data = json.dumps(obj, indent=1, cls=CustomJSONizer)
+        data_dump = ast.literal_eval(data)
+        with open(filename, "w") as f:
+            yaml.dump(data_dump, f, default_flow_style=False)
 
 
 def save_log(obj, filename: str):
@@ -73,8 +84,12 @@ def load_log(filename: str):
 def load_yaml(filename: str):
     """Load in YAML file."""
     with open(filename) as file:
-        yaml_config = yaml.load(file, Loader=yaml.FullLoader)
-    return yaml_config
+        yaml_temp = yaml.load(file, Loader=yaml.FullLoader)
+    # From dict of evals to list of evals
+    yaml_log = []
+    for k in yaml_temp.keys():
+        yaml_log.append(yaml_temp[k])
+    return yaml_log
 
 
 def load_json(filename: str):
