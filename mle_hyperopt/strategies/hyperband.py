@@ -44,10 +44,11 @@ class HyperbandSearch(Strategy):
         self.s_max = math.floor(logeta(self.search_config["max_resource"]))
         self.B = (self.s_max + 1) * self.search_config["max_resource"]
         self.sh_num_arms = [
-            math.ceil(
-                self.B
-                / self.search_config["max_resource"]
-                * ((self.search_config["eta"] ** s) / (s + 1))
+            int(
+                math.ceil(
+                    int(self.B / self.search_config["max_resource"] / (s + 1))
+                    * self.search_config["eta"] ** s
+                )
             )
             for s in reversed(range(self.s_max + 1))
         ]
@@ -68,7 +69,7 @@ class HyperbandSearch(Strategy):
             integer=self.integer,
             categorical=self.categorical,
             search_config={
-                "budget": self.sh_budgets[self.hb_counter],
+                "min_budget": self.sh_budgets[self.hb_counter],
                 "num_arms": self.sh_num_arms[self.hb_counter],
                 "halving_coeff": self.search_config["eta"],
             },
@@ -82,7 +83,12 @@ class HyperbandSearch(Strategy):
     def ask_search(self, batch_size: int):
         """Get proposals to eval next (in batches) - Random Sampling."""
         param_batch = self.sub_strategy.ask()
+        if type(param_batch) != list:
+            param_batch = [param_batch]
+
         # Add Hyperband iter counter to extra dictionary
+        for c in param_batch:
+            c["hb_counter"] = self.hb_counter
         return param_batch
 
     def tell_search(
@@ -103,7 +109,7 @@ class HyperbandSearch(Strategy):
                 integer=self.integer,
                 categorical=self.categorical,
                 search_config={
-                    "budget": self.sh_budgets[self.hb_counter],
+                    "min_budget": self.sh_budgets[self.hb_counter],
                     "num_arms": self.sh_num_arms[self.hb_counter],
                     "halving_coeff": self.search_config["eta"],
                 },
@@ -118,16 +124,8 @@ class HyperbandSearch(Strategy):
     ):
         """Log info specific to search strategy."""
         strat_data = []
-        num_iters = self.iters_per_batch[self.sh_counter - 1]
-        num_prev_iters = self.iters_per_batch[self.sh_counter - 2]
         for i in range(len(batch_proposals)):
             c_data = {}
-            if i in self.haved_ids:
-                c_data["hb_continued"] = True
-            else:
-                c_data["hb_continued"] = False
-            c_data["hb_counter"] = self.sh_counter - 1
-            c_data["hb_total_iters"] = num_iters
-            c_data["hb_add_iters"] = num_iters - num_prev_iters
+            c_data["hb_counter"] = self.hb_counter - 1
             strat_data.append(c_data)
         return strat_data

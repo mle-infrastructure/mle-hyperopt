@@ -34,14 +34,14 @@ class SuccessiveHalvingSearch(Strategy):
             verbose,
         )
         self.space = RandomSpace(real, integer, categorical)
-        for k in ["budget", "num_arms", "halving_coeff"]:
+        for k in ["min_budget", "num_arms", "halving_coeff"]:
             assert k in self.search_config.keys()
 
         # Pre-compute number of configs & iters per config across SH batches
         def logeta(x):
             return math.log(x) / math.log(self.search_config["halving_coeff"])
 
-        self.num_batches = math.ceil(logeta(self.search_config["num_arms"]))
+        self.num_batches = math.floor(logeta(self.search_config["num_arms"]) + 1)
         self.evals_per_batch = [self.search_config["num_arms"]]
         for i in range(self.num_batches - 1):
             self.evals_per_batch.append(
@@ -51,14 +51,15 @@ class SuccessiveHalvingSearch(Strategy):
             )
         self.iters_per_batch = []
         for i in range(self.num_batches):
-            self.iters_per_batch.append(
-                math.floor(
-                    self.search_config["budget"]
-                    / (self.evals_per_batch[i] * self.num_batches)
-                )
+            iter_batch = (
+                self.search_config["min_budget"]
+                * self.search_config["halving_coeff"] ** i
             )
+            # Cap off maximum update budget to spend on a single iteration
+            if "max_budget" in self.search_config.keys():
+                iter_batch = min(iter_batch, self.search_config["max_budget"])
+            self.iters_per_batch.append(iter_batch)
         self.sh_counter = 0
-
         # Add start-up message printing the search space
         if self.verbose:
             self.print_hello()
@@ -107,20 +108,21 @@ class SuccessiveHalvingSearch(Strategy):
     ):
         """Perform post-iteration clean-up - no surrogate model."""
         self.sh_counter += 1
-        num_configs = self.evals_per_batch[self.sh_counter]
+        if not self.completed:
+            num_configs = self.evals_per_batch[self.sh_counter]
 
-        # Sort last performances & set haved configs & corresponding ckpts
-        sorted_idx = np.argsort(perf_measures)
-        if not self.maximize_objective:
-            best_idx = sorted_idx[:num_configs]
-        else:
-            best_idx = sorted_idx[::-1][:num_configs]
-        self.haved_ids = best_idx
-        self.haved_configs = [batch_proposals[idx] for idx in best_idx]
-        if ckpt_paths is not None:
-            self.haved_ckpt = [ckpt_paths[idx] for idx in best_idx]
-        else:
-            self.haved_ckpt = None
+            # Sort last performances & set haved configs & corresponding ckpts
+            sorted_idx = np.argsort(perf_measures)
+            if not self.maximize_objective:
+                best_idx = sorted_idx[:num_configs]
+            else:
+                best_idx = sorted_idx[::-1][:num_configs]
+            self.haved_ids = best_idx
+            self.haved_configs = [batch_proposals[idx] for idx in best_idx]
+            if ckpt_paths is not None:
+                self.haved_ckpt = [ckpt_paths[idx] for idx in best_idx]
+            else:
+                self.haved_ckpt = None
 
     def log_search(
         self,
