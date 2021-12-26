@@ -28,6 +28,8 @@ def main(experiment_dir: str, config_fname: str, seed_id: int):
     # Reload model checkpoint if provided in config SH
     if "sh_ckpt" in train_config["extra"].keys():
         model.load_state_dict(torch.load(train_config.extra.sh_ckpt))
+    elif "pbt_ckpt" in train_config["extra"].keys():
+        model.load_state_dict(torch.load(train_config.extra.sh_ckpt))
 
     loss_fn = torch.nn.MSELoss(reduction="sum")
 

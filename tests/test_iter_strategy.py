@@ -185,5 +185,5 @@ def test_pbt():
     theta_log.append(new_theta)
 
     ckpts = ["ckpt1.pt", "ckpt2.pt"]
-    # strategy.tell(configs, values, ckpts)
+    strategy.tell(configs, values, ckpts)
     return
