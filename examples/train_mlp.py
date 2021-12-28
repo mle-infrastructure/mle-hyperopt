@@ -15,7 +15,6 @@ def main(experiment_dir: str, config_fname: str, seed_id: int):
         time_to_track=["num_steps"],
         what_to_track=["loss"],
         model_type="torch",
-        # verbose=True,
     )
 
     x = torch.linspace(-math.pi, math.pi, 2000)

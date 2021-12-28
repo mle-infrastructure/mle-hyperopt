@@ -14,12 +14,12 @@
 
 ### Fixed
 
-## [v0.0.4] - 12/10/2021
+## [v0.0.4] - [12/10/2021]
 
 ### Fixed
 - Bug Fix Data Types & internal refactor 🔺 for internal talk.
 
-## [v0.0.3] - 10/24/2021
+## [v0.0.3] - [10/24/2021]
 
 ### Added
 - Adds rich logging to all console print statements.
@@ -31,7 +31,7 @@
 ### Fixed
 - Fixes `CoordinateSearch` active grid search dimension updating. We have to account for the fact that previous coordinates are not evaluated again after switching the active variable.
 
-## [v0.0.2] - 10/20/2021
+## [v0.0.2] - [10/20/2021]
 
 ### Added
 - Adds search space refinement for nevergrad and smbo search strategies via `refine_after` and `refine_top_k`:
@@ -61,7 +61,7 @@ strategy = SMBOSearch(
 - Fixes import bug when using PyPi installation.
 
 
-## [v0.0.1] - 10/16/2021
+## [v0.0.1] - [10/16/2021]
 
 ### Added
 - Base API implementation:

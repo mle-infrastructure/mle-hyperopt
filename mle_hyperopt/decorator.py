@@ -6,6 +6,9 @@ from .strategies import (
     SMBOSearch,
     NevergradSearch,
     CoordinateSearch,
+    SuccessiveHalvingSearch,
+    HyperbandSearch,
+    PBTSearch,
 )
 
 
@@ -32,23 +35,45 @@ def hyperopt(
     strategy = distance_from_circle()
     strategy.log
     """
+    assert strategy_type in [
+        "Random",
+        "Grid",
+        "SMBO",
+        "Nevergrad",
+        "Coordinate",
+        "SuccessiveHalving",
+        "Hyperband",
+        "PBT",
+    ]
 
-    if strategy_type == "random":
+    if strategy_type == "Random":
         strategy = RandomSearch(
             real, integer, categorical, search_config, maximize_objective, fixed_params
         )
-    elif strategy_type == "grid":
+    elif strategy_type == "Grid":
         strategy = GridSearch(real, integer, categorical, fixed_params)
-    elif strategy_type == "smbo":
+    elif strategy_type == "SMBO":
         strategy = SMBOSearch(
             real, integer, categorical, search_config, maximize_objective, fixed_params
         )
-    elif strategy_type == "nevergrad":
+    elif strategy_type == "Nevergrad":
         strategy = NevergradSearch(
             real, integer, categorical, search_config, maximize_objective, fixed_params
         )
-    elif strategy_type == "coordinate":
+    elif strategy_type == "Coordinate":
         strategy = CoordinateSearch(
+            real, integer, categorical, search_config, maximize_objective, fixed_params
+        )
+    elif strategy_type == "SuccessiveHalving":
+        strategy = SuccessiveHalvingSearch(
+            real, integer, categorical, search_config, maximize_objective, fixed_params
+        )
+    elif strategy_type == "Hyperband":
+        strategy = HyperbandSearch(
+            real, integer, categorical, search_config, maximize_objective, fixed_params
+        )
+    elif strategy_type == "PBT":
+        strategy = PBTSearch(
             real, integer, categorical, search_config, maximize_objective, fixed_params
         )
 
@@ -57,7 +82,7 @@ def hyperopt(
         def wrapper(*args, **kwargs):
             for iter_id in range(num_search_iters):
                 config = strategy.ask()
-                result = function(config)
+                result = function(config, *args, **kwargs)
                 strategy.tell(config, [result])
             return strategy
 

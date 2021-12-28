@@ -3,8 +3,16 @@ import os
 import numpy as np
 import pandas as pd
 import numbers
-from .utils import load_log, save_log, load_strategy, save_strategy, write_configs
-from .comms import welcome_message, update_message, ranking_message
+from .utils import (
+    load_log,
+    save_log,
+    load_strategy,
+    save_strategy,
+    write_configs,
+    welcome_message,
+    update_message,
+    ranking_message,
+)
 import matplotlib.pyplot as plt
 import seaborn as sns
 from rich.console import Console

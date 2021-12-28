@@ -159,9 +159,10 @@ You can run the test suite via `python -m pytest -vv tests/`. If you find a bug 
 - [x] Fix logging message when log is stored
 - [x] Add save option for best plot
 - [x] Make json serializer more robust for numpy data types
+- [x] Add `args, kwargs` into decorator
+- [x] Add Successive Halving
+- [x] Add HyperBand
 - [ ] Make sure search space refinement works for different batch sizes
-- [ ] Add `args, kwargs` into decorator
 - [ ] Check why SMBO can propose same config multiple times. Add Hutter reference.
-- [ ] Add HyperBand
 - [ ] Add synchronous PBT
-- [ ] Update example to include `mle-scheduler`
+- [ ] Update example to include `mle-scheduler` & iterative search methods.
