@@ -76,12 +76,68 @@ cd mle-hyperopt
 pip install -e .
 ```
 
+## Search Method Highlights 🔎
+
+### Grid Search 🟥
+
+```python
+strategy = GridSearch(
+    real={"lrate": {"begin": 0.1,
+                    "end": 0.5,
+                    "bins": 5}},
+    integer={"batch_size": {"begin": 1,
+                            "end": 5,
+                            "bins": 1}},
+    categorical={"arch": ["mlp", "cnn"]},
+    fixed_params={"momentum": 0.9})
+
+configs = strategy.ask()
+```
+
+### Hyperband 🎸
+
+```python
+strategy = HyperbandSearch(
+    real={"lrate": {"begin": 0.1,
+                    "end": 0.5,
+                    "prior": "uniform"}},
+    integer={"batch_size": {"begin": 1,
+                            "end": 5,
+                            "prior": "log-uniform"}},
+    categorical={"arch": ["mlp", "cnn"]},
+    search_config={"max_resource": 81,
+                   "eta": 3},
+    seed_id=42,
+    verbose=True)
+
+configs = strategy.ask()
+```
+
+### Population-Based Training 🦎
+
+```python
+strategy = PBTSearch(
+    real={"lrate": {"begin": 0.1,
+                    "end": 0.5,
+                    "prior": "uniform"}}
+    search_config={
+        "exploit": {"strategy": "truncation", "selection_percent": 0.2},
+        "explore": {"strategy": "perturbation", "perturb_coeffs": [0.8, 1.2]},
+        "steps_until_ready": 4,
+        "num_workers": 10,
+    },
+    maximize_objective=True
+)
+
+configs = strategy.ask()
+```
+
 ## Further Options 🚴
 
 ### Saving & Reloading Logs 🏪
 
 ```python
-# Storing & reloading of results from .pkl
+# Storing & reloading of results from .json/.yaml/.pkl
 strategy.save("search_log.json")
 strategy = RandomSearch(..., reload_path="search_log.json")
 
@@ -95,7 +151,7 @@ strategy.load("search_log.json")
 ```python
 from mle_hyperopt import hyperopt
 
-@hyperopt(strategy_type="grid",
+@hyperopt(strategy_type="Grid",
           num_search_iters=25,
           real={"x": {"begin": 0., "end": 0.5, "bins": 5},
                 "y": {"begin": 0, "end": 0.5, "bins": 5}})
@@ -164,6 +220,6 @@ If you use `mle-hyperopt` in your research, please cite it as follows:
 }
 ```
 
-## Development & Milestones for Next Release
+## Development
 
 You can run the test suite via `python -m pytest -vv tests/`. If you find a bug or are missing your favourite feature, feel free to contact me [@RobertTLange](https://twitter.com/RobertTLange) or create an issue :hugs:.

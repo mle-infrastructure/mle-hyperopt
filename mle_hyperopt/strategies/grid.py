@@ -76,11 +76,11 @@ class GridSearch(Strategy):
         xy_labels: Union[None, List[str]] = ["x-label", "y-label"],
         variable_name: Union[None, str] = "Var Label",
         every_nth_tick: int = 1,
+        fname: Union[None, str] = None,
     ):
         """Plot 2D heatmap of evaluations."""
-        df = self.to_df()
         fig, ax = visualize_2D_grid(
-            df,
+            self.df,
             fixed_params,
             params_to_plot,
             target_to_plot,
@@ -90,4 +90,9 @@ class GridSearch(Strategy):
             variable_name,
             every_nth_tick,
         )
-        return fig, ax
+
+        # Save the figure if a filename was provided
+        if fname is not None:
+            fig.savefig(fname, dpi=300)
+        else:
+            return fig, ax
