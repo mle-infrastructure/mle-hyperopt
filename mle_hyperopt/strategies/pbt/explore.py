@@ -40,10 +40,10 @@ class Explore(object):
 
     def __call__(self, hyperparams: dict) -> dict:
         """Perform an exploration step."""
-        if self.strategy == "perturbation":
+        if self.explore_config["strategy"] == "perturbation":
             hyperparams = self.perturb(hyperparams)
-        elif self.strategy == "resampling":
+        elif self.explore_config["strategy"] == "resampling":
             hyperparams = self.resample()
-        elif self.strategy == "additive-noise":
+        elif self.explore_config["strategy"] == "additive-noise":
             hyperparams = self.noisify(hyperparams)
         return hyperparams

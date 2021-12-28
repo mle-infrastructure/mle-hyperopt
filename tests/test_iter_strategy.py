@@ -1,6 +1,5 @@
 from mle_hyperopt import (
     RandomSearch,
-    PBTSearch,
     SuccessiveHalvingSearch,
     HyperbandSearch,
 )
@@ -15,34 +14,6 @@ def get_iteration_score(
     train_loss = f1 + seed_id * 0.5
     test_loss = f1 + seed_id * 0.5 + np.random.uniform(0, 0.3)
     return train_loss / epoch, test_loss / epoch
-
-
-class QuadraticProblem(object):
-    def __init__(self, theta=None, lrate: float = 0.1):
-        self.theta = theta
-        if self.theta is None:
-            self.theta = np.array([[0.9, 0.9]])
-        self.lrate = lrate
-
-    def step(self, h):
-        """Perform GradAscent step on quadratic surrogate objective (max!)."""
-        surrogate_grad = -2.0 * h * self.theta
-        self.theta += self.lrate * surrogate_grad
-
-    def evaluate(self):
-        """Ground truth objective (e.g. val loss) - Jaderberg et al. 2016."""
-        return 1.2 - np.sum(self.theta ** 2)
-
-    def surrogate_objective(self, h):
-        """Surrogate objective (with hyperparams h) - Jaderberg et al. 2016."""
-        return 1.2 - np.sum(h * self.theta ** 2)
-
-    def __call__(self, hyperparams):
-        h = np.array([hyperparams["h0"], hyperparams["h1"]])
-        self.step(h)
-        exact = self.evaluate()
-        surrogate = self.surrogate_objective(h)
-        return exact, surrogate, self.theta
 
 
 def test_store_ckpt():
@@ -157,33 +128,3 @@ def test_hyperband():
     ]
     ckpts = [f"ckpt_5_{i}.pt" for i in range(len(configs))]
     strategy.tell(configs, scores, ckpts)
-
-
-def test_pbt():
-    strategy = PBTSearch(
-        real={
-            "h0": {"begin": 0.0, "end": 1.0, "prior": "uniform"},
-            "h1": {"begin": 0.0, "end": 1.0, "prior": "uniform"},
-        },
-        search_config={
-            "exploit": {"strategy": "truncation", "truncation_selection": 0.2},
-            "explore": {"strategy": "additive-noise", "noise_scale": 0.1},
-            "steps_until_ready": 1,
-            "num_workers": 2,
-        },
-    )
-    configs = strategy.ask()
-    values = []
-    theta_log = [[np.array([[0.9, 0.9]]), np.array([[0.9, 0.9]])]]
-    new_theta = []
-    for i in range(2):
-        exact, surrogate, theta = QuadraticProblem(theta_log[-1][i])(
-            configs[i]["params"]
-        )
-        values.append(exact)
-        new_theta.append(theta)
-    theta_log.append(new_theta)
-
-    ckpts = ["ckpt1.pt", "ckpt2.pt"]
-    strategy.tell(configs, values, ckpts)
-    return

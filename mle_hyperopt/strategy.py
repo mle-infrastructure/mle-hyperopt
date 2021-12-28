@@ -370,7 +370,8 @@ class Strategy(object):
         else:
             return fig, ax
 
-    def to_df(self):
+    @property
+    def df(self):
         """Return log as pandas dataframe."""
         flat_log = []
         for l in self.log:
@@ -380,6 +381,8 @@ class Strategy(object):
             # TODO: Add extra data stored in log
             sub_log["objective"] = l["objective"]
             sub_log.update(l["params"])
+            if "extra" in l.keys():
+                sub_log.update(l["extra"])
             flat_log.append(sub_log)
         return pd.DataFrame(flat_log)
 
