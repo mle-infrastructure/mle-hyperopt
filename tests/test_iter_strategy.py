@@ -1,6 +1,6 @@
 from mle_hyperopt import (
     RandomSearch,
-    SuccessiveHalvingSearch,
+    HalvingSearch,
     HyperbandSearch,
 )
 import numpy as np
@@ -32,7 +32,7 @@ def test_store_ckpt():
 
 
 def test_successive_halving():
-    strategy = SuccessiveHalvingSearch(
+    strategy = HalvingSearch(
         real={"lrate": {"begin": 0.1, "end": 0.5, "prior": "uniform"}},
         integer={"batch_size": {"begin": 1, "end": 5, "prior": "log-uniform"}},
         categorical={"arch": ["mlp", "cnn"]},

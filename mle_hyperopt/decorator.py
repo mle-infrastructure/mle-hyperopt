@@ -6,7 +6,7 @@ from .strategies import (
     SMBOSearch,
     NevergradSearch,
     CoordinateSearch,
-    SuccessiveHalvingSearch,
+    HalvingSearch,
     HyperbandSearch,
     PBTSearch,
 )
@@ -41,7 +41,7 @@ def hyperopt(
         "SMBO",
         "Nevergrad",
         "Coordinate",
-        "SuccessiveHalving",
+        "Halving",
         "Hyperband",
         "PBT",
     ]
@@ -64,7 +64,7 @@ def hyperopt(
         strategy = CoordinateSearch(
             real, integer, categorical, search_config, maximize_objective, fixed_params
         )
-    elif strategy_type == "SuccessiveHalving":
+    elif strategy_type == "Halving":
         strategy = SuccessiveHalvingSearch(
             real, integer, categorical, search_config, maximize_objective, fixed_params
         )

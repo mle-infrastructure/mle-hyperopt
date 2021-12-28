@@ -5,7 +5,7 @@ from .strategies import (
     SMBOSearch,
     NevergradSearch,
     CoordinateSearch,
-    SuccessiveHalvingSearch,
+    HalvingSearch,
     HyperbandSearch,
     PBTSearch,
 )
@@ -17,7 +17,7 @@ Strategies = {
     "SMBO": SMBOSearch,
     "Nevergrad": NevergradSearch,
     "Coordinate": CoordinateSearch,
-    "SuccessiveHalving": SuccessiveHalvingSearch,
+    "Halving": HalvingSearch,
     "Hyperband": HyperbandSearch,
     "PBT": PBTSearch,
 }
@@ -29,7 +29,7 @@ __all__ = [
     "SMBOSearch",
     "NevergradSearch",
     "CoordinateSearch",
-    "SuccessiveHalvingSearch",
+    "HalvingSearch",
     "HyperbandSearch",
     "PBTSearch",
     "hyperopt",
