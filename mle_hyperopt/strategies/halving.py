@@ -5,7 +5,7 @@ from ..strategy import Strategy
 from ..spaces import RandomSpace
 
 
-class SuccessiveHalvingSearch(Strategy):
+class HalvingSearch(Strategy):
     def __init__(
         self,
         real: Union[dict, None] = None,
@@ -19,7 +19,7 @@ class SuccessiveHalvingSearch(Strategy):
         seed_id: int = 42,
         verbose: bool = False,
     ):
-        self.search_name = "SuccessiveHalving"
+        self.search_name = "Halving"
         Strategy.__init__(
             self,
             real,

@@ -171,7 +171,7 @@ class Strategy(object):
 
             if (
                 proposal_clean in self.all_evaluated_params
-                and self.search_name not in ["SuccessiveHalving", "Hyperband", "PBT"]
+                and self.search_name not in ["Halving", "Hyperband", "PBT"]
             ):
                 Console().log(f"{batch_proposals[i]} was previously evaluated.")
             else:

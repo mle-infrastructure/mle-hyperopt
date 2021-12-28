@@ -1,7 +1,7 @@
 import math
 from typing import Union, List
 from ..strategy import Strategy
-from .halving import SuccessiveHalvingSearch
+from .halving import HalvingSearch
 from ..spaces import RandomSpace
 
 
@@ -60,7 +60,7 @@ class HyperbandSearch(Strategy):
         self.num_hb_loops = len(self.sh_budgets)
 
         # Define first SH Loop to evaluate
-        self.sub_strategy = SuccessiveHalvingSearch(
+        self.sub_strategy = HalvingSearch(
             real=self.real,
             integer=self.integer,
             categorical=self.categorical,
@@ -101,7 +101,7 @@ class HyperbandSearch(Strategy):
         if self.sub_strategy.completed:
             self.hb_counter += 1
             if self.hb_counter < self.num_hb_loops:
-                self.sub_strategy = SuccessiveHalvingSearch(
+                self.sub_strategy = HalvingSearch(
                     real=self.real,
                     integer=self.integer,
                     categorical=self.categorical,
