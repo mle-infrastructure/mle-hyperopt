@@ -65,7 +65,7 @@ def hyperopt(
             real, integer, categorical, search_config, maximize_objective, fixed_params
         )
     elif strategy_type == "Halving":
-        strategy = SuccessiveHalvingSearch(
+        strategy = HalvingSearch(
             real, integer, categorical, search_config, maximize_objective, fixed_params
         )
     elif strategy_type == "Hyperband":
