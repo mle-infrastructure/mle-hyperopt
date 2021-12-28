@@ -60,7 +60,7 @@ def update_message(
         "Best Overall", str(best_eval_id), str(best_eval), str(best_config)[1:-1]
     )
     if best_batch_ckpt is not None:
-        best_batch_config["ckpt"] = best_ckpt
+        best_batch_config["ckpt"] = best_batch_ckpt
     table.add_row(
         "Best in Batch",
         str(best_batch_eval_id),

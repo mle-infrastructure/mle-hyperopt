@@ -106,6 +106,8 @@ class Strategy(object):
         batch_proposals: Union[List[dict], dict],
         perf_measures: Union[List[Union[float, int]], float],
         ckpt_paths: Union[None, List[str], str] = None,
+        save: bool = False,
+        save_path: str = "search_log.yaml",
         reload: bool = False,
     ):
         """Perform post-iteration clean-up. (E.g. update surrogate model)"""
@@ -140,6 +142,10 @@ class Strategy(object):
         # Print update message
         if self.verbose and not reload:
             self.print_update(clean_prop, clean_perf, clean_ckpt)
+
+        # Save the log if desired (default to search_log.yaml in root)
+        if save:
+            self.save(save_path)
 
     def clean_data(
         self,
@@ -216,7 +222,7 @@ class Strategy(object):
     def update_search(self):
         """Update the strategy settings - e.g. refine/coord/halving switch."""
 
-    def save(self, save_path: str = "search_log.json"):
+    def save(self, save_path: str = "search_log.yaml"):
         """Store the state of the optimizer (parameters, values) as .pkl."""
         fname, fext = os.path.splitext(save_path)
         if fext in [".yaml", ".json"]:
@@ -249,10 +255,13 @@ class Strategy(object):
                 for iter in reloaded:
                     if "ckpt" in iter.keys():
                         self.tell(
-                            [iter["params"]], [iter["objective"]], [iter["ckpt"]], True
+                            [iter["params"]],
+                            [iter["objective"]],
+                            [iter["ckpt"]],
+                            reload=True,
                         )
                     else:
-                        self.tell([iter["params"]], [iter["objective"]], None, True)
+                        self.tell([iter["params"]], [iter["objective"]], reload=True)
             elif fext == ".pkl":
                 self.__dict__ = load_strategy(reload_path).__dict__
 
@@ -260,10 +269,13 @@ class Strategy(object):
             for iter in reload_list:
                 if "ckpt" in iter.keys():
                     self.tell(
-                        [iter["params"]], [iter["objective"]], [iter["ckpt"]], True
+                        [iter["params"]],
+                        [iter["objective"]],
+                        [iter["ckpt"]],
+                        reload=True,
                     )
                 else:
-                    self.tell([iter["params"]], [iter["objective"]], None, True)
+                    self.tell([iter["params"]], [iter["objective"]], reload=True)
 
         if reload_path is not None or reload_list is not None:
             Console().log(

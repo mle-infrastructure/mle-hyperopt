@@ -57,6 +57,7 @@ class HyperbandSearch(Strategy):
             for s in reversed(range(self.s_max + 1))
         ]
         self.hb_counter = 0
+        self.num_hb_loops = len(self.sh_budgets)
 
         # Define first SH Loop to evaluate
         self.sub_strategy = SuccessiveHalvingSearch(
@@ -99,17 +100,18 @@ class HyperbandSearch(Strategy):
         """Check whether to switch to next successive halving strategy."""
         if self.sub_strategy.completed:
             self.hb_counter += 1
-            self.sub_strategy = SuccessiveHalvingSearch(
-                real=self.real,
-                integer=self.integer,
-                categorical=self.categorical,
-                search_config={
-                    "min_budget": self.sh_budgets[self.hb_counter],
-                    "num_arms": self.sh_num_arms[self.hb_counter],
-                    "halving_coeff": self.search_config["eta"],
-                },
-                seed_id=self.hb_counter + self.seed_id,
-            )
+            if self.hb_counter < self.num_hb_loops:
+                self.sub_strategy = SuccessiveHalvingSearch(
+                    real=self.real,
+                    integer=self.integer,
+                    categorical=self.categorical,
+                    search_config={
+                        "min_budget": self.sh_budgets[self.hb_counter],
+                        "num_arms": self.sh_num_arms[self.hb_counter],
+                        "halving_coeff": self.search_config["eta"],
+                    },
+                    seed_id=self.hb_counter + self.seed_id,
+                )
 
     def log_search(
         self,

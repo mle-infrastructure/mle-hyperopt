@@ -116,17 +116,3 @@ class PBTSearch(Strategy):
     def update_search(self):
         """Update PBT search counter."""
         self.pbt_step_counter += 1
-
-    def log_search(
-        self,
-        batch_proposals: list,
-        perf_measures: list,
-        ckpt_paths: Union[None, List[str], str] = None,
-    ):
-        """Log info specific to search strategy."""
-        strat_data = []
-        for i in range(len(batch_proposals)):
-            c_data = {}
-            # TODO: Add copy info
-            strat_data.append(c_data)
-        return strat_data

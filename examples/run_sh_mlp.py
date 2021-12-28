@@ -2,8 +2,8 @@ from mle_hyperopt import SuccessiveHalvingSearch
 from mle_scheduler import MLEQueue
 
 
-def main():
-    """ Run Successive Halving """
+def main(hyperband: bool = False):
+    """Run Successive Halving"""
     strategy = SuccessiveHalvingSearch(
         real={"lrate": {"begin": 1e-08, "end": 1e-06, "prior": "uniform"}},
         search_config={"min_budget": 1, "num_arms": 20, "halving_coeff": 2},
@@ -26,7 +26,7 @@ def main():
             automerge_configs=True,
         )
         queue.run()
-        if sh_iter + 1 != strategy.num_batches:
+        if len(config_fnames) > 1:
             scores = [queue.log[r].stats.loss.mean[-1] for r in queue.mle_run_ids]
             ckpts = [queue.log[r].meta.model_ckpt for r in queue.mle_run_ids]
         else:

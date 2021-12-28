@@ -24,15 +24,20 @@ def main(experiment_dir: str, config_fname: str, seed_id: int):
 
     model = torch.nn.Sequential(torch.nn.Linear(3, 1), torch.nn.Flatten(0, 1))
 
-    # Reload model checkpoint if provided in config SH
+    # Reload model checkpoint if provided in config SH/PBT cases
     if "sh_ckpt" in train_config["extra"].keys():
         model.load_state_dict(torch.load(train_config.extra.sh_ckpt))
     elif "pbt_ckpt" in train_config["extra"].keys():
-        model.load_state_dict(torch.load(train_config.extra.sh_ckpt))
+        model.load_state_dict(torch.load(train_config.extra.pbt_ckpt))
 
     loss_fn = torch.nn.MSELoss(reduction="sum")
 
-    for t in range(train_config.extra.sh_num_add_iters * 50):
+    if "sh_num_add_iters" in train_config.extra.keys():
+        num_gd_steps = train_config.extra.sh_num_add_iters * 50
+    else:
+        num_gd_steps = train_config.extra.pbt_num_add_iters * 50
+
+    for t in range(num_gd_steps):
         y_pred = model(xx)
         loss = loss_fn(y_pred, y)
 
