@@ -18,6 +18,7 @@ class GridSearch(Strategy):
         seed_id: int = 42,
         verbose: bool = False,
     ):
+        self.search_name = "Grid"
         Strategy.__init__(
             self,
             real,
@@ -36,8 +37,6 @@ class GridSearch(Strategy):
         self.space = GridSpace(real, integer, categorical)
         self.num_param_configs = len(self.space)
         self.grid_counter = self.eval_counter
-        self.search_name = "Gird Search"
-
         # Add start-up message printing the search space
         if self.verbose:
             self.print_hello()
@@ -46,24 +45,22 @@ class GridSearch(Strategy):
         """Get proposals to eval next (in batches) - Grid Search"""
         # Set grid counter to eval_counter in order ensure while
         # That results for grid configuration are collected before continuation
-        self.grid_counter = self.eval_counter
+        grid_counter = self.eval_counter
         param_batch = []
         # Sample a new configuration for each eval in the batch
-        while (
-            len(param_batch) < batch_size and self.grid_counter < self.num_param_configs
-        ):
+        while len(param_batch) < batch_size and grid_counter < self.num_param_configs:
             # Get parameter batch from the grid
-            proposal_params = self.space.sample(self.grid_counter)
+            proposal_params = self.space.sample(grid_counter)
             if proposal_params not in (self.all_evaluated_params + param_batch):
                 # Add parameter proposal to the batch list
                 param_batch.append(proposal_params)
-                self.grid_counter += 1
+                grid_counter += 1
             else:
                 # Otherwise continue sampling proposals
                 continue
         return param_batch
 
-    def tell_search(self, batch_proposals: list, perf_measures: list):
+    def update_search(self):
         """Update search log data - Grid Search"""
         # Make sure that the grid_counter equals the eval_counter
         # This is only relevant if we load in new log data mid-search
@@ -79,11 +76,11 @@ class GridSearch(Strategy):
         xy_labels: Union[None, List[str]] = ["x-label", "y-label"],
         variable_name: Union[None, str] = "Var Label",
         every_nth_tick: int = 1,
+        fname: Union[None, str] = None,
     ):
         """Plot 2D heatmap of evaluations."""
-        df = self.to_df()
         fig, ax = visualize_2D_grid(
-            df,
+            self.df,
             fixed_params,
             params_to_plot,
             target_to_plot,
@@ -93,4 +90,9 @@ class GridSearch(Strategy):
             variable_name,
             every_nth_tick,
         )
-        return fig, ax
+
+        # Save the figure if a filename was provided
+        if fname is not None:
+            fig.savefig(fname, dpi=300)
+        else:
+            return fig, ax

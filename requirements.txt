@@ -6,3 +6,5 @@ scikit-optimize
 nevergrad
 scikit-learn==0.24.2
 rich
+pickle5
+pyyaml>=5.1

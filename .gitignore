@@ -1,8 +1,12 @@
+*.pkl
 mle_play.py
 eval_0.yaml
 eval_1.yaml
 search_log.pkl
 search_log.json
+logs_hb
+logs_sh
+logs_pbt
 *.gif
 *.zip
 .vim-arsync

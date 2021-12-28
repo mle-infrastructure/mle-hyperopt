@@ -2,8 +2,8 @@
 [![Pyversions](https://img.shields.io/pypi/pyversions/mle-hyperopt.svg?style=flat-square)](https://pypi.python.org/pypi/mle-hyperopt)
 [![PyPI version](https://badge.fury.io/py/mle-hyperopt.svg)](https://badge.fury.io/py/mle-hyperopt)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-[![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/mle-infrastructure/mle-hyperopt/blob/main/examples/getting_started.ipynb)
 [![codecov](https://codecov.io/gh/mle-infrastructure/mle-hyperopt/branch/main/graph/badge.svg)](https://codecov.io/gh/mle-infrastructure/mle-hyperopt)
+[![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/mle-infrastructure/mle-hyperopt/blob/main/examples/getting_started.ipynb)
 <a href="https://github.com/mle-infrastructure/mle-hyperopt/blob/main/docs/logo_transparent.png?raw=true"><img src="https://github.com/mle-infrastructure/mle-hyperopt/blob/main/docs/logo_transparent.png?raw=true" width="200" align="right" /></a>
 
 The `mle-hyperopt` package provides a simple and intuitive API for hyperparameter optimization of your Machine Learning Experiment (MLE) pipeline. It supports real, integer & categorical search variables and single- or multi-objective optimization.
@@ -11,7 +11,7 @@ The `mle-hyperopt` package provides a simple and intuitive API for hyperparamete
 Core features include the following:
 
 - **API Simplicity**: `strategy.ask()`, `strategy.tell()` interface & space definition.
-- **Strategy Diversity**: Grid, random, coordinate search, SMBO & wrapping around FAIR's [`nevergrad`](https://facebookresearch.github.io/nevergrad/).
+- **Strategy Diversity**: Grid, random, coordinate search, SMBO & wrapping FAIR's [`nevergrad`](https://facebookresearch.github.io/nevergrad/), Successive Halving, Hyperband, Population-Based Training.
 - **Search Space Refinement** based on the top performing configs via `strategy.refine(top_k=10)`.
 - **Export of configurations** to execute via e.g. `python train.py --config_fname config.yaml`.
 - **Storage & reload search logs** via `strategy.save(<log_fname>)`,  `strategy.load(<log_fname>)`.
@@ -45,8 +45,11 @@ strategy.tell(configs, values)
 |<img src="https://github.com/mle-infrastructure/mle-hyperopt/blob/main/docs/grid.png?raw=true" alt="drawing" width="65"/>|  `GridSearch`          |  Search over list of discrete values  | - |
 |<img src="https://github.com/mle-infrastructure/mle-hyperopt/blob/main/docs/random.png?raw=true" alt="drawing" width="65"/>|  `RandomSearch`        |  Random search over variable ranges         | `refine_after`, `refine_top_k` |
 |<img src="https://github.com/mle-infrastructure/mle-hyperopt/blob/main/docs/coordinate.png?raw=true" alt="drawing" width="65"/>|  `CoordinateSearch`    |  Coordinate-wise optimization with fixed defaults | `order`, `defaults`
-|<img src="https://github.com/mle-infrastructure/mle-hyperopt/blob/main/docs/smbo.png?raw=true" alt="drawing" width="65"/>|  `SMBOSearch`          |  Sequential model-based optimization        | `base_estimator`, `acq_function`, `n_initial_points`
+|<img src="https://github.com/mle-infrastructure/mle-hyperopt/blob/main/docs/smbo.png?raw=true" alt="drawing" width="65"/>|  `SMBOSearch`          |  Sequential model-based optimization   [(Hutter et al., 2011)](https://ml.informatik.uni-freiburg.de/wp-content/uploads/papers/11-LION5-SMAC.pdf)    | `base_estimator`, `acq_function`, `n_initial_points`
 |<img src="https://github.com/mle-infrastructure/mle-hyperopt/blob/main/docs/nevergrad.png?raw=true" alt="drawing" width="65"/>|  `NevergradSearch`     |  Multi-objective [nevergrad](https://facebookresearch.github.io/nevergrad/) wrapper | `optimizer`, `budget_size`, `num_workers`
+|<img src="https://github.com/mle-infrastructure/mle-hyperopt/blob/main/docs/halving.png?raw=true" alt="drawing" width="50"/>|  `SuccessiveHalvingSearch`     | Successive Halving [(Karmin et al., 2013)](https://proceedings.mlr.press/v28/karnin13.html) | `num_arms`, `budget`
+|<img src="https://github.com/mle-infrastructure/mle-hyperopt/blob/main/docs/hyperband.png?raw=true" alt="drawing" width="50"/>|  `HyperbandSearch`     | Hyperband [(Li et al., 2018)](https://arxiv.org/pdf/1603.06560.pdf) | `max_resource`, `eta`
+|<img src="https://github.com/mle-infrastructure/mle-hyperopt/blob/main/docs/pbt.png?raw=true" alt="drawing" width="50"/>|  `PBTSearch`     | Population-Based Training [(Jaderberg et al., 2017)](https://arxiv.org/pdf/1711.09846.pdf) | `explore`, `exploit`
 
 ### Variable Types & Hyperparameter Spaces 🌍
 
@@ -73,12 +76,68 @@ cd mle-hyperopt
 pip install -e .
 ```
 
+## Search Method Highlights 🔎
+
+### Grid Search 🟥
+
+```python
+strategy = GridSearch(
+    real={"lrate": {"begin": 0.1,
+                    "end": 0.5,
+                    "bins": 5}},
+    integer={"batch_size": {"begin": 1,
+                            "end": 5,
+                            "bins": 1}},
+    categorical={"arch": ["mlp", "cnn"]},
+    fixed_params={"momentum": 0.9})
+
+configs = strategy.ask()
+```
+
+### Hyperband 🎸
+
+```python
+strategy = HyperbandSearch(
+    real={"lrate": {"begin": 0.1,
+                    "end": 0.5,
+                    "prior": "uniform"}},
+    integer={"batch_size": {"begin": 1,
+                            "end": 5,
+                            "prior": "log-uniform"}},
+    categorical={"arch": ["mlp", "cnn"]},
+    search_config={"max_resource": 81,
+                   "eta": 3},
+    seed_id=42,
+    verbose=True)
+
+configs = strategy.ask()
+```
+
+### Population-Based Training 🦎
+
+```python
+strategy = PBTSearch(
+    real={"lrate": {"begin": 0.1,
+                    "end": 0.5,
+                    "prior": "uniform"}}
+    search_config={
+        "exploit": {"strategy": "truncation", "selection_percent": 0.2},
+        "explore": {"strategy": "perturbation", "perturb_coeffs": [0.8, 1.2]},
+        "steps_until_ready": 4,
+        "num_workers": 10,
+    },
+    maximize_objective=True
+)
+
+configs = strategy.ask()
+```
+
 ## Further Options 🚴
 
 ### Saving & Reloading Logs 🏪
 
 ```python
-# Storing & reloading of results from .pkl
+# Storing & reloading of results from .json/.yaml/.pkl
 strategy.save("search_log.json")
 strategy = RandomSearch(..., reload_path="search_log.json")
 
@@ -92,7 +151,7 @@ strategy.load("search_log.json")
 ```python
 from mle_hyperopt import hyperopt
 
-@hyperopt(strategy_type="grid",
+@hyperopt(strategy_type="Grid",
           num_search_iters=25,
           real={"x": {"begin": 0., "end": 0.5, "bins": 5},
                 "y": {"begin": 0, "end": 0.5, "bins": 5}})
@@ -147,15 +206,20 @@ strategy.refine(top_k=2)
 
 Note that the search space refinement is only implemented for random, SMBO and nevergrad-based search strategies.
 
-## Development & Milestones for Next Release
+
+### Citing the MLE-Infrastructure ✏️
+
+If you use `mle-hyperopt` in your research, please cite it as follows:
+
+```
+@software{mle_infrastructure2021github,
+  author = {Robert Tjarko Lange},
+  title = {{MLE-Infrastructure}: A Set of Lightweight Tools for Distributed Machine Learning Experimentation},
+  url = {http://github.com/mle-infrastructure},
+  year = {2021},
+}
+```
+
+## Development
 
 You can run the test suite via `python -m pytest -vv tests/`. If you find a bug or are missing your favourite feature, feel free to contact me [@RobertTLange](https://twitter.com/RobertTLange) or create an issue :hugs:.
-
-- [x] Robust type checking with `isinstance(self.log[0]["objective"], (float, int, np.integer, np.float))`
-- [x] Add `improvement` method indicating if score is better than best stored one
-- [x] Fix logging message when log is stored
-- [x] Add save option for best plot
-- [x] Make json serializer more robust for numpy data types
-- [ ] Make sure search space refinement works for different batch sizes
-- [ ] Add `args, kwargs` into decorator
-- [ ] Check why SMBO can propose same config multiple times. Add Hutter reference.

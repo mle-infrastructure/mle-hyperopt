@@ -1,9 +1,18 @@
 from typing import Union, List
+import os
 import numpy as np
 import pandas as pd
 import numbers
-from .utils import load_json, save_json, write_configs_to_file
-from .comms import welcome_message, update_message, ranking_message
+from .utils import (
+    load_log,
+    save_log,
+    load_strategy,
+    save_strategy,
+    write_configs,
+    welcome_message,
+    update_message,
+    ranking_message,
+)
 import matplotlib.pyplot as plt
 import seaborn as sns
 from rich.console import Console
@@ -51,28 +60,15 @@ class Strategy(object):
         # Set random seed for reproduction for all strategies
         np.random.seed(self.seed_id)
 
-        # Set up search space refinement
-        if self.search_config is not None:
-            if "refine_top_k" in self.search_config.keys():
-                self.refine_counter = 0
-                assert self.search_config["refine_top_k"] > 1
-                self.refine_after = self.search_config["refine_after"]
-                # Make sure that refine iteration is list
-                if type(self.refine_after) == int:
-                    self.refine_after = [self.refine_after]
-                self.refine_top_k = self.search_config["refine_top_k"]
-                self.last_refined = 0
-            else:
-                self.refine_after = None
-        else:
-            self.refine_after = None
+        # Set up the search strategy settings
+        self.setup_search()
 
         # Reload previously stored search data
         self.load(reload_path, reload_list)
 
     def ask(
         self,
-        batch_size: int = 1,
+        batch_size: Union[int, None] = 1,
         store: bool = False,
         config_fnames: Union[None, List[str]] = None,
     ):
@@ -95,24 +91,23 @@ class Strategy(object):
             else:
                 assert len(config_fnames) == len(param_batch)
             self.store_configs(param_batch, config_fnames)
-            if batch_size == 1:
+            if len(param_batch) == 1:
                 return param_batch[0], config_fnames[0]
             else:
                 return param_batch, config_fnames
         else:
-            if batch_size == 1:
+            if len(param_batch) == 1:
                 return param_batch[0]
             else:
                 return param_batch
-
-    def ask_search(self, batch_size: int):
-        """Search method-specific proposal generation."""
-        raise NotImplementedError
 
     def tell(
         self,
         batch_proposals: Union[List[dict], dict],
         perf_measures: Union[List[Union[float, int]], float],
+        ckpt_paths: Union[None, List[str], str] = None,
+        save: bool = False,
+        save_path: str = "search_log.yaml",
         reload: bool = False,
     ):
         """Perform post-iteration clean-up. (E.g. update surrogate model)"""
@@ -121,56 +116,121 @@ class Strategy(object):
             batch_proposals = [batch_proposals]
         if isinstance(perf_measures, numbers.Number):
             perf_measures = [perf_measures]
+        if type(ckpt_paths) == str:
+            ckpt_paths = [ckpt_paths]
 
+        log_data, clean_prop, clean_perf, clean_ckpt = self.clean_data(
+            batch_proposals, perf_measures, ckpt_paths
+        )
+
+        # Update search strategy - specific to each strategy
+        self.tell_search(clean_prop, clean_perf, clean_ckpt)
+
+        # Update the log with additional search result data - merge dicts
+        strat_data = self.log_search(batch_proposals, perf_measures, ckpt_paths)
+        for i in range(len(clean_prop)):
+            if strat_data is not None:
+                if "extra" in log_data[i].keys():
+                    log_data[i]["extra"] = {**log_data[i]["extra"], **strat_data[i]}
+                else:
+                    log_data[i]["extra"] = strat_data[i]
+            self.log.append(log_data[i])
+
+        # Update the search strategy - space refinement/switches
+        self.update_search()
+
+        # Print update message
+        if self.verbose and not reload:
+            self.print_update(clean_prop, clean_perf, clean_ckpt)
+
+        # Save the log if desired (default to search_log.yaml in root)
+        if save:
+            self.save(save_path)
+
+    def clean_data(
+        self,
+        batch_proposals: Union[List[dict], dict],
+        perf_measures: Union[List[Union[float, int]], float],
+        ckpt_paths: Union[None, List[str], str] = None,
+    ):
+        """Remove duplicate evals (reload) & strategy non-relevant data."""
+        log_data, clean_proposals, clean_performance, clean_ckpt = [], [], [], []
         for i in range(len(batch_proposals)):
             # Check whether proposals were already previously added
             # If so -- ignore (and print message?)
             proposal_clean = dict(batch_proposals[i])
+
+            if "extra" in proposal_clean.keys():
+                extra_data = proposal_clean["extra"]
+                proposal_clean = proposal_clean["params"]
+            else:
+                extra_data = None
             if self.fixed_params is not None:
                 for k in self.fixed_params.keys():
                     del proposal_clean[k]
 
-            if proposal_clean in self.all_evaluated_params:
+            if (
+                proposal_clean in self.all_evaluated_params
+                and self.search_name not in ["SuccessiveHalving", "Hyperband", "PBT"]
+            ):
                 Console().log(f"{batch_proposals[i]} was previously evaluated.")
             else:
-                self.log.append(
-                    {
-                        "eval_id": self.eval_counter,
-                        "params": proposal_clean,
-                        "objective": perf_measures[i],
-                    }
-                )
+                data_to_append = {
+                    "eval_id": self.eval_counter,
+                    "params": proposal_clean,
+                    "objective": perf_measures[i],
+                }
+                if extra_data is not None:
+                    data_to_append["extra"] = extra_data
+                # Add checkpoint path to data if it is provided!
+                if ckpt_paths is not None:
+                    data_to_append["ckpt"] = ckpt_paths[i]
+                log_data.append(data_to_append)
+                clean_proposals.append(proposal_clean)
+                clean_performance.append(perf_measures[i])
+                if type(ckpt_paths) == list:
+                    clean_ckpt.append(ckpt_paths[i])
+                else:
+                    clean_ckpt = None
                 self.all_evaluated_params.append(proposal_clean)
                 self.eval_counter += 1
+        return log_data, clean_proposals, clean_performance, clean_ckpt
 
-        self.tell_search(batch_proposals, perf_measures)
-
-        # Print update message
-        if self.verbose and not reload:
-            self.print_update(batch_proposals, perf_measures)
-
-        # Refine search space boundaries after set of search iterations
-        if self.refine_after is not None:
-            # Check whether there are still refinements open
-            # And whether we have already passed last refinement point
-            if len(self.refine_after) > self.refine_counter:
-                exact = self.eval_counter == self.refine_after[self.refine_counter]
-                skip = (
-                    self.eval_counter > self.refine_after[self.refine_counter]
-                    and self.last_refined != self.refine_after[self.refine_counter]
-                )
-                if exact or skip:
-                    self.refine(self.refine_top_k)
-                    self.last_refined = self.refine_after[self.refine_counter]
-                    self.refine_counter += 1
-
-    def tell_search(self, batch_proposals: list, perf_measures: list):
-        """Search method-specific strategy update."""
+    def ask_search(self, batch_size: int):
+        """Search method-specific proposal generation."""
         raise NotImplementedError
 
-    def save(self, save_path: str = "search_log.json"):
+    def tell_search(
+        self,
+        batch_proposals: list,
+        perf_measures: list,
+        ckpt_paths: Union[None, List[str], str] = None,
+    ):
+        """Search method-specific strategy update."""
+
+    def setup_search(self):
+        """Initialize search settings at startup."""
+
+    def log_search(
+        self,
+        batch_proposals: list,
+        perf_measures: list,
+        ckpt_paths: Union[None, List[str], str] = None,
+    ):
+        """Log info specific to search strategy."""
+
+    def update_search(self):
+        """Update the strategy settings - e.g. refine/coord/halving switch."""
+
+    def save(self, save_path: str = "search_log.yaml"):
         """Store the state of the optimizer (parameters, values) as .pkl."""
-        save_json(self.log, save_path)
+        fname, fext = os.path.splitext(save_path)
+        if fext in [".yaml", ".json"]:
+            save_log(self.log, save_path)
+        elif fext == ".pkl":
+            save_strategy(self, save_path)
+        else:
+            raise ValueError("Only YAML, JSON or PKL file paths supported.")
         if self.verbose:
             Console().log(
                 f"Stored {self.eval_counter} search iterations --> {save_path}."
@@ -185,13 +245,37 @@ class Strategy(object):
         # Simply loop over param, value pairs and `tell` the strategy.
         prev_evals = int(self.eval_counter)
         if reload_path is not None:
-            reloaded = load_json(reload_path)
-            for iter in reloaded:
-                self.tell([iter["params"]], [iter["objective"]], True)
+            fname, fext = os.path.splitext(reload_path)
+            if fext in [".yaml", ".json"]:
+                if self.search_name in ["PBT", "SuccessiveHalving", "Hyperband"]:
+                    raise ValueError(
+                        "Iterative search logs can only be loaded from .pkl."
+                    )
+                reloaded = load_log(reload_path)
+                for iter in reloaded:
+                    if "ckpt" in iter.keys():
+                        self.tell(
+                            [iter["params"]],
+                            [iter["objective"]],
+                            [iter["ckpt"]],
+                            reload=True,
+                        )
+                    else:
+                        self.tell([iter["params"]], [iter["objective"]], reload=True)
+            elif fext == ".pkl":
+                self.__dict__ = load_strategy(reload_path).__dict__
 
         if reload_list is not None:
             for iter in reload_list:
-                self.tell([iter["params"]], [iter["objective"]], True)
+                if "ckpt" in iter.keys():
+                    self.tell(
+                        [iter["params"]],
+                        [iter["objective"]],
+                        [iter["ckpt"]],
+                        reload=True,
+                    )
+                else:
+                    self.tell([iter["params"]], [iter["objective"]], reload=True)
 
         if reload_path is not None or reload_list is not None:
             Console().log(
@@ -215,33 +299,50 @@ class Strategy(object):
             best_configs = [it["params"] for it in best_iters]
             best_evals = [it["objective"] for it in best_iters]
 
+            if "ckpt" in best_iters[0].keys():
+                best_ckpt = [it["ckpt"] for it in best_iters]
+            else:
+                best_ckpt = None
+
         # Multi-objective case - get pareto front
         else:
-            pareto_configs, pareto_evals = self.get_pareto_front()
+            pareto_configs, pareto_evals, pareto_ckpt = self.get_pareto_front()
             if not self.maximize_objective:
                 best_configs, best_evals = pareto_configs[:top_k], pareto_evals[:top_k]
+                if pareto_ckpt is not None:
+                    best_ckpt = pareto_ckpt[:top_k]
+                else:
+                    best_ckpt = None
             else:
                 best_configs, best_evals = (
                     pareto_configs[::-1][:top_k],
                     pareto_evals[::-1][:top_k],
                 )
+                if pareto_ckpt is not None:
+                    best_ckpt = pareto_ckpt[::-1][:top_k]
+                else:
+                    best_ckpt = None
 
             best_idx = top_k * ["-"]
 
         # Unravel retrieved lists if there is only single config
         if top_k == 1:
-            return best_idx[0], best_configs[0], best_evals[0]
+            if best_ckpt is not None:
+                ckpt_to_return = best_ckpt[0]
+            else:
+                ckpt_to_return = None
+            return best_idx[0], best_configs[0], best_evals[0], ckpt_to_return
         else:
-            return best_idx, best_configs, best_evals
+            return best_idx, best_configs, best_evals, best_ckpt
 
     def print_ranking(self, top_k: int = 5):
         """Pretty print archive of best configurations."""
-        best_idx, best_configs, best_evals = self.get_best(top_k)
+        best_idx, best_configs, best_evals, _ = self.get_best(top_k)
         ranking_message(best_idx, best_configs, best_evals)
 
     def improvement(self, score: float) -> bool:
         """Return boolean if score is better than best logged one."""
-        best_idx, best_config, best_eval = self.get_best()
+        best_idx, best_config, best_eval, _ = self.get_best()
         if self.maximize_objective:
             improved = score >= best_eval
         else:
@@ -254,7 +355,7 @@ class Strategy(object):
         config_fnames: Union[str, List[str], None] = None,
     ):
         """Store configuration as .json files to file path."""
-        write_configs_to_file(config_dicts, config_fnames)
+        write_configs(config_dicts, config_fnames)
 
     def plot_best(self, fname: Union[None, str] = None):
         """Plot the evolution of best model performance over evaluations."""
@@ -281,15 +382,19 @@ class Strategy(object):
         else:
             return fig, ax
 
-    def to_df(self):
+    @property
+    def df(self):
         """Return log as pandas dataframe."""
         flat_log = []
         for l in self.log:
             sub_log = {}
             sub_log["eval_id"] = l["eval_id"]
             # TODO: Add if-clause for multi-objective list case
+            # TODO: Add extra data stored in log
             sub_log["objective"] = l["objective"]
             sub_log.update(l["params"])
+            if "extra" in l.keys():
+                sub_log.update(l["extra"])
             flat_log.append(sub_log)
         return pd.DataFrame(flat_log)
 
@@ -308,10 +413,13 @@ class Strategy(object):
         welcome_message(space_data, print_out)
 
     def print_update(
-        self, batch_proposals: List[dict], perf_measures: List[Union[float, int]]
+        self,
+        batch_proposals: List[dict],
+        perf_measures: List[Union[float, int]],
+        ckpt_paths: Union[None, List[str], str] = None,
     ):
         """Print strategy update."""
-        best_eval_id, best_config, best_eval = self.get_best(top_k=1)
+        best_eval_id, best_config, best_eval, best_ckpt = self.get_best(top_k=1)
         if not self.maximize_objective:
             best_batch_idx = np.argmin(perf_measures)
         else:
@@ -322,15 +430,21 @@ class Strategy(object):
             batch_proposals[best_batch_idx],
             perf_measures[best_batch_idx],
         )
+        if ckpt_paths is not None:
+            best_batch_ckpt = ckpt_paths[best_batch_idx]
+        else:
+            best_batch_ckpt = None
         # Print best data in log - and best data in last batch
         update_message(
             self.eval_counter,
             best_eval_id,
             best_config,
             best_eval,
+            best_ckpt,
             best_batch_eval_id,
             best_batch_config,
             best_batch_eval,
+            best_batch_ckpt,
         )
 
     def refine_space(self, top_k: int):
@@ -339,7 +453,8 @@ class Strategy(object):
 
     def refine(self, top_k: int):
         """Refine the space boundaries based on top-k performers."""
-        top_idx, top_k_configs, top_k_evals = self.get_best(top_k)
+        assert self.search_name in ["Random", "SMBO", "Nevergrad"]
+        top_idx, top_k_configs, top_k_evals, _ = self.get_best(top_k)
         # Loop over real, integer and categorical variable keys
         # Get boundaries and re-define the search space
         if self.categorical is not None:
@@ -361,9 +476,6 @@ class Strategy(object):
                 # Copy prior/number of bins to loop over
                 if "prior" in self.real[var].keys():
                     real_refined[var]["prior"] = self.real[var]["prior"]
-                # elif "bins" in self.real[var].keys():
-                #     # TODO: Will increase the grid resolution! Do we want this?
-                #     real_refined[var]["bins"] = self.real[var]["bins"]
         else:
             real_refined = None
 
@@ -378,9 +490,6 @@ class Strategy(object):
             # Copy prior/number of bins to loop over
             if "prior" in self.integer[var].keys():
                 integer_refined[var]["prior"] = self.integer[var]["prior"]
-            # elif "bins" in self.integer[var].keys():
-            #     # TODO: Will increase the grid resolution! Do we want this?
-            #     integer_refined[var]["bins"] = self.integer[var]["bins"]
         else:
             integer_refined = None
 

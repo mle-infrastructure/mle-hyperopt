@@ -31,9 +31,11 @@ def update_message(
     best_eval_id,
     best_config,
     best_eval,
+    best_ckpt,
     best_batch_eval_id,
     best_batch_config,
     best_batch_eval,
+    best_batch_ckpt,
 ):
     """Print current best performing configurations."""
     time_t = datetime.now().strftime("%m/%d/%Y %H:%M:%S")
@@ -52,9 +54,13 @@ def update_message(
     for k, v in best_batch_config.items():
         if type(v) == float:
             best_batch_config[k] = round(v, 3)
+    if best_ckpt is not None:
+        best_config["ckpt"] = best_ckpt
     table.add_row(
         "Best Overall", str(best_eval_id), str(best_eval), str(best_config)[1:-1]
     )
+    if best_batch_ckpt is not None:
+        best_batch_config["ckpt"] = best_batch_ckpt
     table.add_row(
         "Best in Batch",
         str(best_batch_eval_id),
