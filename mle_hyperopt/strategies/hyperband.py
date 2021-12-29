@@ -3,6 +3,7 @@ from typing import Union, List
 from ..strategy import Strategy
 from .halving import HalvingSearch
 from ..spaces import RandomSpace
+from ..utils import print_hyperband_hello, print_hyperband_update
 
 
 class HyperbandSearch(Strategy):
@@ -59,6 +60,11 @@ class HyperbandSearch(Strategy):
         self.hb_counter = 0
         self.num_hb_loops = len(self.sh_budgets)
 
+        # Add start-up message printing the search space
+        if self.verbose:
+            self.print_hello()
+            self.print_hello_strategy()
+
         # Define first SH Loop to evaluate
         self.sub_strategy = HalvingSearch(
             real=self.real,
@@ -71,10 +77,6 @@ class HyperbandSearch(Strategy):
             },
             seed_id=self.hb_counter + self.seed_id,
         )
-
-        # Add start-up message printing the search space
-        if self.verbose:
-            self.print_hello()
 
     def ask_search(self, batch_size: int):
         """Get proposals to eval next (in batches) - Random Sampling."""
@@ -112,6 +114,8 @@ class HyperbandSearch(Strategy):
                     },
                     seed_id=self.hb_counter + self.seed_id,
                 )
+                if self.verbose:
+                    self.print_update_strategy()
 
     def log_search(
         self,
@@ -130,3 +134,13 @@ class HyperbandSearch(Strategy):
                 c_data["sh_continued"] = False
             strat_data.append(c_data)
         return strat_data
+
+    def print_hello_strategy(self):
+        """Hello message specific to hyperband search."""
+        print_hyperband_hello(self.num_hb_loops, self.sh_num_arms, self.sh_budgets)
+
+    def print_update_strategy(self):
+        """Update message specific to hyperband search."""
+        print_hyperband_update(
+            self.hb_counter, self.num_hb_loops, self.sh_num_arms, self.sh_budgets
+        )

@@ -16,10 +16,11 @@ def main():
         verbose=True,
     )
 
-    num_pbt_steps = 20
-    # Run a queue of successive halving batch jobs
+    num_pbt_steps = 5
+    # Run a queue for the different PBT workers
     for pbt_iter in range(num_pbt_steps):
         configs, config_fnames = strategy.ask(store=True)
+        # Instantiate queue with jobs to run
         queue = MLEQueue(
             resource_to_run="local",
             job_filename="train_mlp.py",
@@ -29,7 +30,7 @@ def main():
             automerge_configs=True,
         )
         queue.run()
-
+        # Get results and storage checkpoints
         scores = [queue.log[r].stats.loss.mean[-1] for r in queue.mle_run_ids]
         ckpts = [queue.log[r].meta.model_ckpt for r in queue.mle_run_ids]
         strategy.tell(configs, scores, ckpts, save=True)

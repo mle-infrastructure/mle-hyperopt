@@ -1,4 +1,4 @@
-from typing import Union, List
+from typing import Union
 from ..strategy import Strategy
 from ..spaces import RandomSpace
 

@@ -1,6 +1,7 @@
 from typing import Union, List
 from ...strategy import Strategy
 from ...spaces import RandomSpace
+from ...utils import print_pbt_hello, print_pbt_update
 from .exploit import Exploit
 from .explore import Explore
 
@@ -36,6 +37,8 @@ class PBTSearch(Strategy):
         self.space = RandomSpace(real, integer, categorical)
         for k in ["explore", "exploit", "steps_until_ready", "num_workers"]:
             assert k in self.search_config.keys()
+        self.num_workers = self.search_config["num_workers"]
+        self.steps_until_ready = self.search_config["steps_until_ready"]
         self.explore = Explore(self.search_config["explore"], self.space)
         self.exploit = Exploit(self.search_config["exploit"], self.maximize_objective)
         self.pbt_step_counter = 0
@@ -43,13 +46,14 @@ class PBTSearch(Strategy):
         # Add start-up message printing the search space
         if self.verbose:
             self.print_hello()
+            self.print_hello_strategy()
 
     def ask_search(self, batch_size: int):
         """Get proposals to eval next (in batches) - Sync PBT"""
         param_batch = []
         if self.eval_counter == 0:
             # Sample a new configuration for each eval in the batch
-            while len(param_batch) < self.search_config["num_workers"]:
+            while len(param_batch) < self.num_workers:
                 proposal_params = self.space.sample()
                 if proposal_params not in param_batch:
                     # Add parameter proposal to the batch list
@@ -116,3 +120,22 @@ class PBTSearch(Strategy):
     def update_search(self):
         """Update PBT search counter."""
         self.pbt_step_counter += 1
+        if self.verbose:
+            self.print_update_strategy()
+
+    def print_hello_strategy(self):
+        """Hello message specific to PBT search."""
+        print_pbt_hello(
+            self.num_workers,
+            self.steps_until_ready,
+            self.search_config["explore"]["strategy"],
+            self.search_config["exploit"]["strategy"],
+        )
+
+    def print_update_strategy(self):
+        """Update message specific to PBT search."""
+        print_pbt_update(
+            self.pbt_step_counter,
+            self.pbt_step_counter * self.steps_until_ready,
+            self.copy_info,
+        )

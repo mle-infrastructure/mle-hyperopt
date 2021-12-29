@@ -108,7 +108,7 @@ class CoordinateSearch(Strategy):
         # Increase active variable counter and reset grid counter
         self.active_var = self.search_config["order"][self.var_counter]
         if self.verbose:
-            Console().log(f"New active variable `{self.active_var}`.")
+            Console().log(f"New active variable/coordinate `{self.active_var}`.")
 
         # Create new grid search space - if fixed: Create categorical
         # Note: Only one variable is 'active' at every time

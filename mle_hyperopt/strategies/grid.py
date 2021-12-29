@@ -1,7 +1,7 @@
 from typing import Union, List
 from ..strategy import Strategy
 from ..spaces import GridSpace
-from ..utils import visualize_2D_grid
+from ..utils import visualize_2D_grid, print_grid_hello
 
 
 class GridSearch(Strategy):
@@ -40,6 +40,7 @@ class GridSearch(Strategy):
         # Add start-up message printing the search space
         if self.verbose:
             self.print_hello()
+            self.print_hello_strategy()
 
     def ask_search(self, batch_size: int):
         """Get proposals to eval next (in batches) - Grid Search"""
@@ -96,3 +97,7 @@ class GridSearch(Strategy):
             fig.savefig(fname, dpi=300)
         else:
             return fig, ax
+
+    def print_hello_strategy(self):
+        """Hello message specific to grid search."""
+        print_grid_hello(self.num_param_configs, self.space.num_dims)

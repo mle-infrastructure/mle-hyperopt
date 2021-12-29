@@ -34,8 +34,13 @@ def main(experiment_dir: str, config_fname: str, seed_id: int):
 
     if "sh_num_add_iters" in train_config.extra.keys():
         num_gd_steps = train_config.extra.sh_num_add_iters * 50
-    else:
+        lrate = train_config.params.lrate
+    elif "pbt_num_add_iters" in train_config.extra.keys():
         num_gd_steps = train_config.extra.pbt_num_add_iters * 50
+        lrate = train_config.params.lrate
+    else:
+        num_gd_steps = 400
+        lrate = train_config.lrate
 
     for t in range(num_gd_steps):
         y_pred = model(xx)
@@ -45,7 +50,7 @@ def main(experiment_dir: str, config_fname: str, seed_id: int):
         loss.backward()
         with torch.no_grad():
             for param in model.parameters():
-                param -= float(train_config.params.lrate) * param.grad
+                param -= float(lrate) * param.grad
 
         log.update(
             {"num_steps": t},

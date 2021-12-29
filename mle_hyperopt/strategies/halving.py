@@ -3,6 +3,7 @@ import numpy as np
 from typing import Union, List
 from ..strategy import Strategy
 from ..spaces import RandomSpace
+from ..utils import print_halving_hello, print_halving_update
 
 
 class HalvingSearch(Strategy):
@@ -41,16 +42,16 @@ class HalvingSearch(Strategy):
         def logeta(x):
             return math.log(x) / math.log(self.search_config["halving_coeff"])
 
-        self.num_batches = math.floor(logeta(self.search_config["num_arms"]) + 1)
+        self.num_sh_batches = math.floor(logeta(self.search_config["num_arms"]) + 1)
         self.evals_per_batch = [self.search_config["num_arms"]]
-        for i in range(self.num_batches - 1):
+        for i in range(self.num_sh_batches - 1):
             self.evals_per_batch.append(
                 math.floor(
                     self.evals_per_batch[-1] / self.search_config["halving_coeff"]
                 )
             )
         self.iters_per_batch = []
-        for i in range(self.num_batches):
+        for i in range(self.num_sh_batches):
             iter_batch = (
                 self.search_config["min_budget"]
                 * self.search_config["halving_coeff"] ** i
@@ -59,10 +60,14 @@ class HalvingSearch(Strategy):
             if "max_budget" in self.search_config.keys():
                 iter_batch = min(iter_batch, self.search_config["max_budget"])
             self.iters_per_batch.append(iter_batch)
+        self.total_num_iters = np.sum(
+            np.array(self.evals_per_batch) * np.array(self.iters_per_batch)
+        )
         self.sh_counter = 0
         # Add start-up message printing the search space
         if self.verbose:
             self.print_hello()
+            self.print_hello_strategy()
 
     def ask_search(self, batch_size: Union[int, None] = None):
         """Get proposals to eval next (in batches) - Random Sampling."""
@@ -135,6 +140,10 @@ class HalvingSearch(Strategy):
             else:
                 self.haved_ckpt = None
 
+    def update_search(self):
+        if self.verbose:
+            self.print_update_strategy()
+
     def log_search(
         self,
         batch_proposals: list,
@@ -155,4 +164,24 @@ class HalvingSearch(Strategy):
     @property
     def completed(self):
         """Return boolean if all SH rounds were completed."""
-        return self.sh_counter >= self.num_batches
+        return self.sh_counter >= self.num_sh_batches
+
+    def print_hello_strategy(self):
+        """Hello message specific to successive halving search."""
+        print_halving_hello(
+            self.num_sh_batches,
+            self.evals_per_batch,
+            self.iters_per_batch,
+            self.search_config["halving_coeff"],
+            self.total_num_iters,
+        )
+
+    def print_update_strategy(self):
+        """Update message specific to successive halving search."""
+        print_halving_update(
+            self.sh_counter,
+            self.num_sh_batches,
+            self.evals_per_batch,
+            self.iters_per_batch,
+            self.total_num_iters,
+        )

@@ -26,6 +26,18 @@ class HyperSpace(object):
         self.construct()
 
     @property
+    def num_dims(self):
+        """Get number of variables to search over."""
+        num_total_dims = 0
+        if self.real is not None:
+            num_total_dims += len(self.real)
+        if self.integer is not None:
+            num_total_dims += len(self.integer)
+        if self.categorical is not None:
+            num_total_dims += len(self.categorical)
+        return num_total_dims
+
+    @property
     def bounds(self):
         """Return bounds of real and integer valued variables."""
         bounds_dict = {}

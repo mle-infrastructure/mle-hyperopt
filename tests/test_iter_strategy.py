@@ -39,7 +39,7 @@ def test_successive_halving():
         search_config={"min_budget": 1, "num_arms": 20, "halving_coeff": 2},
         seed_id=42,
     )
-    assert strategy.num_batches == 5
+    assert strategy.num_sh_batches == 5
     assert strategy.evals_per_batch == [20, 10, 5, 2, 1]
     assert strategy.iters_per_batch == [1, 2, 4, 8, 16]
 

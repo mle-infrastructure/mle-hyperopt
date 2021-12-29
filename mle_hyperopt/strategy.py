@@ -136,12 +136,12 @@ class Strategy(object):
                     log_data[i]["extra"] = strat_data[i]
             self.log.append(log_data[i])
 
-        # Update the search strategy - space refinement/switches
-        self.update_search()
-
         # Print update message
         if self.verbose and not reload:
             self.print_update(clean_prop, clean_perf, clean_ckpt)
+
+        # Update the search strategy - space refinement/switches
+        self.update_search()
 
         # Save the log if desired (default to search_log.yaml in root)
         if save:
@@ -194,7 +194,7 @@ class Strategy(object):
                     clean_ckpt = None
                 self.all_evaluated_params.append(proposal_clean)
                 self.eval_counter += 1
-        return log_data, clean_proposals, clean_performance, clean_ckpt
+        return log_data, list(clean_proposals), clean_performance, clean_ckpt
 
     def ask_search(self, batch_size: int):
         """Search method-specific proposal generation."""
