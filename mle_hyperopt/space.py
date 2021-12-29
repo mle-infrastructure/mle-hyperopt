@@ -2,6 +2,18 @@ class HyperSpace(object):
     def __init__(self, real, integer, categorical):
         """General Class Wrapper for HyperSpace configuration setup."""
         self.update(real, integer, categorical)
+        if self.real is not None:
+            self.real_names = list(self.real.keys())
+        else:
+            self.real_names = []
+        if self.integer is not None:
+            self.integer_names = list(self.integer.keys())
+        else:
+            self.integer_names = []
+        if self.categorical is not None:
+            self.categorical_names = list(self.categorical.keys())
+        else:
+            self.categorical_names = []
 
     def check(self):
         """Check that all inputs are provided correctly."""

@@ -17,15 +17,24 @@ class Explore(object):
         """Multiply hyperparam independently by random factor of 0.8/1.2/etc."""
         new_hyperparams = {}
         for param_name, param_value in hyperparams.items():
-            new_hyperparams[param_name] = (
-                np.random.choice(self.explore_config["perturb_coeffs"]) * param_value
-            )
+            if param_name in self.space.real_names:
+                new_hyperparams[param_name] = (
+                    np.random.choice(self.explore_config["perturb_coeffs"])
+                    * param_value
+                )
+            elif param_name in self.space.integer_names:
+                new_hyperparams[param_name] = round(
+                    np.random.choice(self.explore_config["perturb_coeffs"])
+                    * param_value
+                )
+            else:
+                sample_config = self.space.sample()
+                new_hyperparams[param_name] = sample_config[param_name]
         return new_hyperparams
 
     def resample(self) -> dict:
         """Resample hyperparam from original prior distribution."""
-        hyperparams = self.space.sample()
-        return hyperparams
+        return self.space.sample()
 
     def noisify(self, hyperparams: dict) -> dict:
         """Add independent Gaussian noise to all float hyperparams."""
@@ -33,9 +42,17 @@ class Explore(object):
         # https://github.com/bkj/pbt/blob/master/pbt.ipynb
         new_hyperparams = {}
         for param_name, param_value in hyperparams.items():
-            # Sample gaussian noise and add it to the parameter
-            eps = np.random.normal() * self.explore_config["noise_scale"]
-            new_hyperparams[param_name] = param_value + eps
+            if param_name in self.space.real_names:
+                # Sample gaussian noise and add it to the parameter
+                eps = np.random.normal() * self.explore_config["noise_scale"]
+                new_hyperparams[param_name] = param_value + eps
+            elif param_name in self.space.integer_names:
+                # Sample gaussian noise and add it to the parameter
+                eps = np.random.normal() * self.explore_config["noise_scale"]
+                new_hyperparams[param_name] = round(param_value + eps)
+            else:
+                sample_config = self.space.sample()
+                new_hyperparams[param_name] = sample_config[param_name]
         return new_hyperparams
 
     def __call__(self, hyperparams: dict) -> dict:
