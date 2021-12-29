@@ -28,6 +28,7 @@ def main():
             experiment_dir="logs_pbt",
             max_running_jobs=5,
             automerge_configs=True,
+            delete_config=True,
         )
         queue.run()
         # Get results and storage checkpoints

@@ -146,9 +146,10 @@ def print_halving_update(
     console.log(
         f"Completed {sh_counter}/{num_sh_batches} batches of SH ➢ {done_iters}/{num_total_iters} iters."
     )
-    console.log(
-        f"➞ Next - Batch No. {sh_counter+1}/{num_sh_batches}: {evals_per_batch[sh_counter]} configs for {iters_per_batch[sh_counter]} iters."
-    )
+    if sh_counter < num_sh_batches:
+        console.log(
+            f"➞ Next - Batch No. {sh_counter+1}/{num_sh_batches}: {evals_per_batch[sh_counter]} configs for {iters_per_batch[sh_counter]} iters."
+        )
 
 
 def print_hyperband_hello(
@@ -170,9 +171,10 @@ def print_hyperband_update(
     """Update message specific to Hyperband search."""
     console = Console(width=console_width)
     console.log(f"Completed {hb_counter}/{num_hb_loops} loops of SH.")
-    console.log(
-        f"➞ Next - Loop No. {hb_counter+1}/{num_hb_loops}: {sh_num_arms[hb_counter]} arms & {sh_budgets[hb_counter]} min budget."
-    )
+    if hb_counter < num_hb_loops:
+        console.log(
+            f"➞ Next - Loop No. {hb_counter+1}/{num_hb_loops}: {sh_num_arms[hb_counter]} arms & {sh_budgets[hb_counter]} min budget."
+        )
 
 
 def print_pbt_hello(

@@ -26,6 +26,7 @@ def main():
                 experiment_dir="logs_hb",
                 max_running_jobs=4,
                 automerge_configs=True,
+                delete_config=True,
             )
             queue.run()
             # Get results and storage checkpoints
