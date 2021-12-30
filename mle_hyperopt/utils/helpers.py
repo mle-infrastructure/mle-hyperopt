@@ -8,22 +8,28 @@ import ast
 import numpy as np
 
 
-class CustomJSONizer(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, np.integer):
-            return int(obj)
-        if isinstance(obj, np.floating):
-            return float(obj)
-        if isinstance(obj, np.ndarray):
-            return obj.tolist()
-        if isinstance(obj, np.bool_):
-            return bool(obj)
-        return super(CustomJSONizer, self).default(obj)
+def convert(obj):
+    """Conversion helper instead of JSON encoder for handling booleans."""
+    if isinstance(obj, bool):
+        return int(obj)
+    if isinstance(obj, (list, tuple)):
+        return [convert(item) for item in obj]
+    if isinstance(obj, dict):
+        return {convert(key): convert(value) for key, value in obj.items()}
+    if isinstance(obj, np.integer):
+        return int(obj)
+    if isinstance(obj, np.floating):
+        return float(obj)
+    if isinstance(obj, np.ndarray):
+        return convert(obj.tolist())
+    if isinstance(obj, np.bool_):
+        return int(obj)
+    return obj
 
 
 def save_json(obj, filename: str):
     with open(filename, "w") as fout:
-        json.dump(obj, fout, indent=1, cls=CustomJSONizer)
+        json.dump(convert(obj), fout, indent=1)
 
 
 def save_yaml(obj, filename: str):
@@ -33,15 +39,15 @@ def save_yaml(obj, filename: str):
         for i in range(len(obj)):
             e_id = obj[i]["eval_id"]
             data[f"{e_id}"] = obj[i]
-        data_dump = json.dumps(data, indent=1, cls=CustomJSONizer)
+        data_dump = json.dumps(convert(data), indent=1)
         with open(filename, "w") as f:
-            yaml.dump(json.loads(data_dump), f, default_flow_style=False)
+            yaml.safe_dump(json.loads(data_dump), f, default_flow_style=False)
     # Case 2: Save configuration to file
     else:
-        data = json.dumps(obj, indent=1, cls=CustomJSONizer)
+        data = json.dumps(convert(obj), indent=1)
         data_dump = ast.literal_eval(data)
         with open(filename, "w") as f:
-            yaml.dump(data_dump, f, default_flow_style=False)
+            yaml.safe_dump(data_dump, f, default_flow_style=False)
 
 
 def save_log(obj, filename: str):
