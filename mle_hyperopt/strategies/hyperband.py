@@ -1,9 +1,26 @@
 import math
-from typing import Union, List
+from typing import Union, List, Tuple
 from ..strategy import Strategy
 from .halving import HalvingSearch
 from ..spaces import RandomSpace
 from ..utils import print_hyperband_hello, print_hyperband_update
+
+
+def get_batch_resources(sh_num_arms: list, eta: int) -> Tuple[int, List[int]]:
+    num_total_batches = 0
+    all_evals_per_batch = []
+
+    def logeta(x):
+        return math.log(x) / math.log(eta)
+
+    for i in range(len(sh_num_arms)):
+        num_sh_batches = math.floor(logeta(sh_num_arms[i]) + 1)
+        evals_per_batch = [sh_num_arms[i]]
+        for i in range(num_sh_batches - 1):
+            evals_per_batch.append(math.floor(evals_per_batch[-1] / eta))
+        num_total_batches += num_sh_batches
+        all_evals_per_batch.extend(evals_per_batch)
+    return num_total_batches, all_evals_per_batch
 
 
 class HyperbandSearch(Strategy):
@@ -57,8 +74,13 @@ class HyperbandSearch(Strategy):
             int(self.search_config["max_resource"] * self.search_config["eta"] ** (-s))
             for s in reversed(range(self.s_max + 1))
         ]
-        self.hb_counter = 0
+        self.hb_counter, self.hb_batch_counter = 0, 0
         self.num_hb_loops = len(self.sh_budgets)
+
+        # Calculate resources for all SH loops -> used in mle-toolbox
+        self.num_hb_batches, self.evals_per_batch = get_batch_resources(
+            self.sh_num_arms, self.search_config["eta"]
+        )
 
         # Add start-up message printing the search space
         if self.verbose:
@@ -97,6 +119,7 @@ class HyperbandSearch(Strategy):
     ):
         """Perform post-iteration clean-up - no surrogate model."""
         self.sub_strategy.tell(batch_proposals, perf_measures, ckpt_paths)
+        self.hb_batch_counter += 1
 
     def update_search(self):
         """Check whether to switch to next successive halving strategy."""
@@ -114,8 +137,8 @@ class HyperbandSearch(Strategy):
                     },
                     seed_id=self.hb_counter + self.seed_id,
                 )
-                if self.verbose:
-                    self.print_update_strategy()
+        if self.verbose:
+            self.print_update_strategy()
 
     def log_search(
         self,
@@ -137,10 +160,22 @@ class HyperbandSearch(Strategy):
 
     def print_hello_strategy(self):
         """Hello message specific to hyperband search."""
-        print_hyperband_hello(self.num_hb_loops, self.sh_num_arms, self.sh_budgets)
+        print_hyperband_hello(
+            self.num_hb_loops,
+            self.sh_num_arms,
+            self.sh_budgets,
+            self.num_hb_batches,
+            self.evals_per_batch,
+        )
 
     def print_update_strategy(self):
         """Update message specific to hyperband search."""
         print_hyperband_update(
-            self.hb_counter, self.num_hb_loops, self.sh_num_arms, self.sh_budgets
+            self.hb_counter,
+            self.num_hb_loops,
+            self.sh_num_arms,
+            self.sh_budgets,
+            self.num_hb_batches,
+            self.hb_batch_counter,
+            self.evals_per_batch,
         )

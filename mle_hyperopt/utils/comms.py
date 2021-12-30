@@ -153,28 +153,43 @@ def print_halving_update(
 
 
 def print_hyperband_hello(
-    num_hb_loops: int, sh_num_arms: List[int], sh_budgets: List[int]
+    num_hb_loops: int,
+    sh_num_arms: List[int],
+    sh_budgets: List[int],
+    num_hb_batches: int,
+    evals_per_batch: List[int],
 ):
     """Hello message specific to Hyperband search."""
     console = Console(width=console_width)
-    console.log(f"Start running {num_hb_loops} SH loops for Hyperband.")
-    console.log(f"➞ Arms per loop: {sh_num_arms}")
-    console.log(f"➞ Min. Budget per loop: {sh_budgets}")
+    console.log(f"Start running {num_hb_batches} batches of Hyperband evaluations.")
+    console.log(f"➞ Evals per batch: {evals_per_batch}")
+    console.log(f"➞ Total SH loops: {num_hb_loops} | Arms per loop: {sh_num_arms}")
+    console.log(f"➞ Min. budget per loop: {sh_budgets}")
     console.log(
-        f"➞ Loop No. 1/{num_hb_loops}: {sh_num_arms[0]} arms & {sh_budgets[0]} min budget."
+        f"➞ Start Loop No. 1/{num_hb_loops}: {sh_num_arms[0]} arms & {sh_budgets[0]} min budget."
     )
 
 
 def print_hyperband_update(
-    hb_counter: int, num_hb_loops: int, sh_num_arms: List[int], sh_budgets: List[int]
+    hb_counter: int,
+    num_hb_loops: int,
+    sh_num_arms: List[int],
+    sh_budgets: List[int],
+    num_hb_batches: int,
+    hb_batch_counter: int,
+    evals_per_batch: List[int],
 ):
     """Update message specific to Hyperband search."""
     console = Console(width=console_width)
-    console.log(f"Completed {hb_counter}/{num_hb_loops} loops of SH.")
+    console.log(
+        f"Completed {hb_batch_counter}/{num_hb_batches} of Hyperband evaluation batches."
+    )
+    console.log(f"➞ Done with {hb_counter}/{num_hb_loops} loops of SH.")
     if hb_counter < num_hb_loops:
         console.log(
-            f"➞ Next - Loop No. {hb_counter+1}/{num_hb_loops}: {sh_num_arms[hb_counter]} arms & {sh_budgets[hb_counter]} min budget."
+            f"➞ Active Loop No. {hb_counter + 1}/{num_hb_loops}: {sh_num_arms[hb_counter]} arms & {sh_budgets[hb_counter]} min budget."
         )
+        console.log(f"➞ Next batch of SH: {evals_per_batch[hb_batch_counter]} evals.")
 
 
 def print_pbt_hello(

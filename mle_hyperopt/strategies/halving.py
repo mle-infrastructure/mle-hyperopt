@@ -38,7 +38,7 @@ class HalvingSearch(Strategy):
         for k in ["min_budget", "num_arms", "halving_coeff"]:
             assert k in self.search_config.keys()
 
-        # Pre-compute number of configs & iters per config across SH batches
+        # Pre-compute number of configs per batch across SH loop
         def logeta(x):
             return math.log(x) / math.log(self.search_config["halving_coeff"])
 
@@ -50,6 +50,8 @@ class HalvingSearch(Strategy):
                     self.evals_per_batch[-1] / self.search_config["halving_coeff"]
                 )
             )
+
+        # Pre-compute number of step iterations per batch in SH loop
         self.iters_per_batch = []
         for i in range(self.num_sh_batches):
             iter_batch = (
