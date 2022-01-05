@@ -89,7 +89,7 @@ strategy = GridSearch(
                             "end": 5,
                             "bins": 1}},
     categorical={"arch": ["mlp", "cnn"]},
-    fixed_params={"momentum": 0.9})
+    fixed_params={"momentum": 0.9})  # Add fixed param setting to each config
 
 configs = strategy.ask()
 ```
@@ -107,7 +107,7 @@ strategy = HyperbandSearch(
     categorical={"arch": ["mlp", "cnn"]},
     search_config={"max_resource": 81,
                    "eta": 3},
-    seed_id=42,
+    seed_id=42,  # Fix randomness for reproducibility
     verbose=True)
 
 configs = strategy.ask()
@@ -126,7 +126,7 @@ strategy = PBTSearch(
         "steps_until_ready": 4,
         "num_workers": 10,
     },
-    maximize_objective=True
+    maximize_objective=True  # Max score instead of min
 )
 
 configs = strategy.ask()
@@ -172,6 +172,20 @@ strategy.ask(2, store=True)
 strategy.ask(2, store=True, config_fnames=["conf_0.yaml", "conf_1.yaml"])
 ```
 
+### Storing Checkpoint Paths 🛥️
+
+
+```python
+# Ask for 5 configurations to evaluate and get their scores
+configs = strategy.ask(5)
+values = ...
+# Get list of checkpoint paths corresponding to config runs
+ckpts = [f"ckpt_{i}.pt" for i in range(len(configs))]
+# `tell` parameter configs, eval scores & ckpt paths
+# Required for Halving, Hyperband and PBT
+strategy.tell(configs, scores, ckpts)
+```
+
 ### Retrieving Top Performers & Visualizing Results 📉
 
 ```python
@@ -204,7 +218,7 @@ strategy.tell(...)
 strategy.refine(top_k=2)
 ```
 
-Note that the search space refinement is only implemented for random, SMBO and nevergrad-based search strategies.
+Note that the search space refinement is only implemented for random, SMBO and `nevergrad`-based search strategies.
 
 
 ### Citing the MLE-Infrastructure ✏️
@@ -220,6 +234,6 @@ If you use `mle-hyperopt` in your research, please cite it as follows:
 }
 ```
 
-## Development
+## Development 👷
 
-You can run the test suite via `python -m pytest -vv tests/`. If you find a bug or are missing your favourite feature, feel free to contact me [@RobertTLange](https://twitter.com/RobertTLange) or create an issue :hugs:.
+You can run the test suite via `python -m pytest -vv tests/`. If you find a bug or are missing your favourite feature, feel free to create an issue and/or start [contributing](CONTRIBUTING.md) :hugs:.

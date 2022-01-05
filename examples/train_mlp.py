@@ -30,7 +30,7 @@ def main(experiment_dir: str, config_fname: str, seed_id: int):
     elif "pbt_ckpt" in train_config["extra"].keys():
         model.load_state_dict(torch.load(train_config.extra.pbt_ckpt))
 
-    loss_fn = torch.nn.MSELoss(reduction="sum")
+    loss_fn = torch.nn.MSELoss()
 
     if "sh_num_add_iters" in train_config.extra.keys():
         num_gd_steps = train_config.extra.sh_num_add_iters * 50

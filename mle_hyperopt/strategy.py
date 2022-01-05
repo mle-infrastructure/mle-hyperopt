@@ -119,6 +119,10 @@ class Strategy(object):
         if type(ckpt_paths) == str:
             ckpt_paths = [ckpt_paths]
 
+        # Check that checkpoints are provided if using iterative search methods
+        if self.search_name in ["Halving", "Hyperband", "PBT"]:
+            assert ckpt_paths is not None
+
         log_data, clean_prop, clean_perf, clean_ckpt = self.clean_data(
             batch_proposals, perf_measures, ckpt_paths
         )
@@ -233,7 +237,7 @@ class Strategy(object):
             raise ValueError("Only YAML, JSON or PKL file paths supported.")
         if self.verbose:
             Console().log(
-                f"Stored {self.eval_counter} search iterations --> {save_path}."
+                f"Stored {self.eval_counter} search iterations ➞ {save_path}."
             )
 
     def load(

@@ -5,7 +5,7 @@ from mle_scheduler import MLEQueue
 def main():
     """Run Hyperband"""
     strategy = HyperbandSearch(
-        real={"lrate": {"begin": 1e-08, "end": 1e-06, "prior": "uniform"}},
+        real={"lrate": {"begin": 1e-04, "end": 1e-02, "prior": "uniform"}},
         search_config={"max_resource": 27, "eta": 3},
         seed_id=42,
         verbose=True,

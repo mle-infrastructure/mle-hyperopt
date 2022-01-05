@@ -1,8 +1,17 @@
-## [v0.0.5] - [Unreleased]
+## [v0.0.5] - [01/05/2022]
 
 ### Added
-- Adds `SuccessiveHalvingSearch`, `HyperbandSearch`, `PBTSearch` and examples/NB documentation (see issues #3, #4).
+
 - Adds possibility to store and reload entire strategies as pkl file (as asked for in issue #2).
+- Adds `improvement` method indicating if score is better than best stored one
+- Adds save option for best plot
+- Adds `args, kwargs` into decorator
+- Adds synchronous Successive Halving (`SuccessiveHalvingSearch` - issue #3)
+- Adds synchronous HyperBand (`HyperbandSearch` - issue #3)
+- Adds synchronous PBT (`PBTSearch` - issue #4)
+- Adds option to save log in `tell` method
+- Adds small torch mlp example for SH/Hyperband/PBT w. logging/scheduler
+- Adds print welcome/update message for strategy specific info
 
 ### Changed
 - Major internal restructuring:
@@ -11,8 +20,12 @@
   - `log_search`: Add search specific log data to evaluation log
   - `update_search`: Refine search space/change active strategy etc.
 - Also allow to store checkpoint of trained models in `tell` method.
-
-### Fixed
+- Fix logging message when log is stored
+- Make json serializer more robust for numpy data types
+- Robust type checking with `isinstance(self.log[0]["objective"], (float, int, np.integer, np.float))`
+- Update NB to include `mle-scheduler` example
+- Make PBT explore robust for integer/categorical valued hyperparams
+- Calculate total batches & their sizes for hyperband
 
 ## [v0.0.4] - [12/10/2021]
 
