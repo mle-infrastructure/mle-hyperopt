@@ -46,28 +46,34 @@ def update_message(
     table.add_column("ID")
     table.add_column("Obj. :chart_with_downwards_trend:")
     table.add_column(f"Configuration :bookmark: - {time_t}")
-    # Round all the values for prettier printing
-    best_eval = round(best_eval, 3)
-    best_batch_eval = round(best_batch_eval, 3)
-    for k, v in best_config.items():
-        if type(v) == float:
-            best_config[k] = round(v, 3)
-    for k, v in best_batch_config.items():
-        if type(v) == float:
-            best_batch_config[k] = round(v, 3)
-    best_c = dict(best_config)
-    if best_ckpt is not None:
-        best_c["ckpt"] = best_ckpt
-    table.add_row("Best Overall", str(best_eval_id), str(best_eval), str(best_c)[1:-1])
-    best_b_c = dict(best_batch_config)
-    if best_batch_ckpt is not None:
-        best_b_c["ckpt"] = best_batch_ckpt
-    table.add_row(
-        "Best in Batch",
-        str(best_batch_eval_id),
-        str(best_batch_eval),
-        str(best_b_c)[1:-1],
-    )
+    print()
+    for i in range(len(best_eval_id)):
+        best_e = np.round_(best_eval[i], 3)
+        for k, v in best_config[i].items():
+            if type(v) == float:
+                best_config[i][k] = np.round_(v, 3)
+        best_c = dict(best_config[i])
+        if best_ckpt is not None:
+            best_c["ckpt"] = best_ckpt[i]
+        table.add_row(
+            "Best Overall", str(best_eval_id[i]), str(best_e), str(best_c)[1:-1]
+        )
+
+    # Add row(s) for best config(s) in batch
+    for i in range(len(best_eval_id)):
+        best_batch_e = np.round_(best_batch_eval[i], 3)
+        for k, v in best_batch_config[i].items():
+            if type(v) == float:
+                best_batch_config[i][k] = np.round_(v, 3)
+        best_b_c = dict(best_batch_config[i])
+        if best_batch_ckpt is not None:
+            best_b_c["ckpt"] = best_batch_ckpt[i]
+        table.add_row(
+            "Best in Batch",
+            str(best_batch_eval_id[i]),
+            str(best_batch_e),
+            str(best_b_c)[1:-1],
+        )
     console.print(Align.center(table))
 
 

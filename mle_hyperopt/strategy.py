@@ -310,27 +310,12 @@ class Strategy(object):
 
         # Multi-objective case - get pareto front
         else:
-            pareto_configs, pareto_evals, pareto_ckpt = self.get_pareto_front()
-            if not self.maximize_objective:
-                best_configs, best_evals = pareto_configs[:top_k], pareto_evals[:top_k]
-                if pareto_ckpt is not None:
-                    best_ckpt = pareto_ckpt[:top_k]
-                else:
-                    best_ckpt = None
-            else:
-                best_configs, best_evals = (
-                    pareto_configs[::-1][:top_k],
-                    pareto_evals[::-1][:top_k],
-                )
-                if pareto_ckpt is not None:
-                    best_ckpt = pareto_ckpt[::-1][:top_k]
-                else:
-                    best_ckpt = None
-
-            best_idx = top_k * ["-"]
+            best_idx, best_configs, best_evals, best_ckpt = self.get_pareto_front()
+            if best_idx is None:
+                best_idx = top_k * ["-"]
 
         # Unravel retrieved lists if there is only single config
-        if top_k == 1:
+        if top_k == 1 and type(self.log[0]["objective"]) not in [tuple, list]:
             if best_ckpt is not None:
                 ckpt_to_return = best_ckpt[0]
             else:
@@ -424,20 +409,43 @@ class Strategy(object):
     ):
         """Print strategy update."""
         best_eval_id, best_config, best_eval, best_ckpt = self.get_best(top_k=1)
-        if not self.maximize_objective:
-            best_batch_idx = np.argmin(perf_measures)
-        else:
-            best_batch_idx = np.argmax(perf_measures)
 
-        best_batch_eval_id = self.eval_counter - len(perf_measures) + best_batch_idx
+        # Get best performer for current batch
+        if type(perf_measures[0]) not in [list, tuple]:
+            if not self.maximize_objective:
+                best_batch_idx = [np.argmin(perf_measures)]
+            else:
+                best_batch_idx = [np.argmax(perf_measures)]
+        else:
+            best_batch_idx = []
+            for i in range(len(perf_measures[0])):
+                if not self.maximize_objective:
+                    best_batch_id = np.argmin(np.array(perf_measures)[:, i])
+                else:
+                    best_batch_id = np.argmax(np.array(perf_measures)[:, i])
+                best_batch_idx.append(best_batch_id)
+
+        best_batch_eval_id = [
+            self.eval_counter - len(perf_measures) + best_bid
+            for best_bid in best_batch_idx
+        ]
         best_batch_config, best_batch_eval = (
-            batch_proposals[best_batch_idx],
-            perf_measures[best_batch_idx],
+            [batch_proposals[best_bid] for best_bid in best_batch_idx],
+            [perf_measures[best_bid] for best_bid in best_batch_idx],
         )
         if ckpt_paths is not None:
-            best_batch_ckpt = ckpt_paths[best_batch_idx]
+            best_batch_ckpt = [ckpt_paths[best_bid] for best_bid in best_batch_idx]
         else:
             best_batch_ckpt = None
+
+        # Make sure that we process list of lists in update_message
+        if type(best_config) != list:
+            best_config = [best_config]
+            best_eval_id = [best_eval_id]
+            best_eval = [best_eval]
+            if best_ckpt is not None:
+                best_ckpt = [best_ckpt]
+
         # Print best data in log - and best data in last batch
         update_message(
             self.eval_counter,
@@ -503,4 +511,20 @@ class Strategy(object):
 
     def get_pareto_front(self):
         """Get pareto front for multi-objective problems."""
-        raise NotImplementedError
+        objective_evals = np.array([it["objective"] for it in self.log])
+        best_idx, best_configs, best_evals, best_ckpt = [], [], [], []
+        for d in range(objective_evals.shape[1]):
+            sorted_idx = np.argsort(objective_evals[:, d])
+            if not self.maximize_objective:
+                best_id = sorted_idx[0]
+            else:
+                best_id = sorted_idx[-1]
+            best_idx.append(best_id)
+            best_configs.append(self.log[best_id]["params"])
+            best_evals.append(self.log[best_id]["objective"])
+
+            if "ckpt" in self.log[best_id].keys():
+                best_ckpt.append(self.log[best_id]["ckpt"])
+            else:
+                best_ckpt = None
+        return best_idx, best_configs, best_evals, best_ckpt

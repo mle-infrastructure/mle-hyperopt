@@ -140,5 +140,9 @@ class NevergradSearch(Strategy):
             self.hyper_optimizer.pareto_front(), key=lambda p: p.losses[0]
         ):
             pareto_configs.append(param.value[1])
-            pareto_evals.append(param.losses)
-        return pareto_configs, pareto_evals, pareto_ckpt
+            if self.maximize_objective:
+                eff_loss = [-1 * l for l in param.losses]
+            else:
+                eff_loss = param.losses
+            pareto_evals.append(eff_loss)
+        return None, pareto_configs, pareto_evals, pareto_ckpt
