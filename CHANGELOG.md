@@ -10,7 +10,7 @@
   ```
   mle-search <script>.py -base <base>.yaml -search <search>.yaml -iters <search_iters>
   ```
-
+- Adds doc-strings to all functionalities.
 ### Changed
 
 - Make it possible to optimize parameters in nested dictionaries. Added helpers `flatten_config` and `unflatten_config`. For shaping `'sub1/sub2/vname' <-> {sub1: {sub2: {vname: v}}}`

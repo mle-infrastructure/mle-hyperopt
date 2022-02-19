@@ -1,5 +1,5 @@
 import math
-from typing import Union, List, Tuple
+from typing import Optional, List, Tuple, Union
 from ..strategy import Strategy
 from .halving import HalvingSearch
 from ..spaces import RandomSpace
@@ -7,6 +7,15 @@ from ..utils import print_hyperband_hello, print_hyperband_update
 
 
 def get_batch_resources(sh_num_arms: list, eta: int) -> Tuple[int, List[int]]:
+    """Compute the number of batches & iterations per batch
+
+    Args:
+        sh_num_arms (list): List of number of arms per iteration
+        eta (int): Halving parameter
+
+    Returns:
+        Tuple[int, List[int]]: number of batches & iterations per batch
+    """
     num_total_batches = 0
     all_evals_per_batch = []
 
@@ -26,17 +35,49 @@ def get_batch_resources(sh_num_arms: list, eta: int) -> Tuple[int, List[int]]:
 class HyperbandSearch(Strategy):
     def __init__(
         self,
-        real: Union[dict, None] = None,
-        integer: Union[dict, None] = None,
-        categorical: Union[dict, None] = None,
-        search_config: Union[dict, None] = None,
+        real: Optional[dict] = None,
+        integer: Optional[dict] = None,
+        categorical: Optional[dict] = None,
+        search_config: dict = {"max_resource": 27, "eta": 3},
         maximize_objective: bool = False,
-        fixed_params: Union[dict, None] = None,
-        reload_path: Union[str, None] = None,
-        reload_list: Union[list, None] = None,
+        fixed_params: Optional[dict] = None,
+        reload_path: Optional[str] = None,
+        reload_list: Optional[list] = None,
         seed_id: int = 42,
         verbose: bool = False,
     ):
+        """Hyperband Iterative Search Strategy.
+        Reference: https://homes.cs.washington.edu/~jamieson/hyperband.html
+
+        Args:
+            real (Optional[dict], optional):
+                Dictionary of real-valued search variables & their priors.
+                E.g. {"lrate": {"begin": 0.1, "end": 0.5, "prior": "log-uniform"}}
+                Defaults to None.
+            integer (Optional[dict], optional):
+                Dictionary of integer-valued search variables & their priors.
+                E.g. {"batch_size": {"begin": 1, "end": 5, "bins": "uniform"}}
+                Defaults to None.
+            categorical (Optional[dict], optional):
+                Dictionary of categorical-valued search variables.
+                E.g. {"arch": ["mlp", "cnn"]}
+                Defaults to None.
+            search_config (dict, optional): Hyperband search hyperparameters.
+                Defaults to {"max_resource": 27, "eta": 3}.
+            maximize_objective (bool, optional): Whether to maximize objective.
+                Defaults to False.
+            fixed_params (Optional[dict], optional):
+                Fixed parameters that will be added to all configurations.
+                Defaults to None.
+            reload_path (Optional[str], optional):
+                Path to load previous search log from. Defaults to None.
+            reload_list (Optional[list], optional):
+                List of previous results to reload. Defaults to None.
+            seed_id (int, optional):
+                Random seed for reproducibility. Defaults to 42.
+            verbose (bool, optional):
+                Option to print intermediate results. Defaults to False.
+        """
         self.search_name = "Hyperband"
         Strategy.__init__(
             self,
@@ -71,7 +112,10 @@ class HyperbandSearch(Strategy):
             for s in reversed(range(self.s_max + 1))
         ]
         self.sh_budgets = [
-            int(self.search_config["max_resource"] * self.search_config["eta"] ** (-s))
+            int(
+                self.search_config["max_resource"]
+                * self.search_config["eta"] ** (-s)
+            )
             for s in reversed(range(self.s_max + 1))
         ]
         self.hb_counter, self.hb_batch_counter = 0, 0
@@ -100,8 +144,16 @@ class HyperbandSearch(Strategy):
             seed_id=self.hb_counter + self.seed_id,
         )
 
-    def ask_search(self, batch_size: int):
-        """Get proposals to eval next (in batches) - Random Sampling."""
+    def ask_search(self, batch_size: Optional[int] = None) -> List[dict]:
+        """Get proposals to eval next (in batches) - Hyperband Search.
+
+        Args:
+            batch_size (Optional[int]): Number of desired configurations
+            - Not applicable here since number of configurations is prescribed
+
+        Returns:
+            List[dict]: List of configuration dictionaries
+        """
         param_batch = self.sub_strategy.ask()
         if type(param_batch) != list:
             param_batch = [param_batch]
@@ -115,13 +167,20 @@ class HyperbandSearch(Strategy):
         self,
         batch_proposals: list,
         perf_measures: list,
-        ckpt_paths: Union[List[str], None] = None,
-    ):
-        """Perform post-iteration clean-up - no surrogate model."""
+        ckpt_paths: Optional[List[str]] = None,
+    ) -> None:
+        """Perform post-iteration clean-up by updating surrogate model.
+
+        Args:
+            batch_proposals (list): List of evaluated configurations
+            perf_measures (list): List of corresponding performances
+            ckpt_paths (Optional[List[str]], optional):
+                List of corresponding model ckpts to store. Defaults to None.
+        """
         self.sub_strategy.tell(batch_proposals, perf_measures, ckpt_paths)
         self.hb_batch_counter += 1
 
-    def update_search(self):
+    def update_search(self) -> None:
         """Check whether to switch to next successive halving strategy."""
         if self.sub_strategy.completed:
             self.hb_counter += 1
@@ -144,9 +203,19 @@ class HyperbandSearch(Strategy):
         self,
         batch_proposals: list,
         perf_measures: list,
-        ckpt_paths: Union[None, List[str], str] = None,
-    ):
-        """Log info specific to search strategy."""
+        ckpt_paths: Optional[Union[List[str], str]] = None,
+    ) -> list:
+        """Log info specific to search strategy.
+
+        Args:
+            batch_proposals (list): List of evaluated configurations
+            perf_measures (list): List of corresponding performances
+            ckpt_paths (Optional[List[str]], optional):
+                List of corresponding model ckpts to store. Defaults to None.
+
+        Returns:
+            [list]: Hyperband data to log.
+        """
         strat_data = []
         for i in range(len(batch_proposals)):
             c_data = {}
@@ -158,7 +227,7 @@ class HyperbandSearch(Strategy):
             strat_data.append(c_data)
         return strat_data
 
-    def print_hello_strategy(self):
+    def print_hello_strategy(self) -> None:
         """Hello message specific to hyperband search."""
         print_hyperband_hello(
             self.num_hb_loops,
@@ -168,7 +237,7 @@ class HyperbandSearch(Strategy):
             self.evals_per_batch,
         )
 
-    def print_update_strategy(self):
+    def print_update_strategy(self) -> None:
         """Update message specific to hyperband search."""
         print_hyperband_update(
             self.hb_counter,

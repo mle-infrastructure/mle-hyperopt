@@ -101,7 +101,11 @@ def search():
         if args.num_iters is not None
         else search_config.num_iters
     )
-    for _ in range(num_search_iters):
+    for s_iter in range(num_search_iters):
         config = strategy.ask()
+        config["search_eval_id"] = (
+            search_config.search_type.lower() + f"_{s_iter}"
+        )
         result = foo.main(config)
+        del config["search_eval_id"]
         strategy.tell(config, result, save=True)

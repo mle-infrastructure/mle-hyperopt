@@ -62,7 +62,7 @@ setup(
     ),
     entry_points={
         "console_scripts": [
-            "mle-search=mle_hyperopt.search:search",
+            "mle-search=mle_hyperopt.cli:search",
         ]
     },
 )
