@@ -1,3 +1,22 @@
+## [v0.0.6] - [02/19/2022]
+### Added
+
+- Adds a command line interface for running a sequential search given a python script `<script>.py` containing a function `main(config)`, a default configuration file `<base>.yaml` & a search configuration `<search>.yaml`. The `main` function should return a single scalar performance score. You can then start the search via:
+
+  ```
+  mle-search <script>.py --base_config <base>.yaml --search_config <search>.yaml --num_iters <search_iters>
+  ```
+  Or short via:
+  ```
+  mle-search <script>.py -base <base>.yaml -search <search>.yaml -iters <search_iters>
+  ```
+
+### Changed
+
+- Make it possible to optimize parameters in nested dictionaries. Added helpers `flatten_config` and `unflatten_config`. For shaping `'sub1/sub2/vname' <-> {sub1: {sub2: {vname: v}}}`
+- Make start-up message also print fixed parameter settings.
+- Cleaned up decorator with the help of `Strategies` wrapper.
+
 ## [v0.0.5] - [01/05/2022]
 
 ### Added

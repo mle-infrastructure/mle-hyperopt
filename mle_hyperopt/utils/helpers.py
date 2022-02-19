@@ -6,6 +6,7 @@ import json
 import yaml
 import ast
 import numpy as np
+import collections
 
 
 def convert(obj):
@@ -114,3 +115,31 @@ def write_configs(params_batch: List[dict], config_fnames: List[str]):
             save_yaml(params_batch[s_id], config_fnames[s_id])
         else:
             raise ValueError("Only YAML & JSON configuration can be stored.")
+
+
+def unflatten_config(dictionary, sep="/"):
+    """Transform flat composed parameter keys into corresponding nested dict.
+    Example: 'sub1/sub2/vname' -> {sub1: {sub2: {vname: v}}}"""
+    resultDict = dict()
+    for key, value in dictionary.items():
+        parts = key.split(sep)
+        d = resultDict
+        for part in parts[:-1]:
+            if part not in d:
+                d[part] = dict()
+            d = d[part]
+        d[parts[-1]] = value
+    return resultDict
+
+
+def flatten_config(dictionary, parent_key="", sep="/"):
+    """Transform nested dict keys into flat composed parameter keys.
+    Example: {sub1: {sub2: {vname: v}}} -> 'sub1/sub2/vname'"""
+    items = []
+    for k, v in dictionary.items():
+        new_key = parent_key + sep + k if parent_key else k
+        if isinstance(v, collections.MutableMapping):
+            items.extend(flatten_config(v, new_key, sep=sep).items())
+        else:
+            items.append((new_key, v))
+    return dict(items)

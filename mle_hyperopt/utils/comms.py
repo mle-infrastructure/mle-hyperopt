@@ -4,12 +4,14 @@ from rich.console import Console
 from rich.table import Table
 from rich import box
 from rich.align import Align
-from typing import List
+from typing import List, Optional
 
 console_width = 80
 
 
-def welcome_message(space_data, search_type: str):
+def welcome_message(
+    space_data, search_type: str, fixed_params: Optional[dict] = None
+):
     """Print startup configuration of search space."""
     console = Console(width=console_width)
     table = Table(show_footer=False)
@@ -19,6 +21,10 @@ def welcome_message(space_data, search_type: str):
     table.title = "MLE-Hyperopt " + search_type + " Hyperspace :rocket:"
     for row in space_data:
         table.add_row(*list(row.values()))
+
+    if fixed_params is not None:
+        for k, v in fixed_params.items():
+            table.add_row(k, "fixed", str(v))
     table.columns[2].justify = "left"
     table.columns[2].header_style = "bold red"
     table.columns[2].style = "red"
@@ -97,14 +103,19 @@ def ranking_message(best_eval_ids, best_configs, best_evals):
         # Round all the values for prettier printing
         if type(best_evals[i]) == np.ndarray:
             best_evals[i] = best_evals[i].tolist()
-            best_eval = [round(best_evals[i][j], 3) for j in range(len(best_evals[i]))]
+            best_eval = [
+                round(best_evals[i][j], 3) for j in range(len(best_evals[i]))
+            ]
         else:
             best_eval = round(best_evals[i], 3)
         for k, v in best_configs[i].items():
             if type(v) == float:
                 best_configs[i][k] = round(v, 3)
         table.add_row(
-            f"{i+1}", str(best_eval_ids[i]), str(best_eval), str(best_configs[i])[1:-1]
+            f"{i+1}",
+            str(best_eval_ids[i]),
+            str(best_eval),
+            str(best_configs[i])[1:-1],
         )
     console.print(Align.center(table))
 
@@ -113,7 +124,8 @@ def print_grid_hello(num_total_configs: int, num_dims_grid: int):
     """Hello message specific to grid search."""
     console = Console(width=console_width)
     console.log(
-        f"Start running {num_total_configs} configuration for {num_dims_grid}D grid."
+        f"Start running {num_dims_grid}D grid with "
+        f"{num_total_configs} total configurations."
     )
 
 
@@ -126,13 +138,16 @@ def print_halving_hello(
 ):
     """Hello message specific to SH search."""
     console = Console(width=console_width)
-    console.log(f"Start running {num_sh_batches} batches of Successive Halving.")
+    console.log(
+        f"Start running {num_sh_batches} batches of Successive Halving."
+    )
     console.log(f"➞ Configurations per batch: {evals_per_batch}")
     console.log(f"➞ Iterations per batch: {iters_per_batch}")
     console.log(f"➞ Halving coefficient: {halving_coeff}")
     console.log(f"➞ Total Number of Iterations: {num_total_iters}")
     console.log(
-        f"➞ Batch No. 1/{num_sh_batches}: {evals_per_batch[0]} configs for {iters_per_batch[0]} iters."
+        f"➞ Batch No. 1/{num_sh_batches}: {evals_per_batch[0]} configs for"
+        f" {iters_per_batch[0]} iters."
     )
     return
 
@@ -147,14 +162,18 @@ def print_halving_update(
     """Update message specific to SH search."""
     console = Console(width=console_width)
     done_iters = np.sum(
-        np.array(evals_per_batch)[:sh_counter] * np.array(iters_per_batch)[:sh_counter]
+        np.array(evals_per_batch)[:sh_counter]
+        * np.array(iters_per_batch)[:sh_counter]
     )
     console.log(
-        f"Completed {sh_counter}/{num_sh_batches} batches of SH ➢ {done_iters}/{num_total_iters} iters."
+        f"Completed {sh_counter}/{num_sh_batches} batches of SH ➢"
+        f" {done_iters}/{num_total_iters} iters."
     )
     if sh_counter < num_sh_batches:
         console.log(
-            f"➞ Next - Batch No. {sh_counter+1}/{num_sh_batches}: {evals_per_batch[sh_counter]} configs for {iters_per_batch[sh_counter]} iters."
+            f"➞ Next - Batch No. {sh_counter+1}/{num_sh_batches}:"
+            f" {evals_per_batch[sh_counter]} configs for"
+            f" {iters_per_batch[sh_counter]} iters."
         )
 
 
@@ -167,12 +186,17 @@ def print_hyperband_hello(
 ):
     """Hello message specific to Hyperband search."""
     console = Console(width=console_width)
-    console.log(f"Start running {num_hb_batches} batches of Hyperband evaluations.")
+    console.log(
+        f"Start running {num_hb_batches} batches of Hyperband evaluations."
+    )
     console.log(f"➞ Evals per batch: {evals_per_batch}")
-    console.log(f"➞ Total SH loops: {num_hb_loops} | Arms per loop: {sh_num_arms}")
+    console.log(
+        f"➞ Total SH loops: {num_hb_loops} | Arms per loop: {sh_num_arms}"
+    )
     console.log(f"➞ Min. budget per loop: {sh_budgets}")
     console.log(
-        f"➞ Start Loop No. 1/{num_hb_loops}: {sh_num_arms[0]} arms & {sh_budgets[0]} min budget."
+        f"➞ Start Loop No. 1/{num_hb_loops}: {sh_num_arms[0]} arms &"
+        f" {sh_budgets[0]} min budget."
     )
 
 
@@ -188,18 +212,26 @@ def print_hyperband_update(
     """Update message specific to Hyperband search."""
     console = Console(width=console_width)
     console.log(
-        f"Completed {hb_batch_counter}/{num_hb_batches} of Hyperband evaluation batches."
+        f"Completed {hb_batch_counter}/{num_hb_batches} of Hyperband evaluation"
+        " batches."
     )
     console.log(f"➞ Done with {hb_counter}/{num_hb_loops} loops of SH.")
     if hb_counter < num_hb_loops:
         console.log(
-            f"➞ Active Loop No. {hb_counter + 1}/{num_hb_loops}: {sh_num_arms[hb_counter]} arms & {sh_budgets[hb_counter]} min budget."
+            f"➞ Active Loop No. {hb_counter + 1}/{num_hb_loops}:"
+            f" {sh_num_arms[hb_counter]} arms & {sh_budgets[hb_counter]} min"
+            " budget."
         )
-        console.log(f"➞ Next batch of SH: {evals_per_batch[hb_batch_counter]} evals.")
+        console.log(
+            f"➞ Next batch of SH: {evals_per_batch[hb_batch_counter]} evals."
+        )
 
 
 def print_pbt_hello(
-    num_workers: int, steps_until_ready: int, explore_type: str, exploit_type: str
+    num_workers: int,
+    steps_until_ready: int,
+    explore_type: str,
+    exploit_type: str,
 ):
     """Hello message specific to PBT search."""
     console = Console(width=console_width)
@@ -217,11 +249,16 @@ def print_pbt_update(step_counter: int, num_total_steps: int, copy_info: dict):
     for w_id in range(len(copy_info)):
         if w_id != copy_info[w_id]["copy_id"]:
             console.log(
-                f"➞ 👨‍🚒 W{w_id} (P: {round(copy_info[w_id]['old_performance'], 3)}) exploits W{copy_info[w_id]['copy_id']} (P: {round(copy_info[w_id]['copy_performance'], 3)})"
+                f"➞ 👨‍🚒 W{w_id} (P:"
+                f" {round(copy_info[w_id]['old_performance'], 3)}) exploits"
+                f" W{copy_info[w_id]['copy_id']} (P:"
+                f" {round(copy_info[w_id]['copy_performance'], 3)})"
             )
             console.log(f"-- E/E Params: {copy_info[w_id]['copy_params']}")
         else:
             console.log(
-                f"➞ 👨‍🚒 W{w_id} (P: {round(copy_info[w_id]['old_performance'], 3)}) continues own trajectory."
+                f"➞ 👨‍🚒 W{w_id} (P:"
+                f" {round(copy_info[w_id]['old_performance'], 3)}) continues"
+                " own trajectory."
             )
             console.log(f"-- Old Params: {copy_info[w_id]['copy_params']}")

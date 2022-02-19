@@ -8,6 +8,8 @@ from .utils import (
     save_log,
     load_strategy,
     save_strategy,
+    flatten_config,
+    unflatten_config,
     write_configs,
     welcome_message,
     update_message,
@@ -75,6 +77,10 @@ class Strategy(object):
         """Get proposals to eval - implemented by specific hyperopt algo"""
         # Ask the specific strategy for a batch of configs to evaluate
         param_batch = self.ask_search(batch_size)
+
+        # Check that search variable keys are not nested - if so unpack
+        for i in range(len(param_batch)):
+            param_batch[i] = unflatten_config(param_batch[i])
 
         # If fixed params are not none add them to config dicts
         if self.fixed_params is not None:
@@ -181,6 +187,8 @@ class Strategy(object):
             if self.fixed_params is not None:
                 for k in self.fixed_params.keys():
                     del proposal_clean[k]
+            # After extra/fixed parameter clean up - flatten remaining params
+            proposal_clean = flatten_config(proposal_clean)
 
             if (
                 proposal_clean in self.all_evaluated_params
@@ -421,7 +429,7 @@ class Strategy(object):
             print_out = self.search_name + " - " + message
         else:
             print_out = self.search_name
-        welcome_message(space_data, print_out)
+        welcome_message(space_data, print_out, self.fixed_params)
 
     def print_update(
         self,

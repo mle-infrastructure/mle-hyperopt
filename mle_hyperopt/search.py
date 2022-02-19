@@ -29,6 +29,13 @@ def get_search_args() -> None:
         default="search.yaml",
         help="Filename to load search configuration from.",
     )
+    parser.add_argument(
+        "-iters",
+        "--num_iters",
+        type=int,
+        default=None,
+        help="Number of desired search iterations.",
+    )
     args = parser.parse_args()
     return args
 
@@ -46,7 +53,8 @@ def search():
 
         mle-search <script>.py -base <base>.yaml -search <search>.yaml
 
-    This will spawn single runs for different configurations.
+    This will spawn single runs for different configurations and walk through a
+    set of search iterations.
     """
     args = get_search_args()
 
@@ -88,7 +96,12 @@ def search():
     foo = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(foo)
 
-    for _ in range(search_config.num_iters):
+    num_search_iters = (
+        args.num_iters
+        if args.num_iters is not None
+        else search_config.num_iters
+    )
+    for _ in range(num_search_iters):
         config = strategy.ask()
         result = foo.main(config)
-        strategy.tell(config, result)
+        strategy.tell(config, result, save=True)
