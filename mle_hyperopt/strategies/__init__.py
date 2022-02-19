@@ -7,6 +7,16 @@ from .halving import HalvingSearch
 from .hyperband import HyperbandSearch
 from .pbt import PBTSearch
 
+Strategies = {
+    "Random": RandomSearch,
+    "Grid": GridSearch,
+    "SMBO": SMBOSearch,
+    "Nevergrad": NevergradSearch,
+    "Coordinate": CoordinateSearch,
+    "Halving": HalvingSearch,
+    "Hyperband": HyperbandSearch,
+    "PBT": PBTSearch,
+}
 
 __all__ = [
     "__version__",
@@ -18,4 +28,5 @@ __all__ = [
     "HalvingSearch",
     "HyperbandSearch",
     "PBTSearch",
+    "Strategies",
 ]

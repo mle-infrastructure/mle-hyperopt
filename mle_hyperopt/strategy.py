@@ -79,7 +79,8 @@ class Strategy(object):
         # If fixed params are not none add them to config dicts
         if self.fixed_params is not None:
             for i in range(len(param_batch)):
-                param_batch[i] = {**param_batch[i], **self.fixed_params}
+                # Important that param_batch 2nd - overwrites fixed k,v!
+                param_batch[i] = {**self.fixed_params, **param_batch[i]}
 
         # If string for storage is given: Save configs as .yaml
         if store:
@@ -135,7 +136,10 @@ class Strategy(object):
         for i in range(len(clean_prop)):
             if strat_data is not None:
                 if "extra" in log_data[i].keys():
-                    log_data[i]["extra"] = {**log_data[i]["extra"], **strat_data[i]}
+                    log_data[i]["extra"] = {
+                        **log_data[i]["extra"],
+                        **strat_data[i],
+                    }
                 else:
                     log_data[i]["extra"] = strat_data[i]
             self.log.append(log_data[i])
@@ -158,7 +162,12 @@ class Strategy(object):
         ckpt_paths: Union[None, List[str], str] = None,
     ):
         """Remove duplicate evals (reload) & strategy non-relevant data."""
-        log_data, clean_proposals, clean_performance, clean_ckpt = [], [], [], []
+        log_data, clean_proposals, clean_performance, clean_ckpt = (
+            [],
+            [],
+            [],
+            [],
+        )
         for i in range(len(batch_proposals)):
             # Check whether proposals were already previously added
             # If so -- ignore (and print message?)
@@ -251,7 +260,11 @@ class Strategy(object):
         if reload_path is not None:
             fname, fext = os.path.splitext(reload_path)
             if fext in [".yaml", ".json"]:
-                if self.search_name in ["PBT", "SuccessiveHalving", "Hyperband"]:
+                if self.search_name in [
+                    "PBT",
+                    "SuccessiveHalving",
+                    "Hyperband",
+                ]:
                     raise ValueError(
                         "Iterative search logs can only be loaded from .pkl."
                     )
@@ -265,7 +278,9 @@ class Strategy(object):
                             reload=True,
                         )
                     else:
-                        self.tell([iter["params"]], [iter["objective"]], reload=True)
+                        self.tell(
+                            [iter["params"]], [iter["objective"]], reload=True
+                        )
             elif fext == ".pkl":
                 self.__dict__ = load_strategy(reload_path).__dict__
 
@@ -279,7 +294,9 @@ class Strategy(object):
                         reload=True,
                     )
                 else:
-                    self.tell([iter["params"]], [iter["objective"]], reload=True)
+                    self.tell(
+                        [iter["params"]], [iter["objective"]], reload=True
+                    )
 
         if reload_path is not None or reload_list is not None:
             Console().log(
@@ -310,7 +327,12 @@ class Strategy(object):
 
         # Multi-objective case - get pareto front
         else:
-            best_idx, best_configs, best_evals, best_ckpt = self.get_pareto_front()
+            (
+                best_idx,
+                best_configs,
+                best_evals,
+                best_ckpt,
+            ) = self.get_pareto_front()
             if best_idx is None:
                 best_idx = top_k * ["-"]
 
@@ -434,7 +456,9 @@ class Strategy(object):
             [perf_measures[best_bid] for best_bid in best_batch_idx],
         )
         if ckpt_paths is not None:
-            best_batch_ckpt = [ckpt_paths[best_bid] for best_bid in best_batch_idx]
+            best_batch_ckpt = [
+                ckpt_paths[best_bid] for best_bid in best_batch_idx
+            ]
         else:
             best_batch_ckpt = None
 
@@ -507,7 +531,9 @@ class Strategy(object):
 
         self.refine_space(real_refined, integer_refined, categorical_refined)
         if self.verbose:
-            self.print_hello(f"{self.eval_counter} Evals - Top {top_k} - Refined")
+            self.print_hello(
+                f"{self.eval_counter} Evals - Top {top_k} - Refined"
+            )
 
     def get_pareto_front(self):
         """Get pareto front for multi-objective problems."""

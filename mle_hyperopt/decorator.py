@@ -1,15 +1,6 @@
 from typing import Union
 import functools
-from .strategies import (
-    RandomSearch,
-    GridSearch,
-    SMBOSearch,
-    NevergradSearch,
-    CoordinateSearch,
-    HalvingSearch,
-    HyperbandSearch,
-    PBTSearch,
-)
+from .strategies import Strategies
 
 
 def hyperopt(
@@ -35,52 +26,21 @@ def hyperopt(
     strategy = distance_from_circle()
     strategy.log
     """
-    assert strategy_type in [
-        "Random",
-        "Grid",
-        "SMBO",
-        "Nevergrad",
-        "Coordinate",
-        "Halving",
-        "Hyperband",
-        "PBT",
-    ]
+    assert strategy_type in Strategies.keys()
 
-    if strategy_type == "Random":
-        strategy = RandomSearch(
-            real, integer, categorical, search_config, maximize_objective, fixed_params
-        )
-    elif strategy_type == "Grid":
-        strategy = GridSearch(real, integer, categorical, fixed_params)
-    elif strategy_type == "SMBO":
-        strategy = SMBOSearch(
-            real, integer, categorical, search_config, maximize_objective, fixed_params
-        )
-    elif strategy_type == "Nevergrad":
-        strategy = NevergradSearch(
-            real, integer, categorical, search_config, maximize_objective, fixed_params
-        )
-    elif strategy_type == "Coordinate":
-        strategy = CoordinateSearch(
-            real, integer, categorical, search_config, maximize_objective, fixed_params
-        )
-    elif strategy_type == "Halving":
-        strategy = HalvingSearch(
-            real, integer, categorical, search_config, maximize_objective, fixed_params
-        )
-    elif strategy_type == "Hyperband":
-        strategy = HyperbandSearch(
-            real, integer, categorical, search_config, maximize_objective, fixed_params
-        )
-    elif strategy_type == "PBT":
-        strategy = PBTSearch(
-            real, integer, categorical, search_config, maximize_objective, fixed_params
-        )
+    strategy = Strategies[strategy_type](
+        real,
+        integer,
+        categorical,
+        search_config,
+        maximize_objective,
+        fixed_params,
+    )
 
     def decorator(function):
         @functools.wraps(function)
         def wrapper(*args, **kwargs):
-            for iter_id in range(num_search_iters):
+            for _ in range(num_search_iters):
                 config = strategy.ask()
                 result = function(config, *args, **kwargs)
                 strategy.tell(config, [result])
