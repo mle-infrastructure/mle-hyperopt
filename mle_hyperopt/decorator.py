@@ -12,7 +12,7 @@ def hyperopt(
     search_config: Optional[dict] = None,
     maximize_objective: bool = False,
     fixed_params: Optional[dict] = None,
-) -> Callable[Any, None]:
+) -> Callable[[Any], None]:
     """Simple search decorator for all strategies. Example usage:
     @hyperopt(strategy_type="grid",
               num_search_iters=25,
