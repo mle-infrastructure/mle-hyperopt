@@ -80,6 +80,7 @@ class HyperbandSearch(Strategy):
                 Option to print intermediate results. Defaults to False.
         """
         self.search_name = "Hyperband"
+        self.space = RandomSpace(real, integer, categorical)
         Strategy.__init__(
             self,
             real,
@@ -93,7 +94,6 @@ class HyperbandSearch(Strategy):
             seed_id,
             verbose,
         )
-        self.space = RandomSpace(real, integer, categorical)
         for k in ["max_resource", "eta"]:
             assert k in self.search_config.keys()
 

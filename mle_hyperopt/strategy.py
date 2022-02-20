@@ -384,7 +384,7 @@ class Strategy(object):
         # Simply loop over param, value pairs and `tell` the strategy.
         prev_evals = int(self.eval_counter)
         if reload_path is not None:
-            fname, fext = os.path.splitext(reload_path)
+            _, fext = os.path.splitext(reload_path)
             if fext in [".yaml", ".json"]:
                 if self.search_name in [
                     "PBT",

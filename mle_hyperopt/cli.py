@@ -44,6 +44,13 @@ def get_search_args() -> None:
         default=None,
         help="Directory to save search_log.yaml in.",
     )
+    parser.add_argument(
+        "-reload",
+        "--reload_log",
+        default=False,
+        action="store_true",
+        help="Attempt to reload log file.",
+    )
     args = parser.parse_args()
     return args
 
@@ -69,6 +76,19 @@ def search() -> None:
     """
     args = get_search_args()
 
+    # Setup log storage path & effective search iterations
+    save_path = (
+        os.path.join(args.log_dir, "search_log.yaml")
+        if args.log_dir is not None
+        else "search_log.yaml"
+    )
+
+    num_search_iters = (
+        args.num_iters
+        if args.num_iters is not None
+        else search_config.num_iters
+    )
+
     # Load base configuration and search configuration
     search_config = load_config(args.search_config, True)
     base_config = load_config(args.base_config, True)
@@ -92,6 +112,10 @@ def search() -> None:
     if base_config is not None:
         base_config = base_config.toDict()
 
+    if args.reload_log:
+        reload_path = save_path
+    else:
+        reload_path = None
     strategy = Strategies[search_config.search_type](
         real,
         integer,
@@ -99,20 +123,8 @@ def search() -> None:
         search_config.search_config,
         search_config.maximize_objective,
         fixed_params=base_config,
+        reload_path=reload_path,
         verbose=search_config.verbose,
-    )
-
-    # Setup log storage path & effective search iterations
-    save_path = (
-        os.path.join(args.log_dir, "search_log.yaml")
-        if args.log_dir is not None
-        else "search_log.yaml"
-    )
-
-    num_search_iters = (
-        args.num_iters
-        if args.num_iters is not None
-        else search_config.num_iters
     )
 
     # Append path for correct imports & load the main function module
@@ -124,7 +136,7 @@ def search() -> None:
     spec.loader.exec_module(foo)
 
     # Run the search loop and store results to path
-    for s_iter in range(num_search_iters):
+    for s_iter in range(strategy.eval_counter, num_search_iters, 1):
         config = strategy.ask()
         # Add search id for logging inside main call
         config["search_eval_id"] = (

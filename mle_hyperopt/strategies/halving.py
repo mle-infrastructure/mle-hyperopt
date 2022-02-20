@@ -59,6 +59,7 @@ class HalvingSearch(Strategy):
                 Option to print intermediate results. Defaults to False.
         """
         self.search_name = "Halving"
+        self.space = RandomSpace(real, integer, categorical)
         Strategy.__init__(
             self,
             real,
@@ -72,7 +73,6 @@ class HalvingSearch(Strategy):
             seed_id,
             verbose,
         )
-        self.space = RandomSpace(real, integer, categorical)
         for k in ["min_budget", "num_arms", "halving_coeff"]:
             assert k in self.search_config.keys()
 

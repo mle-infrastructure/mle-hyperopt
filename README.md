@@ -68,14 +68,11 @@ A PyPI installation is available via:
 pip install mle-hyperopt
 ```
 
-Alternatively, you can clone this repository and afterwards 'manually' install it:
+If you want to get the most recent commit, please install directly from the repository:
 
 ```
-git clone https://github.com/mle-infrastructure/mle-hyperopt.git
-cd mle-hyperopt
-pip install -e .
+pip install git+https://github.com/mle-infrastructure/mle-hyperopt.git@main
 ```
-
 ## Search Method Highlights 🔎
 
 ### Grid Search 🟥

@@ -50,6 +50,8 @@ class GridSearch(Strategy):
                 Option to print intermediate results. Defaults to False.
         """
         self.search_name = "Grid"
+        self.space = GridSpace(real, integer, categorical)
+
         Strategy.__init__(
             self,
             real,
@@ -65,7 +67,6 @@ class GridSearch(Strategy):
         )
         # Generate all possible combinations of param configs in list & loop
         # over the list when doing the grid search
-        self.space = GridSpace(real, integer, categorical)
         self.num_param_configs = len(self.space)
         self.grid_counter = self.eval_counter
         # Add start-up message printing the search space

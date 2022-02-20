@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-from typing import List, Union
+from typing import List, Optional
 import seaborn as sns
 from mle_logging import load_config
 
@@ -43,18 +43,18 @@ sns.set(
 
 def visualize_2D_grid(
     hyper_df: pd.core.frame.DataFrame,
-    fixed_params: Union[None, dict] = None,
+    fixed_params: Optional[dict] = None,
     params_to_plot: list = [],
     target_to_plot: str = "objective",
     plot_title: str = "Temp Title",
-    plot_subtitle: Union[None, str] = None,
-    xy_labels: Union[None, List[str]] = ["x-label", "y-label"],
-    variable_name: Union[None, str] = "Performance",
+    plot_subtitle: Optional[str] = None,
+    xy_labels: Optional[List[str]] = ["x-label", "y-label"],
+    variable_name: Optional[str] = "Performance",
     every_nth_tick: int = 1,
     plot_colorbar: bool = True,
     text_in_cell: bool = False,
-    max_heat: Union[None, float] = None,
-    min_heat: Union[None, float] = None,
+    max_heat: Optional[float] = None,
+    min_heat: Optional[float] = None,
     norm_cols: bool = False,
     norm_rows: bool = False,
     return_array: bool = False,
@@ -63,7 +63,7 @@ def visualize_2D_grid(
     ax=None,
     figsize: tuple = (10, 8),
     cmap="magma",
-    fname: Union[None, str] = None,
+    fname: Optional[str] = None,
 ):
     """Fix certain params & visualize grid target value over two selected ones.
 
@@ -216,14 +216,14 @@ def plot_2D_heatmap(
     range_y: np.ndarray,
     heat_array: np.ndarray,
     title: str = "Placeholder Title",
-    subtitle: Union[None, str] = None,
+    subtitle: Optional[str] = None,
     xy_labels: list = ["x-label", "y-label"],
-    variable_name: Union[None, str] = None,
+    variable_name: Optional[str] = None,
     every_nth_tick: int = 1,
     plot_colorbar: bool = True,
     text_in_cell: bool = False,
-    max_heat: Union[None, float] = None,
-    min_heat: Union[None, float] = None,
+    max_heat: Optional[float] = None,
+    min_heat: Optional[float] = None,
     round_ticks: int = 1,
     fig=None,
     ax=None,

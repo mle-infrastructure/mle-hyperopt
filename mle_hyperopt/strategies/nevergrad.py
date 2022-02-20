@@ -58,6 +58,7 @@ class NevergradSearch(Strategy):
                 Option to print intermediate results. Defaults to False.
         """
         self.search_name = "Nevergrad"
+        self.space = NevergradSpace(real, integer, categorical)
         Strategy.__init__(
             self,
             real,
@@ -71,7 +72,6 @@ class NevergradSearch(Strategy):
             seed_id,
             verbose,
         )
-        self.space = NevergradSpace(real, integer, categorical)
         self.init_optimizer()
 
         # Add start-up message printing the search space

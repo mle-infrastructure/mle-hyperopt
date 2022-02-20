@@ -59,6 +59,7 @@ class SMBOSearch(Strategy):
                 Option to print intermediate results. Defaults to False.
         """
         self.search_name = "SMBO"
+        self.space = SMBOSpace(real, integer, categorical)
         Strategy.__init__(
             self,
             real,
@@ -72,7 +73,6 @@ class SMBOSearch(Strategy):
             seed_id,
             verbose,
         )
-        self.space = SMBOSpace(real, integer, categorical)
         self.init_optimizer()
 
         # Add start-up message printing the search space

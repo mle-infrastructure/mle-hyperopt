@@ -51,6 +51,7 @@ class RandomSearch(Strategy):
                 Option to print intermediate results. Defaults to False.
         """
         self.search_name = "Random"
+        self.space = RandomSpace(real, integer, categorical)
         Strategy.__init__(
             self,
             real,
@@ -64,7 +65,6 @@ class RandomSearch(Strategy):
             seed_id,
             verbose,
         )
-        self.space = RandomSpace(real, integer, categorical)
 
         # Add start-up message printing the search space
         if self.verbose:
