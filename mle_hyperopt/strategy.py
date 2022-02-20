@@ -1,4 +1,4 @@
-from typing import Union, List
+from typing import Optional, Union, List, Tuple
 import os
 import numpy as np
 import pandas as pd
@@ -8,6 +8,8 @@ from .utils import (
     save_log,
     load_strategy,
     save_strategy,
+    flatten_config,
+    unflatten_config,
     write_configs,
     welcome_message,
     update_message,
@@ -29,21 +31,51 @@ sns.set(
 
 
 class Strategy(object):
-    """Base Class for Running Hyperparameter Optimisation Searches."""
-
     def __init__(
         self,
-        real: Union[dict, None] = None,
-        integer: Union[dict, None] = None,
-        categorical: Union[dict, None] = None,
-        search_config: Union[dict, None] = None,
+        real: Optional[dict] = None,
+        integer: Optional[dict] = None,
+        categorical: Optional[dict] = None,
+        search_config: Optional[dict] = None,
         maximize_objective: bool = False,
-        fixed_params: Union[dict, None] = None,
-        reload_path: Union[str, None] = None,
-        reload_list: Union[list, None] = None,
+        fixed_params: Optional[dict] = None,
+        reload_path: Optional[str] = None,
+        reload_list: Optional[list] = None,
         seed_id: int = 42,
         verbose: bool = True,
     ):
+        """Base Class for Running Hyperparameter Optimisation Searches.
+
+        Args:
+            real (Optional[dict], optional):
+                Dictionary of real-valued search variables & their resolution.
+                E.g. {"lrate": {"begin": 0.1, "end": 0.5, "bins": 5}}
+                Defaults to None.
+            integer (Optional[dict], optional):
+                Dictionary of integer-valued search variables & their resolution.
+                E.g. {"batch_size": {"begin": 1, "end": 5, "bins": 5}}
+                Defaults to None.
+            categorical (Optional[dict], optional):
+                Dictionary of categorical-valued search variables.
+                E.g. {"arch": ["mlp", "cnn"]}
+                Defaults to None.
+            search_config (dict, optional): Search-specific hyperparameters.
+                Defaults to None.
+            maximize_objective (bool, optional): Whether to maximize objective.
+                Defaults to False.
+            fixed_params (Optional[dict], optional):
+                Fixed parameters that will be added to all configurations.
+                Defaults to None.
+            reload_path (Optional[str], optional):
+                Path to load previous search log from. Defaults to None.
+            reload_list (Optional[list], optional):
+                List of previous results to reload. Defaults to None.
+            seed_id (int, optional):
+                Random seed for reproducibility. Defaults to 42.
+            verbose (bool, optional):
+                Option to print intermediate results. Defaults to False.
+
+        """
         # Key Input: Specify which params to optimize & in which ranges (dict)
         self.real = real
         self.integer = integer
@@ -68,18 +100,34 @@ class Strategy(object):
 
     def ask(
         self,
-        batch_size: Union[int, None] = 1,
+        batch_size: Optional[int] = 1,
         store: bool = False,
-        config_fnames: Union[None, List[str]] = None,
-    ):
-        """Get proposals to eval - implemented by specific hyperopt algo"""
+        config_fnames: Optional[List[str]] = None,
+    ) -> Union[List[dict], dict]:
+        """Get proposals to evaluate - implemented by specific search algorithm.
+
+        Args:
+            batch_size (int): Number of desired configurations
+            store (bool, optional):
+                Option to store configurations as files. Defaults to False.
+            config_fnames (Optional[List[str]], optional):
+                Explicitly provided filenames to store to. Defaults to None.
+
+        Returns:
+            Union[List[dict], dict]: List or single configuration dictionary
+        """
         # Ask the specific strategy for a batch of configs to evaluate
         param_batch = self.ask_search(batch_size)
+
+        # Check that search variable keys are not nested - if so unpack
+        for i in range(len(param_batch)):
+            param_batch[i] = unflatten_config(param_batch[i])
 
         # If fixed params are not none add them to config dicts
         if self.fixed_params is not None:
             for i in range(len(param_batch)):
-                param_batch[i] = {**param_batch[i], **self.fixed_params}
+                # Important that param_batch 2nd - overwrites fixed k,v!
+                param_batch[i] = {**self.fixed_params, **param_batch[i]}
 
         # If string for storage is given: Save configs as .yaml
         if store:
@@ -105,12 +153,25 @@ class Strategy(object):
         self,
         batch_proposals: Union[List[dict], dict],
         perf_measures: Union[List[Union[float, int]], float],
-        ckpt_paths: Union[None, List[str], str] = None,
+        ckpt_paths: Optional[Union[List[str], str]] = None,
         save: bool = False,
         save_path: str = "search_log.yaml",
         reload: bool = False,
     ):
-        """Perform post-iteration clean-up. (E.g. update surrogate model)"""
+        """Perform post-iteration clean-up. E.g. update surrogate model.
+
+        Args:
+            batch_proposals (List[dict]): List of evaluated configurations.
+            perf_measures (List[float, int], float):
+                List of corresponding performances.
+            ckpt_paths (Optional[List[str], str], optional):
+                List of corresponding model ckpts to store. Defaults to None.
+            save (bool, optional): Option to save log. Defaults to False.
+            save_path (str, optional):
+                Filename to store log in. Defaults to "search_log.yaml".
+            reload (bool, optional):
+                Option to use while reloading log. Defaults to False.
+        """
         # Ensure that update data is list to loop over
         if type(batch_proposals) == dict:
             batch_proposals = [batch_proposals]
@@ -135,7 +196,10 @@ class Strategy(object):
         for i in range(len(clean_prop)):
             if strat_data is not None:
                 if "extra" in log_data[i].keys():
-                    log_data[i]["extra"] = {**log_data[i]["extra"], **strat_data[i]}
+                    log_data[i]["extra"] = {
+                        **log_data[i]["extra"],
+                        **strat_data[i],
+                    }
                 else:
                     log_data[i]["extra"] = strat_data[i]
             self.log.append(log_data[i])
@@ -155,10 +219,30 @@ class Strategy(object):
         self,
         batch_proposals: Union[List[dict], dict],
         perf_measures: Union[List[Union[float, int]], float],
-        ckpt_paths: Union[None, List[str], str] = None,
-    ):
-        """Remove duplicate evals (reload) & strategy non-relevant data."""
-        log_data, clean_proposals, clean_performance, clean_ckpt = [], [], [], []
+        ckpt_paths: Optional[Union[List[str], str]] = None,
+    ) -> Tuple[List[dict], List[dict], List[float], List[Union[str, None]]]:
+        """Remove duplicate evals (reload) & strategy non-relevant data.
+
+        Args:
+            batch_proposals (List[dict]): List of evaluated configurations.
+            perf_measures (List[float, int], float):
+                List of corresponding performances.
+            ckpt_paths (Optional[List[str], str], optional):
+                List of corresponding model ckpts to store. Defaults to None.
+
+        Returns:
+            Tuple[List[dict], List[dict], List[float], List[Union[str, None]]]:
+                log_data - full data to store in log.
+                clean_proposals - cleaned parameter dictionaries.
+                clean_performance - cleaned corresponding performance.
+                clean_ckpt - cleaned checkpoint paths
+        """
+        log_data, clean_proposals, clean_performance, clean_ckpt = (
+            [],
+            [],
+            [],
+            [],
+        )
         for i in range(len(batch_proposals)):
             # Check whether proposals were already previously added
             # If so -- ignore (and print message?)
@@ -172,6 +256,8 @@ class Strategy(object):
             if self.fixed_params is not None:
                 for k in self.fixed_params.keys():
                     del proposal_clean[k]
+            # After extra/fixed parameter clean up - flatten remaining params
+            proposal_clean = flatten_config(proposal_clean)
 
             if (
                 proposal_clean in self.all_evaluated_params
@@ -200,17 +286,33 @@ class Strategy(object):
                 self.eval_counter += 1
         return log_data, list(clean_proposals), clean_performance, clean_ckpt
 
-    def ask_search(self, batch_size: int):
-        """Search method-specific proposal generation."""
+    def ask_search(self, batch_size: int) -> List[dict]:
+        """Get proposals to eval next (in batches) - Search-specific.
+
+        Args:
+            batch_size (Optional[int]): Number of desired configurations
+            - Not applicable here since number of configurations is prescribed
+
+        Returns:
+            List[dict]: List of configuration dictionaries
+        """
         raise NotImplementedError
 
     def tell_search(
         self,
-        batch_proposals: list,
-        perf_measures: list,
-        ckpt_paths: Union[None, List[str], str] = None,
-    ):
-        """Search method-specific strategy update."""
+        batch_proposals: List[dict],
+        perf_measures: List[float],
+        ckpt_paths: Optional[List[str]] = None,
+    ) -> None:
+        """Perform post-iteration clean-up by updating surrogate model.
+
+        Args:
+            batch_proposals (List[dict]): List of evaluated configurations.
+            perf_measures (List[float, np.ndarray]):
+                List of corresponding performances.
+            ckpt_paths (Optional[List[str]], optional):
+                List of corresponding model ckpts to store. Defaults to None.
+        """
 
     def setup_search(self):
         """Initialize search settings at startup."""
@@ -219,16 +321,34 @@ class Strategy(object):
         self,
         batch_proposals: list,
         perf_measures: list,
-        ckpt_paths: Union[None, List[str], str] = None,
+        ckpt_paths: Optional[List[str]] = None,
     ):
-        """Log info specific to search strategy."""
+        """Log info specific to search strategy.
 
-    def update_search(self):
+        Args:
+            batch_proposals (list): List of evaluated configurations
+            perf_measures (list): List of corresponding performances
+            ckpt_paths (Optional[List[str]], optional):
+                List of corresponding model ckpts to store. Defaults to None.
+
+        Returns:
+            [list]: Data to log.
+        """
+
+    def update_search(self) -> None:
         """Update the strategy settings - e.g. refine/coord/halving switch."""
 
-    def save(self, save_path: str = "search_log.yaml"):
-        """Store the state of the optimizer (parameters, values) as .pkl."""
-        fname, fext = os.path.splitext(save_path)
+    def save(self, save_path: str = "search_log.yaml") -> None:
+        """Store the log/state of the strategy (parameters, values) as .pkl.
+
+        Args:
+            save_path (str, optional):
+                Filename to store strategy/log. Defaults to "search_log.yaml".
+
+        Raises:
+            ValueError: Make sure that filename has correct extension.
+        """
+        _, fext = os.path.splitext(save_path)
         if fext in [".yaml", ".json"]:
             save_log(self.log, save_path)
         elif fext == ".pkl":
@@ -242,16 +362,28 @@ class Strategy(object):
 
     def load(
         self,
-        reload_path: Union[str, None] = None,
-        reload_list: Union[list, None] = None,
-    ):
-        """Reload the state of the optimizer (parameters, values) as .pkl."""
+        reload_path: Optional[str] = None,
+        reload_list: Optional[list] = None,
+    ) -> None:
+        """Reload the state of the optimizer (parameters, values) as .pkl.
+
+        Args:
+            reload_path (Optional[str], optional): Reload path. Defaults to None.
+            reload_list (Optional[list], optional): Reload list. Defaults to None.
+
+        Raises:
+            ValueError: Make sure that filename has correct extension.
+        """
         # Simply loop over param, value pairs and `tell` the strategy.
         prev_evals = int(self.eval_counter)
         if reload_path is not None:
             fname, fext = os.path.splitext(reload_path)
             if fext in [".yaml", ".json"]:
-                if self.search_name in ["PBT", "SuccessiveHalving", "Hyperband"]:
+                if self.search_name in [
+                    "PBT",
+                    "SuccessiveHalving",
+                    "Hyperband",
+                ]:
                     raise ValueError(
                         "Iterative search logs can only be loaded from .pkl."
                     )
@@ -265,7 +397,9 @@ class Strategy(object):
                             reload=True,
                         )
                     else:
-                        self.tell([iter["params"]], [iter["objective"]], reload=True)
+                        self.tell(
+                            [iter["params"]], [iter["objective"]], reload=True
+                        )
             elif fext == ".pkl":
                 self.__dict__ = load_strategy(reload_path).__dict__
 
@@ -279,7 +413,9 @@ class Strategy(object):
                         reload=True,
                     )
                 else:
-                    self.tell([iter["params"]], [iter["objective"]], reload=True)
+                    self.tell(
+                        [iter["params"]], [iter["objective"]], reload=True
+                    )
 
         if reload_path is not None or reload_list is not None:
             Console().log(
@@ -287,8 +423,16 @@ class Strategy(object):
                 " previous search iterations."
             )
 
-    def get_best(self, top_k: int = 1):
-        """Return top-k best performing parameter configurations."""
+    def get_best(self, top_k: int = 1) -> tuple:
+        """Return top-k best performing parameter configurations.
+
+        Args:
+            top_k (int, optional): Number of top evaluation. Defaults to 1.
+
+        Returns:
+            tuple: IDs, configurations, performance & checkpoint of
+                top performers.
+        """
         assert top_k <= self.eval_counter
 
         # Mono-objective case - get best objective evals
@@ -310,7 +454,12 @@ class Strategy(object):
 
         # Multi-objective case - get pareto front
         else:
-            best_idx, best_configs, best_evals, best_ckpt = self.get_pareto_front()
+            (
+                best_idx,
+                best_configs,
+                best_evals,
+                best_ckpt,
+            ) = self.get_pareto_front()
             if best_idx is None:
                 best_idx = top_k * ["-"]
 
@@ -324,13 +473,24 @@ class Strategy(object):
         else:
             return best_idx, best_configs, best_evals, best_ckpt
 
-    def print_ranking(self, top_k: int = 5):
-        """Pretty print archive of best configurations."""
+    def print_ranking(self, top_k: int = 5) -> None:
+        """Pretty print archive of best configurations.
+
+        Args:
+            top_k (int, optional): Number of top evaluation. Defaults to 5.
+        """
         best_idx, best_configs, best_evals, _ = self.get_best(top_k)
         ranking_message(best_idx, best_configs, best_evals)
 
     def improvement(self, score: float) -> bool:
-        """Return boolean if score is better than best logged one."""
+        """Return boolean if score is better than best logged one.
+
+        Args:
+            score (float): Score to check improvement for.
+
+        Returns:
+            bool: _description_
+        """
         best_idx, best_config, best_eval, _ = self.get_best()
         if self.maximize_objective:
             improved = score >= best_eval
@@ -340,14 +500,27 @@ class Strategy(object):
 
     def store_configs(
         self,
-        config_dicts: List[dict],
-        config_fnames: Union[str, List[str], None] = None,
-    ):
-        """Store configuration as .json files to file path."""
+        config_dicts: Union[dict, List[dict]],
+        config_fnames: Union[str, List[str]],
+    ) -> None:
+        """Store configuration as .json files to file path.
+
+        Args:
+            config_dicts (Union[dict, List[dict]]): List of configuration dicts.
+            config_fnames (Union[str, List[str]]): List of filenames to store at.
+        """
         write_configs(config_dicts, config_fnames)
 
-    def plot_best(self, fname: Union[None, str] = None):
-        """Plot the evolution of best model performance over evaluations."""
+    def plot_best(self, fname: Optional[str] = None):
+        """Plot the evolution of best model performance over evaluations.
+
+        Args:
+            fname (Optional[str], optional):
+                Filename to store plot at. Defaults to None.
+
+        Returns:
+            _type_: Figure and axis matplotlib objects
+        """
         assert isinstance(self.log[0]["objective"], numbers.Number)
         objective_evals = [it["objective"] for it in self.log]
 
@@ -372,7 +545,7 @@ class Strategy(object):
             return fig, ax
 
     @property
-    def df(self):
+    def df(self) -> pd.core.frame.DataFrame:
         """Return log as pandas dataframe."""
         flat_log = []
         for l in self.log:
@@ -391,23 +564,36 @@ class Strategy(object):
         """Return number of evals stored in log."""
         return self.eval_counter
 
-    def print_hello(self, message: Union[str, None] = None):
-        """Print start-up message."""
+    def print_hello(self, message: Optional[str] = None) -> None:
+        """Print start-up message.
+
+        Args:
+            message (Optional[str], optional):
+                Additional string message to print. Defaults to None.
+        """
         # Get search data in table format
         space_data = self.space.describe()
         if message is not None:
             print_out = self.search_name + " - " + message
         else:
             print_out = self.search_name
-        welcome_message(space_data, print_out)
+        welcome_message(space_data, print_out, self.fixed_params)
 
     def print_update(
         self,
         batch_proposals: List[dict],
         perf_measures: List[Union[float, int]],
-        ckpt_paths: Union[None, List[str], str] = None,
+        ckpt_paths: Optional[Union[List[str], str]] = None,
     ):
-        """Print strategy update."""
+        """Print strategy update.
+
+        Args:
+            batch_proposals (List[dict]): List of evaluated configurations.
+            perf_measures (List[float, np.ndarray]):
+                List of corresponding performances.
+            ckpt_paths (Optional[Union[List[str], str]], optional):
+                List of corresponding model ckpts to store. Defaults to None.
+        """
         best_eval_id, best_config, best_eval, best_ckpt = self.get_best(top_k=1)
 
         # Get best performer for current batch
@@ -434,7 +620,9 @@ class Strategy(object):
             [perf_measures[best_bid] for best_bid in best_batch_idx],
         )
         if ckpt_paths is not None:
-            best_batch_ckpt = [ckpt_paths[best_bid] for best_bid in best_batch_idx]
+            best_batch_ckpt = [
+                ckpt_paths[best_bid] for best_bid in best_batch_idx
+            ]
         else:
             best_batch_ckpt = None
 
@@ -459,12 +647,20 @@ class Strategy(object):
             best_batch_ckpt,
         )
 
-    def refine_space(self, top_k: int):
-        """Search method-specific search space update."""
+    def refine_space(self, top_k: int) -> None:
+        """Search method-specific search space update.
+
+        Args:
+            top_k (int): Top k performers to consider when refining.
+        """
         raise NotImplementedError
 
-    def refine(self, top_k: int):
-        """Refine the space boundaries based on top-k performers."""
+    def refine(self, top_k: int) -> None:
+        """Refine the space boundaries based on top-k performers.
+
+        Args:
+            top_k (int): Top k performers to consider when refining.
+        """
         assert self.search_name in ["Random", "SMBO", "Nevergrad"]
         top_idx, top_k_configs, top_k_evals, _ = self.get_best(top_k)
         # Loop over real, integer and categorical variable keys
@@ -507,9 +703,11 @@ class Strategy(object):
 
         self.refine_space(real_refined, integer_refined, categorical_refined)
         if self.verbose:
-            self.print_hello(f"{self.eval_counter} Evals - Top {top_k} - Refined")
+            self.print_hello(
+                f"{self.eval_counter} Evals - Top {top_k} - Refined"
+            )
 
-    def get_pareto_front(self):
+    def get_pareto_front(self) -> tuple:
         """Get pareto front for multi-objective problems."""
         objective_evals = np.array([it["objective"] for it in self.log])
         best_idx, best_configs, best_evals, best_ckpt = [], [], [], []

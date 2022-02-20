@@ -1,6 +1,29 @@
+from typing import Optional, List
+
+
 class HyperSpace(object):
-    def __init__(self, real, integer, categorical):
-        """General Class Wrapper for HyperSpace configuration setup."""
+    def __init__(
+        self,
+        real: Optional[dict] = None,
+        integer: Optional[dict] = None,
+        categorical: Optional[dict] = None,
+    ):
+        """General Class Wrapper for HyperSpace configuration setup.
+
+        Args:
+            real (Optional[dict], optional):
+                Dictionary of real-valued search variables & their resolution.
+                E.g. {"lrate": {"begin": 0.1, "end": 0.5, "bins": 5}}
+                Defaults to None.
+            integer (Optional[dict], optional):
+                Dictionary of integer-valued search variables & their resolution.
+                E.g. {"batch_size": {"begin": 1, "end": 5, "bins": 5}}
+                Defaults to None.
+            categorical (Optional[dict], optional):
+                Dictionary of categorical-valued search variables.
+                E.g. {"arch": ["mlp", "cnn"]}
+                Defaults to None.
+        """
         self.update(real, integer, categorical)
         if self.real is not None:
             self.real_names = list(self.real.keys())
@@ -27,8 +50,28 @@ class HyperSpace(object):
         """Setup/construct the search space."""
         raise NotImplementedError
 
-    def update(self, real, integer, categorical):
-        """Update the search variables and update the space."""
+    def update(
+        self,
+        real: Optional[dict] = None,
+        integer: Optional[dict] = None,
+        categorical: Optional[dict] = None,
+    ) -> None:
+        """Update the search variables and update the space.
+
+        Args:
+            real (Optional[dict], optional):
+                Dictionary of real-valued search variables & their resolution.
+                E.g. {"lrate": {"begin": 0.1, "end": 0.5, "bins": 5}}
+                Defaults to None.
+            integer (Optional[dict], optional):
+                Dictionary of integer-valued search variables & their resolution.
+                E.g. {"batch_size": {"begin": 1, "end": 5, "bins": 5}}
+                Defaults to None.
+            categorical (Optional[dict], optional):
+                Dictionary of categorical-valued search variables.
+                E.g. {"arch": ["mlp", "cnn"]}
+                Defaults to None.
+        """
         self.real = real
         self.integer = integer
         self.categorical = categorical
@@ -38,7 +81,7 @@ class HyperSpace(object):
         self.construct()
 
     @property
-    def num_dims(self):
+    def num_dims(self) -> int:
         """Get number of variables to search over."""
         num_total_dims = 0
         if self.real is not None:
@@ -50,7 +93,7 @@ class HyperSpace(object):
         return num_total_dims
 
     @property
-    def bounds(self):
+    def bounds(self) -> dict:
         """Return bounds of real and integer valued variables."""
         bounds_dict = {}
         if self.real is not None:
@@ -64,7 +107,7 @@ class HyperSpace(object):
                 bounds_dict[k] = ["categorical"] + v
         return bounds_dict
 
-    def describe(self):
+    def describe(self) -> List[dict]:
         """Get space statistics/parameters printed out."""
         all_vars = []
         if self.categorical is not None:
@@ -77,7 +120,10 @@ class HyperSpace(object):
                 data_dict = {
                     "name": k,
                     "type": "real",
-                    "extra": f'Begin: {v["begin"]}, End: {v["end"]}, Prior: {v["prior"]}',
+                    "extra": (
+                        f'Begin: {v["begin"]}, End: {v["end"]}, Prior:'
+                        f' {v["prior"]}'
+                    ),
                 }
                 all_vars.append(data_dict)
 
@@ -86,12 +132,15 @@ class HyperSpace(object):
                 data_dict = {
                     "name": k,
                     "type": "integer",
-                    "extra": f'Begin: {v["begin"]}, End: {v["end"]}, Prior: {v["prior"]}',
+                    "extra": (
+                        f'Begin: {v["begin"]}, End: {v["end"]}, Prior:'
+                        f' {v["prior"]}'
+                    ),
                 }
                 all_vars.append(data_dict)
         return all_vars
 
-    def contains(self, candidate):
+    def contains(self, candidate: dict) -> bool:
         """Check whether a candidate is in the search space."""
         # Define a separate function for discrete grid case!
         for k, v in candidate.items():

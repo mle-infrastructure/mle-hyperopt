@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Optional
 from ..space import HyperSpace
 from skopt.space import Real, Integer, Categorical
 
@@ -6,15 +6,30 @@ from skopt.space import Real, Integer, Categorical
 class SMBOSpace(HyperSpace):
     def __init__(
         self,
-        real: Union[dict, None] = None,
-        integer: Union[dict, None] = None,
-        categorical: Union[dict, None] = None,
+        real: Optional[dict] = None,
+        integer: Optional[dict] = None,
+        categorical: Optional[dict] = None,
     ):
-        """For SMBO-based hyperopt generate spaces with skopt classes"""
+        """SMBO search hyperparameter space with desired priors.
+
+        Args:
+            real (Optional[dict], optional):
+                Dictionary of real-valued search variables & their priors.
+                E.g. {"lrate": {"begin": 0.1, "end": 0.5, "prior": "log-uniform"}}
+                Defaults to None.
+            integer (Optional[dict], optional):
+                Dictionary of integer-valued search variables & their priors.
+                E.g. {"batch_size": {"begin": 1, "end": 5, "bins": "uniform"}}
+                Defaults to None.
+            categorical (Optional[dict], optional):
+                Dictionary of categorical-valued search variables.
+                E.g. {"arch": ["mlp", "cnn"]}
+                Defaults to None.
+        """
         HyperSpace.__init__(self, real, integer, categorical)
         self.dimensions = list(self.param_range.values())
 
-    def check(self):
+    def check(self) -> None:
         """Check that all inputs are provided correctly."""
         if self.real is not None:
             real_keys = ["begin", "end", "prior"]
@@ -41,7 +56,7 @@ class SMBOSpace(HyperSpace):
                 if type(v) is not list:
                     self.categorical[k] = [v]
 
-    def construct(self):
+    def construct(self) -> None:
         """Setup/construct the search space."""
         param_range = {}
         if self.categorical is not None:

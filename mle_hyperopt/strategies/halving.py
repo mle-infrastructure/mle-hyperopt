@@ -1,6 +1,6 @@
 import math
 import numpy as np
-from typing import Union, List
+from typing import Optional, List, Union
 from ..strategy import Strategy
 from ..spaces import RandomSpace
 from ..utils import print_halving_hello, print_halving_update
@@ -9,17 +9,55 @@ from ..utils import print_halving_hello, print_halving_update
 class HalvingSearch(Strategy):
     def __init__(
         self,
-        real: Union[dict, None] = None,
-        integer: Union[dict, None] = None,
-        categorical: Union[dict, None] = None,
-        search_config: Union[dict, None] = None,
+        real: Optional[dict] = None,
+        integer: Optional[dict] = None,
+        categorical: Optional[dict] = None,
+        search_config: dict = {
+            "min_budget": 1,
+            "num_arms": 20,
+            "halving_coeff": 2,
+        },
         maximize_objective: bool = False,
-        fixed_params: Union[dict, None] = None,
-        reload_path: Union[str, None] = None,
-        reload_list: Union[list, None] = None,
+        fixed_params: Optional[dict] = None,
+        reload_path: Optional[str] = None,
+        reload_list: Optional[list] = None,
         seed_id: int = 42,
         verbose: bool = False,
     ):
+        """Successive Halving Iterative Search Strategy.
+        Reference: https://proceedings.mlr.press/v28/karnin13.html
+
+        Args:
+            real (Optional[dict], optional):
+                Dictionary of real-valued search variables & their priors.
+                E.g. {"lrate": {"begin": 0.1, "end": 0.5, "prior": "log-uniform"}}
+                Defaults to None.
+            integer (Optional[dict], optional):
+                Dictionary of integer-valued search variables & their priors.
+                E.g. {"batch_size": {"begin": 1, "end": 5, "bins": "uniform"}}
+                Defaults to None.
+            categorical (Optional[dict], optional):
+                Dictionary of categorical-valued search variables.
+                E.g. {"arch": ["mlp", "cnn"]}
+                Defaults to None.
+            search_config (dict, optional): Halving search hyperparameters.
+                Defaults to {"min_budget": 1,
+                             "num_arms": 20,
+                             "halving_coeff": 2}.
+            maximize_objective (bool, optional): Whether to maximize objective.
+                Defaults to False.
+            fixed_params (Optional[dict], optional):
+                Fixed parameters that will be added to all configurations.
+                Defaults to None.
+            reload_path (Optional[str], optional):
+                Path to load previous search log from. Defaults to None.
+            reload_list (Optional[list], optional):
+                List of previous results to reload. Defaults to None.
+            seed_id (int, optional):
+                Random seed for reproducibility. Defaults to 42.
+            verbose (bool, optional):
+                Option to print intermediate results. Defaults to False.
+        """
         self.search_name = "Halving"
         Strategy.__init__(
             self,
@@ -42,12 +80,15 @@ class HalvingSearch(Strategy):
         def logeta(x):
             return math.log(x) / math.log(self.search_config["halving_coeff"])
 
-        self.num_sh_batches = math.floor(logeta(self.search_config["num_arms"]) + 1)
+        self.num_sh_batches = math.floor(
+            logeta(self.search_config["num_arms"]) + 1
+        )
         self.evals_per_batch = [self.search_config["num_arms"]]
         for i in range(self.num_sh_batches - 1):
             self.evals_per_batch.append(
                 math.floor(
-                    self.evals_per_batch[-1] / self.search_config["halving_coeff"]
+                    self.evals_per_batch[-1]
+                    / self.search_config["halving_coeff"]
                 )
             )
 
@@ -71,8 +112,16 @@ class HalvingSearch(Strategy):
             self.print_hello()
             self.print_hello_strategy()
 
-    def ask_search(self, batch_size: Union[int, None] = None):
-        """Get proposals to eval next (in batches) - Random Sampling."""
+    def ask_search(self, batch_size: Optional[int] = None) -> List[dict]:
+        """Get proposals to eval next (in batches) - Halving Search.
+
+        Args:
+            batch_size (Optional[int]): Number of desired configurations
+            - Not applicable here since number of configurations is prescribed
+
+        Returns:
+            List[dict]: List of configuration dictionaries
+        """
         param_batch = []
         num_iters = self.iters_per_batch[self.sh_counter]
         if self.sh_counter > 0:
@@ -99,7 +148,9 @@ class HalvingSearch(Strategy):
                     # Otherwise continue sampling proposals
                     continue
         elif self.completed:
-            raise ValueError("You already completed all Successive Halving iterations.")
+            raise ValueError(
+                "You already completed all Successive Halving iterations."
+            )
         else:
             num_iters = self.iters_per_batch[self.sh_counter]
             num_prev_iters = self.iters_per_batch[self.sh_counter - 1]
@@ -122,9 +173,16 @@ class HalvingSearch(Strategy):
         self,
         batch_proposals: list,
         perf_measures: list,
-        ckpt_paths: Union[List[str], None] = None,
-    ):
-        """Perform post-iteration clean-up - no surrogate model."""
+        ckpt_paths: Optional[List[str]] = None,
+    ) -> None:
+        """Perform post-iteration clean-up by updating surrogate model.
+
+        Args:
+            batch_proposals (list): List of evaluated configurations
+            perf_measures (list): List of corresponding performances
+            ckpt_paths (Optional[List[str]], optional):
+                List of corresponding model ckpts to store. Defaults to None.
+        """
         self.sh_counter += 1
         if not self.completed:
             num_configs = self.evals_per_batch[self.sh_counter]
@@ -142,7 +200,8 @@ class HalvingSearch(Strategy):
             else:
                 self.haved_ckpt = None
 
-    def update_search(self):
+    def update_search(self) -> None:
+        """Print state of halving search."""
         if self.verbose:
             self.print_update_strategy()
 
@@ -150,9 +209,19 @@ class HalvingSearch(Strategy):
         self,
         batch_proposals: list,
         perf_measures: list,
-        ckpt_paths: Union[None, List[str], str] = None,
-    ):
-        """Log info specific to search strategy."""
+        ckpt_paths: Optional[Union[List[str], str]] = None,
+    ) -> None:
+        """Log info specific to search strategy.
+
+        Args:
+            batch_proposals (list): List of evaluated configurations
+            perf_measures (list): List of corresponding performances
+            ckpt_paths (Optional[List[str]], optional):
+                List of corresponding model ckpts to store. Defaults to None.
+
+        Returns:
+            [list]: Hyperband data to log.
+        """
         strat_data = []
         for i in range(len(batch_proposals)):
             c_data = {}
@@ -164,11 +233,11 @@ class HalvingSearch(Strategy):
         return strat_data
 
     @property
-    def completed(self):
+    def completed(self) -> bool:
         """Return boolean if all SH rounds were completed."""
         return self.sh_counter >= self.num_sh_batches
 
-    def print_hello_strategy(self):
+    def print_hello_strategy(self) -> None:
         """Hello message specific to successive halving search."""
         print_halving_hello(
             self.num_sh_batches,
@@ -178,7 +247,7 @@ class HalvingSearch(Strategy):
             self.total_num_iters,
         )
 
-    def print_update_strategy(self):
+    def print_update_strategy(self) -> None:
         """Update message specific to successive halving search."""
         print_halving_update(
             self.sh_counter,
