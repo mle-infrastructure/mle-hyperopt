@@ -207,3 +207,29 @@ def flatten_config(dictionary, parent_key="", sep="/") -> dict:
         else:
             items.append((new_key, v))
     return dict(items)
+
+
+def merge_config_dicts(dict1: dict, dict2: dict):
+    """Merge two potentially nested dictionaries.
+    Important: dict2 overwrites dict1 in case of shared entries.
+
+    Args:
+        dict1 (dict): Fixed parameter dictionary.
+        dict2 (dict): New hyperparameters to evaluate.
+
+    Yields:
+        _type_: Generator - wrap with dict outside of function.
+    """
+    for k in set(dict1.keys()).union(dict2.keys()):
+        if k in dict1 and k in dict2:
+            if isinstance(dict1[k], dict) and isinstance(dict2[k], dict):
+                yield (k, dict(merge_config_dicts(dict1[k], dict2[k])))
+            else:
+                # If one of the values is not a dict, you can't continue merging it.
+                # Value from second dict overrides one in first and we move on.
+                yield (k, dict2[k])
+                # Alternatively, replace this with exception raiser to alert you of value conflicts
+        elif k in dict1:
+            yield (k, dict1[k])
+        else:
+            yield (k, dict2[k])

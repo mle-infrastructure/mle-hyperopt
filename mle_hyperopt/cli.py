@@ -1,5 +1,6 @@
 import argparse
 import os
+import sys
 import importlib
 from mle_logging import load_config
 from .strategies import Strategies
@@ -19,7 +20,7 @@ def get_search_args() -> None:
         "-base",
         "--base_config",
         type=str,
-        default="base.yaml",
+        default=None,
         help="Filename to load base configuration from.",
     )
     parser.add_argument(
@@ -88,6 +89,8 @@ def search() -> None:
         if "categorical" in search_config.search_config.keys()
         else None
     )
+    if base_config is not None:
+        base_config = base_config.toDict()
 
     strategy = Strategies[search_config.search_type](
         real,
@@ -95,7 +98,7 @@ def search() -> None:
         categorical,
         search_config.search_config,
         search_config.maximize_objective,
-        fixed_params=base_config.toDict(),
+        fixed_params=base_config,
         verbose=search_config.verbose,
     )
 
@@ -112,7 +115,8 @@ def search() -> None:
         else search_config.num_iters
     )
 
-    # Load the main function module
+    # Append path for correct imports & load the main function module
+    sys.path.append(os.getcwd())
     spec = importlib.util.spec_from_file_location(
         "main", os.path.join(os.getcwd(), args.exec_fname)
     )

@@ -1,4 +1,5 @@
 from .helpers import (
+    save_yaml,
     load_log,
     save_log,
     load_strategy,
@@ -6,8 +7,9 @@ from .helpers import (
     write_configs,
     flatten_config,
     unflatten_config,
+    merge_config_dicts,
 )
-from .plotting import visualize_2D_grid
+from .plotting import visualize_2D_grid, load_search_log
 from .comms import (
     welcome_message,
     update_message,
@@ -23,6 +25,7 @@ from .comms import (
 
 
 __all__ = [
+    "save_yaml",
     "load_log",
     "save_log",
     "load_strategy",
@@ -30,7 +33,9 @@ __all__ = [
     "write_configs",
     "flatten_config",
     "unflatten_config",
+    "merge_config_dicts",
     "visualize_2D_grid",
+    "load_search_log",
     "welcome_message",
     "update_message",
     "ranking_message",

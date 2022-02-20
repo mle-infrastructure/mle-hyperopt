@@ -1,4 +1,13 @@
-## [v0.0.6] - [02/19/2022]
+## [v0.0.7] - [02/20/2022]
+
+### Added
+- Log reloading helper for post-processing.
+
+### Fixed
+- Bug fix in `mle-search` with imports of dependencies. Needed to append path.
+- Bug fix with cleaning nested dictionaries. Have to make sure not to delete entire sub-dictionary.
+
+## [v0.0.6] - [02/20/2022]
 ### Added
 
 - Adds a command line interface for running a sequential search given a python script `<script>.py` containing a function `main(config)`, a default configuration file `<base>.yaml` & a search configuration `<search>.yaml`. The `main` function should return a single scalar performance score. You can then start the search via:

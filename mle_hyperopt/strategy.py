@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import numbers
 from .utils import (
+    merge_config_dicts,
     load_log,
     save_log,
     load_strategy,
@@ -127,7 +128,9 @@ class Strategy(object):
         if self.fixed_params is not None:
             for i in range(len(param_batch)):
                 # Important that param_batch 2nd - overwrites fixed k,v!
-                param_batch[i] = {**self.fixed_params, **param_batch[i]}
+                param_batch[i] = dict(
+                    merge_config_dicts(self.fixed_params, param_batch[i])
+                )
 
         # If string for storage is given: Save configs as .yaml
         if store:
@@ -253,11 +256,15 @@ class Strategy(object):
                 proposal_clean = proposal_clean["params"]
             else:
                 extra_data = None
-            if self.fixed_params is not None:
-                for k in self.fixed_params.keys():
-                    del proposal_clean[k]
+
             # After extra/fixed parameter clean up - flatten remaining params
             proposal_clean = flatten_config(proposal_clean)
+            if self.fixed_params is not None:
+                fixed_flat = flatten_config(self.fixed_params)
+                for k in fixed_flat.keys():
+                    if k not in self.space.variable_names:
+                        if k in proposal_clean.keys():
+                            del proposal_clean[k]
 
             if (
                 proposal_clean in self.all_evaluated_params

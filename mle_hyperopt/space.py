@@ -37,6 +37,9 @@ class HyperSpace(object):
             self.categorical_names = list(self.categorical.keys())
         else:
             self.categorical_names = []
+        self.variable_names = (
+            self.real_names + self.integer_names + self.categorical_names
+        )
 
     def check(self):
         """Check that all inputs are provided correctly."""

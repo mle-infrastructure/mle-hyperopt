@@ -3,8 +3,31 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from typing import List, Union
-
 import seaborn as sns
+from mle_logging import load_config
+
+
+def load_search_log(log_fname: str) -> pd.core.frame.DataFrame:
+    """Reload the stored log yaml file.
+
+    Args:
+        log_fname (str): Filename to load
+
+    Returns:
+        pd.core.frame.DataFrame: Reloaded log as pandas dataframe.
+    """
+    log_dict = load_config(log_fname)
+
+    log_list = []
+    for k in log_dict.keys():
+        log_list.append(log_dict[k])
+    # Load in json format for nested dictionaries
+    df = pd.json_normalize(log_list)
+    # Rename columns and get rid of 'params.'
+    new_cols = [df.columns[i].split(".")[-1] for i in range(len(df.columns))]
+    df.columns = new_cols
+    return df
+
 
 # Set overall plots appearance sns style
 sns.set(
@@ -22,11 +45,11 @@ def visualize_2D_grid(
     hyper_df: pd.core.frame.DataFrame,
     fixed_params: Union[None, dict] = None,
     params_to_plot: list = [],
-    target_to_plot: str = "target",
+    target_to_plot: str = "objective",
     plot_title: str = "Temp Title",
     plot_subtitle: Union[None, str] = None,
     xy_labels: Union[None, List[str]] = ["x-label", "y-label"],
-    variable_name: Union[None, str] = "Var Label",
+    variable_name: Union[None, str] = "Performance",
     every_nth_tick: int = 1,
     plot_colorbar: bool = True,
     text_in_cell: bool = False,
