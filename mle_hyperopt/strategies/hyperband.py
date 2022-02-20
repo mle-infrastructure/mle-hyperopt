@@ -1,4 +1,5 @@
 import math
+import numpy as np
 from typing import Optional, List, Tuple, Union
 from ..strategy import Strategy
 from .halving import HalvingSearch
@@ -165,15 +166,16 @@ class HyperbandSearch(Strategy):
 
     def tell_search(
         self,
-        batch_proposals: list,
-        perf_measures: list,
+        batch_proposals: List[dict],
+        perf_measures: List[Union[float, np.ndarray, int]],
         ckpt_paths: Optional[List[str]] = None,
     ) -> None:
         """Perform post-iteration clean-up by updating surrogate model.
 
         Args:
-            batch_proposals (list): List of evaluated configurations
-            perf_measures (list): List of corresponding performances
+            batch_proposals (List[dict]): List of evaluated configurations.
+            perf_measures (List[float, np.ndarray]):
+                List of corresponding performances.
             ckpt_paths (Optional[List[str]], optional):
                 List of corresponding model ckpts to store. Defaults to None.
         """

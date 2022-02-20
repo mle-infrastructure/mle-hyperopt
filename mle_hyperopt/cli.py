@@ -6,7 +6,7 @@ from .strategies import Strategies
 
 
 def get_search_args() -> None:
-    """Get command line arguments."""
+    """Parse command line arguments."""
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "exec_fname",
@@ -36,22 +36,32 @@ def get_search_args() -> None:
         default=None,
         help="Number of desired search iterations.",
     )
+    parser.add_argument(
+        "-log",
+        "--log_dir",
+        type=str,
+        default=None,
+        help="Directory to save search_log.yaml in.",
+    )
     args = parser.parse_args()
     return args
 
 
-def search():
+def search() -> None:
     """Command line tool for running a sequential search given a python script
     `<script>.py` containing a function `main(config)`, a default configuration
     file `<base>.yaml` & a search configuration `<search>.yaml`. The `main`
     function should return a single scalar performance score.
     You can then start the search via:
 
-        mle-search <script>.py --base_config <base>.yaml --search_config <search>.yaml
+        mle-search <script>.py
+            --base_config <base>.yaml
+            --search_config <search>.yaml
+            --log_dir <log_dir>
 
     Or short:
 
-        mle-search <script>.py -base <base>.yaml -search <search>.yaml
+        mle-search <script>.py -base <base>.yaml -search <search>.yaml -log <log_dir>
 
     This will spawn single runs for different configurations and walk through a
     set of search iterations.
@@ -89,6 +99,19 @@ def search():
         verbose=search_config.verbose,
     )
 
+    # Setup log storage path & effective search iterations
+    save_path = (
+        os.path.join(args.log_dir, "search_log.yaml")
+        if args.log_dir is not None
+        else "search_log.yaml"
+    )
+
+    num_search_iters = (
+        args.num_iters
+        if args.num_iters is not None
+        else search_config.num_iters
+    )
+
     # Load the main function module
     spec = importlib.util.spec_from_file_location(
         "main", os.path.join(os.getcwd(), args.exec_fname)
@@ -96,16 +119,13 @@ def search():
     foo = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(foo)
 
-    num_search_iters = (
-        args.num_iters
-        if args.num_iters is not None
-        else search_config.num_iters
-    )
+    # Run the search loop and store results to path
     for s_iter in range(num_search_iters):
         config = strategy.ask()
+        # Add search id for logging inside main call
         config["search_eval_id"] = (
             search_config.search_type.lower() + f"_{s_iter}"
         )
         result = foo.main(config)
         del config["search_eval_id"]
-        strategy.tell(config, result, save=True)
+        strategy.tell(config, result, save=True, save_path=save_path)

@@ -4,15 +4,24 @@ from rich.console import Console
 from rich.table import Table
 from rich import box
 from rich.align import Align
-from typing import List, Optional
+from typing import List, Optional, Union
 
 console_width = 80
 
 
 def welcome_message(
-    space_data, search_type: str, fixed_params: Optional[dict] = None
-):
-    """Print startup configuration of search space."""
+    space_data: List[dict],
+    search_type: str,
+    fixed_params: Optional[dict] = None,
+) -> None:
+    """Print startup configuration of search space.
+
+    Args:
+        space_data (List[dict]): List of search variable descriptions.
+        search_type (str): Name of search strategy
+        fixed_params (Optional[dict], optional):
+            Fixed parameter names and values. Defaults to None.
+    """
     console = Console(width=console_width)
     table = Table(show_footer=False)
     table.add_column(":sunflower: Variable", no_wrap=True)
@@ -34,17 +43,30 @@ def welcome_message(
 
 
 def update_message(
-    total_eval_id,
-    best_eval_id,
-    best_config,
-    best_eval,
-    best_ckpt,
-    best_batch_eval_id,
-    best_batch_config,
-    best_batch_eval,
-    best_batch_ckpt,
-):
-    """Print current best performing configurations."""
+    total_eval_id: int,
+    best_eval_id: List[int],
+    best_config: List[dict],
+    best_eval: List[Union[float, np.ndarray]],
+    best_ckpt: Optional[List[str]],
+    best_batch_eval_id: List[int],
+    best_batch_config: List[dict],
+    best_batch_eval: List[Union[float, np.ndarray]],
+    best_batch_ckpt: Optional[List[str]],
+) -> None:
+    """Print current best performing configurations.
+
+    Args:
+        total_eval_id (int): Number of total evaluations so far.
+        best_eval_id (List[int]): ID of top-k performing evaluations.
+        best_config (List[dict]): Top-k performing parameter configurations.
+        best_eval (List[float, np.ndarray]): Top-k performance values.
+        best_ckpt (Optional[List[str]]): Top-k checkpoint paths.
+        best_batch_eval_id (List[int]): Top-k performing evaluations in batch.
+        best_batch_config (List[dict]): Top-k performing configurations in batch.
+        best_batch_eval (List[float, np.ndarray]):
+            Top-k performance values in batch.
+        best_batch_ckpt (Optional[List[str]]): Top-k checkpoint paths in batch.
+    """
     time_t = datetime.now().strftime("%m/%d/%Y %H:%M:%S")
     console = Console(width=console_width)
     table = Table(show_header=True)
@@ -83,8 +105,18 @@ def update_message(
     console.print(Align.center(table))
 
 
-def ranking_message(best_eval_ids, best_configs, best_evals):
-    """Print top-k performing configurations."""
+def ranking_message(
+    best_eval_ids: List[int],
+    best_configs: List[dict],
+    best_evals: List[Union[float, np.ndarray]],
+) -> None:
+    """Print top-k performing configurations.
+
+    Args:
+        best_eval_ids (List[int]): ID of top-k performing evaluations.
+        best_configs (List[dict]): Top-k performing parameter configurations.
+        best_evals (List[float, np.ndarray]): Top-k performance values.
+    """
     # Ensure that update data is list to loop over
     if type(best_eval_ids) in [int, np.int64]:
         best_eval_ids = [best_eval_ids]
@@ -120,8 +152,13 @@ def ranking_message(best_eval_ids, best_configs, best_evals):
     console.print(Align.center(table))
 
 
-def print_grid_hello(num_total_configs: int, num_dims_grid: int):
-    """Hello message specific to grid search."""
+def print_grid_hello(num_total_configs: int, num_dims_grid: int) -> None:
+    """Hello message specific to grid search.
+
+    Args:
+        num_total_configs (int): Number of total configurations in grid.
+        num_dims_grid (int): Number of variables to search over.
+    """
     console = Console(width=console_width)
     console.log(
         f"Start running {num_dims_grid}D grid with "
@@ -135,8 +172,16 @@ def print_halving_hello(
     iters_per_batch: List[int],
     halving_coeff: int,
     num_total_iters: int,
-):
-    """Hello message specific to SH search."""
+) -> None:
+    """Hello message specific to SH search.
+
+    Args:
+        num_sh_batches (int): Total number of SH batches.
+        evals_per_batch (List[int]): List of number of evaluations per batch.
+        iters_per_batch (List[int]): List of number of iterations per batch.
+        halving_coeff (int): Halving coefficient.
+        num_total_iters (int): Number of total evaluations at the end of search.
+    """
     console = Console(width=console_width)
     console.log(
         f"Start running {num_sh_batches} batches of Successive Halving."
@@ -158,8 +203,16 @@ def print_halving_update(
     evals_per_batch: List[int],
     iters_per_batch: List[int],
     num_total_iters: int,
-):
-    """Update message specific to SH search."""
+) -> None:
+    """Update message specific to SH search.
+
+    Args:
+        sh_counter (int): Number of completed SH batches.
+        num_sh_batches (int): Total number of SH batches.
+        evals_per_batch (List[int]): List of number of evaluations per batch.
+        iters_per_batch (List[int]): List of number of iterations per batch.
+        num_total_iters (int): Number of total evaluations at the end of search.
+    """
     console = Console(width=console_width)
     done_iters = np.sum(
         np.array(evals_per_batch)[:sh_counter]
@@ -183,8 +236,16 @@ def print_hyperband_hello(
     sh_budgets: List[int],
     num_hb_batches: int,
     evals_per_batch: List[int],
-):
-    """Hello message specific to Hyperband search."""
+) -> None:
+    """Hello message specific to Hyperband search.
+
+    Args:
+        num_hb_loops (int): Number of total SH loops in hyperband.
+        sh_num_arms (List[int]): List of active bandit arms in all SH loops.
+        sh_budgets (List[int]): List of iteration budgets in all SH loops.
+        num_hb_batches (int): Number of total job batches in hyperband search.
+        evals_per_batch (List[int]): List of number of jobs in all batches.
+    """
     console = Console(width=console_width)
     console.log(
         f"Start running {num_hb_batches} batches of Hyperband evaluations."
@@ -208,8 +269,18 @@ def print_hyperband_update(
     num_hb_batches: int,
     hb_batch_counter: int,
     evals_per_batch: List[int],
-):
-    """Update message specific to Hyperband search."""
+) -> None:
+    """Update message specific to Hyperband search.
+
+    Args:
+        hb_counter (int): Number of completed SH loops in hyperband.
+        num_hb_loops (int): Number of total SH loops in hyperband.
+        sh_num_arms (List[int]): List of active bandit arms in all SH loops.
+        sh_budgets (List[int]): List of iteration budgets in all SH loops.
+        num_hb_batches (int): Number of total job batches in hyperband search.
+        hb_batch_counter (int): Number of completed job batches.
+        evals_per_batch (List[int]): List of number of jobs in all batches.
+    """
     console = Console(width=console_width)
     console.log(
         f"Completed {hb_batch_counter}/{num_hb_batches} of Hyperband evaluation"
@@ -232,8 +303,15 @@ def print_pbt_hello(
     steps_until_ready: int,
     explore_type: str,
     exploit_type: str,
-):
-    """Hello message specific to PBT search."""
+) -> None:
+    """Hello message specific to PBT search.
+
+    Args:
+        num_workers (int): Number of synchronous PBT workers.
+        steps_until_ready (int): Number of (SGD) steps between PBT iterations.
+        explore_type (str): Exploration strategy name.
+        exploit_type (str): Exploitation strategy name.
+    """
     console = Console(width=console_width)
     console.log(f"Start running PBT w. {num_workers} workers.")
     console.log(f"➞ Steps until ready: {steps_until_ready}")
@@ -241,8 +319,16 @@ def print_pbt_hello(
     console.log(f"➞ Exploitation strategy: {exploit_type}")
 
 
-def print_pbt_update(step_counter: int, num_total_steps: int, copy_info: dict):
-    """Update message specific to PBT search."""
+def print_pbt_update(
+    step_counter: int, num_total_steps: int, copy_info: dict
+) -> None:
+    """Update message specific to PBT search.
+
+    Args:
+        step_counter (int): Number of completed PBT batches.
+        num_total_steps (int): Number of total steps (e.g. SGD intervals).
+        copy_info (dict): Info about which worker exploited/explored.
+    """
     console = Console(width=console_width)
     console.log(f"Completed {step_counter} batches of PBT.")
     console.log(f"➞ Number of total steps: {num_total_steps}")
