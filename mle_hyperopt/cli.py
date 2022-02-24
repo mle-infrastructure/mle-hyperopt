@@ -83,15 +83,15 @@ def search() -> None:
         else "search_log.yaml"
     )
 
+    # Load base configuration and search configuration
+    search_config = load_config(args.search_config, True)
+    base_config = load_config(args.base_config, True)
+
     num_search_iters = (
         args.num_iters
         if args.num_iters is not None
         else search_config.num_iters
     )
-
-    # Load base configuration and search configuration
-    search_config = load_config(args.search_config, True)
-    base_config = load_config(args.base_config, True)
 
     # Setup search instance
     real = (
