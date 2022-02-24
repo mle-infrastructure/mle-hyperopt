@@ -1,4 +1,3 @@
-*.yaml
 logs
 *.pkl
 mle_play.py

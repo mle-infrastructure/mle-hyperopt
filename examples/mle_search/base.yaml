@@ -1,0 +1,6 @@
+placeholder:
+  other:
+    1
+lrate: 0.01
+batch_size: 2
+arch: "mlp"

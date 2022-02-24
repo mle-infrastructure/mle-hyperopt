@@ -1,0 +1,19 @@
+num_iters: 50
+search_type: "Grid"
+maximize_objective: false
+verbose: true
+search_config:
+  real:
+    lrate:
+      begin: 0.1
+      end: 0.5
+      bins: 5
+  integer:
+    batch_size:
+      begin: 1
+      end: 5
+      bins: 5
+  categorical:
+    arch/sub_arch:
+      - "cnn"
+      - "mlp"
