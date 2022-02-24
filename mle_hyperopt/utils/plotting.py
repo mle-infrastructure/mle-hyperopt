@@ -4,19 +4,49 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from typing import List, Optional
 import seaborn as sns
-from mle_logging import load_config
+import yaml
+import re
+
+
+def load_yaml(config_fname: str) -> dict:
+    """Load in YAML config file.
+
+    Args:
+        config_fname (str): Filename to load.
+
+    Returns:
+        dict: Return yaml dictionary.
+    """
+    loader = yaml.SafeLoader
+    loader.add_implicit_resolver(
+        "tag:yaml.org,2002:float",
+        re.compile(
+            """^(?:
+        [-+]?(?:[0-9][0-9_]*)\\.[0-9_]*(?:[eE][-+]?[0-9]+)?
+        |[-+]?(?:[0-9][0-9_]*)(?:[eE][-+]?[0-9]+)
+        |\\.[0-9_]+(?:[eE][-+][0-9]+)?
+        |[-+]?[0-9][0-9_]*(?::[0-5]?[0-9])+\\.[0-9_]*
+        |[-+]?\\.(?:inf|Inf|INF)
+        |\\.(?:nan|NaN|NAN))$""",
+            re.X,
+        ),
+        list("-+0123456789."),
+    )
+    with open(config_fname) as file:
+        yaml_config = yaml.load(file, Loader=loader)
+    return yaml_config
 
 
 def load_search_log(log_fname: str) -> pd.core.frame.DataFrame:
     """Reload the stored log yaml file.
 
     Args:
-        log_fname (str): Filename to load
+        log_fname (str): Filename to load.
 
     Returns:
         pd.core.frame.DataFrame: Reloaded log as pandas dataframe.
     """
-    log_dict = load_config(log_fname)
+    log_dict = load_yaml(log_fname)
 
     log_list = []
     for k in log_dict.keys():
