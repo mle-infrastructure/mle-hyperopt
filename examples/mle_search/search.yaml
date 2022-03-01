@@ -1,8 +1,7 @@
 num_iters: 50
 search_type: "Grid"
 maximize_objective: false
-verbose: true
-search_config:
+search_params:
   real:
     lrate:
       begin: 0.1

@@ -4,6 +4,7 @@ from typing import List, Union
 import os
 import json
 import yaml
+import re
 import ast
 import numpy as np
 import collections
@@ -128,8 +129,23 @@ def load_yaml(
     Returns:
         List[dict]: List of evaluation results.
     """
+    loader = yaml.SafeLoader
+    loader.add_implicit_resolver(
+        "tag:yaml.org,2002:float",
+        re.compile(
+            """^(?:
+        [-+]?(?:[0-9][0-9_]*)\\.[0-9_]*(?:[eE][-+]?[0-9]+)?
+        |[-+]?(?:[0-9][0-9_]*)(?:[eE][-+]?[0-9]+)
+        |\\.[0-9_]+(?:[eE][-+][0-9]+)?
+        |[-+]?[0-9][0-9_]*(?::[0-5]?[0-9])+\\.[0-9_]*
+        |[-+]?\\.(?:inf|Inf|INF)
+        |\\.(?:nan|NaN|NAN))$""",
+            re.X,
+        ),
+        list("-+0123456789."),
+    )
     with open(filename) as file:
-        yaml_temp = yaml.load(file, Loader=yaml.FullLoader)
+        yaml_temp = yaml.load(file, Loader=loader)
     if keys_to_list:
         # From dict of evals to list of evals
         yaml_log = []

@@ -220,13 +220,21 @@ Note that the search space refinement is only implemented for random, SMBO and `
 
 ### Simple Command Line interface ⌨️
 
-You can also directly launch a search for your applications. This requires a couple of things: A python script `<script>.py` containing a function `main(config)`, which runs your simulation for a given configuration dictionary. It should return a single scalar performance score, which will be logged. Furthermore, you will need a search configuration `<search>.yaml` file and can add default fixed parameter settings in `<base>.yaml`.
+You can also directly launch a search for your applications. This requires a couple of things: A python script `<script>.py` containing a function `main(config)`, which runs your simulation for a given configuration dictionary. It should return a single scalar performance score, which will be logged.
+
+```python
+def main(config):
+    ...
+    return score
+```
+
+Furthermore, you will need a search configuration `<search>.yaml` file and can add default fixed parameter settings in `<base>.yaml`.
 
 ```
 mle-search <script>.py -base <base>.yaml -search <search>.yaml -iters <search_iters>
 ```
 
-Have a look at the [example](https://github.com/mle-infrastructure/mle-hyperopt/tree/main/examples/mle_search), which can be executed via `mle-search run_mle_search.py -search search.yaml -base base.yaml`.
+Have a look at the [example](https://github.com/mle-infrastructure/mle-hyperopt/tree/main/examples/mle_search), which can be executed via `mle-search run_mle_search.py -search search.yaml -base base.yaml`. You can reload a previous search log by adding the option `-reload`.
 
 ### Citing the MLE-Infrastructure ✏️
 

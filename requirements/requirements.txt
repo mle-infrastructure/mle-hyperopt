@@ -2,4 +2,5 @@ numpy
 pandas
 rich
 pickle5
+dotmap
 pyyaml>=5.1

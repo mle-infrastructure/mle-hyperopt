@@ -2,6 +2,7 @@ import argparse
 import os
 import sys
 import importlib
+from dotmap import DotMap
 from .strategies import Strategies
 from .utils import load_yaml
 
@@ -65,11 +66,13 @@ def search() -> None:
         mle-search <script>.py
             --base_config <base>.yaml
             --search_config <search>.yaml
+            --num_iters <num_iters>
             --log_dir <log_dir>
 
     Or short:
 
-        mle-search <script>.py -base <base>.yaml -search <search>.yaml -log <log_dir>
+        mle-search <script>.py -base <base>.yaml -search <search>.yaml
+            -iters <num_iters >-log <log_dir>
 
     This will spawn single runs for different configurations and walk through a
     set of search iterations.
@@ -87,27 +90,24 @@ def search() -> None:
     search_config = load_yaml(args.search_config, False)
     base_config = load_yaml(args.base_config, False)
 
+    # Allow `mle-search` to work with experiment configuration
+    # Note: Will still require a main(config) call to exec run
+    if "param_search_args" in search_config.keys():
+        conf_temp = dict(search_config["param_search_args"]["search_config"])
+        conf_temp["maximize_objective"] = search_config["param_search_args"][
+            "search_logging"
+        ]["max_objective"]
+        if "search_config" not in conf_temp.keys():
+            conf_temp["search_config"] = {}
+        search_config = conf_temp
+
+    if "train_config" in base_config.keys():
+        base_config = base_config["train_config"]
+
     num_search_iters = (
         args.num_iters
         if args.num_iters is not None
         else search_config["num_iters"]
-    )
-
-    # Setup search instance
-    real = (
-        search_config["search_config"]["real"]
-        if "real" in search_config["search_config"].keys()
-        else None
-    )
-    integer = (
-        search_config["search_config"]["integer"]
-        if "integer" in search_config["search_config"].keys()
-        else None
-    )
-    categorical = (
-        search_config["search_config"]["categorical"]
-        if "categorical" in search_config["search_config"].keys()
-        else None
     )
 
     if args.reload_log:
@@ -115,14 +115,12 @@ def search() -> None:
     else:
         reload_path = None
     strategy = Strategies[search_config["search_type"]](
-        real,
-        integer,
-        categorical,
-        search_config["search_config"],
-        search_config["maximize_objective"],
+        **search_config["search_params"],
+        search_config=search_config["search_config"],
+        maximize_objective=search_config["maximize_objective"],
         fixed_params=base_config,
         reload_path=reload_path,
-        verbose=search_config["verbose"],
+        verbose=True,
     )
 
     # Append path for correct imports & load the main function module
@@ -140,6 +138,6 @@ def search() -> None:
         config["search_eval_id"] = (
             search_config["search_type"].lower() + f"_{s_iter}"
         )
-        result = foo.main(config)
+        result = foo.main(DotMap(config))
         del config["search_eval_id"]
         strategy.tell(config, result, save=True, save_path=save_path)
