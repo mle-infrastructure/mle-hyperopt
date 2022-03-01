@@ -1,0 +1,5 @@
+numpy
+pandas
+rich
+pickle5
+pyyaml>=5.1

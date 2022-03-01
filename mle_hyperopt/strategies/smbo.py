@@ -2,7 +2,6 @@ from typing import Optional, List
 import numpy as np
 from ..strategy import Strategy
 from ..spaces import SMBOSpace
-from skopt import Optimizer
 
 
 class SMBOSearch(Strategy):
@@ -81,6 +80,13 @@ class SMBOSearch(Strategy):
 
     def init_optimizer(self) -> None:
         """Initialize the surrogate model/hyperparam config proposer."""
+        try:
+            from skopt import Optimizer
+        except ImportError:
+            raise ImportError(
+                "You need to install `scikit-optimize` & `scikit-learn==0.24.2`"
+                " to use the SMBO search strategy."
+            )
         self.hyper_optimizer = Optimizer(
             dimensions=self.space.dimensions,
             random_state=self.seed_id,

@@ -1,7 +1,6 @@
 from ..strategy import Strategy
 from ..spaces import NevergradSpace
 from typing import Optional, List, Tuple
-import nevergrad as ng
 
 
 class NevergradSearch(Strategy):
@@ -81,10 +80,22 @@ class NevergradSearch(Strategy):
     @property
     def optimizers(self) -> list:
         """Returns list of available nevergrad optimizers."""
+        try:
+            import nevergrad as ng
+        except ImportError:
+            raise ImportError(
+                "You need to install `nevergrad` to use its search strategies."
+            )
         return sorted(ng.optimizers.registry.keys())
 
     def init_optimizer(self) -> None:
         """Initialize the surrogate model/hyperparam config proposer."""
+        try:
+            import nevergrad as ng
+        except ImportError:
+            raise ImportError(
+                "You need to install `nevergrad` to use its search strategies."
+            )
         assert self.search_config["optimizer"] in list(
             dict(ng.optimizers.registry).keys()
         )

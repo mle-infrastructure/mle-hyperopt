@@ -58,8 +58,18 @@ setup(
     platforms="any",
     python_requires=">=3.6",
     install_requires=parse_requirements(
-        os.path.join(CURRENT_DIR, "requirements.txt")
+        os.path.join(CURRENT_DIR, "requirements", "requirements.txt")
     ),
+    tests_require=parse_requirements(
+        os.path.join(CURRENT_DIR, "requirements", "requirements-test.txt")
+    ),
+    extras_require={
+        "examples": parse_requirements(
+            os.path.join(
+                CURRENT_DIR, "requirements", "requirements-examples.txt"
+            )
+        )
+    },
     entry_points={
         "console_scripts": [
             "mle-search=mle_hyperopt.cli:search",

@@ -1,6 +1,6 @@
 import pickle
 import pickle5
-from typing import List
+from typing import List, Union
 import os
 import json
 import yaml
@@ -116,22 +116,28 @@ def load_log(filename: str) -> List[dict]:
     return log_results
 
 
-def load_yaml(filename: str) -> List[dict]:
+def load_yaml(
+    filename: str, keys_to_list: bool = True
+) -> Union[dict, List[dict]]:
     """Load in YAML file.
 
     Args:
         filename (str): YAML filename to load from.
+        keys_to_list (bool): Option to transform dict of eval entries into list.
 
     Returns:
         List[dict]: List of evaluation results.
     """
     with open(filename) as file:
         yaml_temp = yaml.load(file, Loader=yaml.FullLoader)
-    # From dict of evals to list of evals
-    yaml_log = []
-    for k in yaml_temp.keys():
-        yaml_log.append(yaml_temp[k])
-    return yaml_log
+    if keys_to_list:
+        # From dict of evals to list of evals
+        yaml_log = []
+        for k in yaml_temp.keys():
+            yaml_log.append(yaml_temp[k])
+        return yaml_log
+    else:
+        return yaml_temp
 
 
 def load_json(filename: str):

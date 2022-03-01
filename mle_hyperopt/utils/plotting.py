@@ -1,9 +1,6 @@
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-from mpl_toolkits.axes_grid1 import make_axes_locatable
 from typing import List, Optional
-import seaborn as sns
 import yaml
 import re
 
@@ -57,18 +54,6 @@ def load_search_log(log_fname: str) -> pd.core.frame.DataFrame:
     new_cols = [df.columns[i].split(".")[-1] for i in range(len(df.columns))]
     df.columns = new_cols
     return df
-
-
-# Set overall plots appearance sns style
-sns.set(
-    context="poster",
-    style="white",
-    palette="Paired",
-    font="sans-serif",
-    font_scale=1.05,
-    color_codes=True,
-    rc=None,
-)
 
 
 def visualize_2D_grid(
@@ -298,6 +283,27 @@ def plot_2D_heatmap(
     Returns:
         _type_: Figure and axis matplotlib objects.
     """
+    try:
+        import matplotlib.pyplot as plt
+        from mpl_toolkits.axes_grid1 import make_axes_locatable
+        import seaborn as sns
+
+        # Set overall plots appearance sns style
+        sns.set(
+            context="poster",
+            style="white",
+            palette="Paired",
+            font="sans-serif",
+            font_scale=1.05,
+            color_codes=True,
+            rc=None,
+        )
+    except ImportError:
+        raise ImportError(
+            "You need to install `matplotlib` and `seaborn` to "
+            "use `mle-hyperopt`'s plotting utilities."
+        )
+
     if fig is None or ax is None:
         fig, ax = plt.subplots(figsize=figsize)
     if max_heat is None and min_heat is None:

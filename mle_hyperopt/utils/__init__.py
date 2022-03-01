@@ -1,5 +1,6 @@
 from .helpers import (
     save_yaml,
+    load_yaml,
     load_log,
     save_log,
     load_strategy,
@@ -26,6 +27,7 @@ from .comms import (
 
 __all__ = [
     "save_yaml",
+    "load_yaml",
     "load_log",
     "save_log",
     "load_strategy",

@@ -2,8 +2,8 @@ import argparse
 import os
 import sys
 import importlib
-from mle_logging import load_config
 from .strategies import Strategies
+from .utils import load_yaml
 
 
 def get_search_args() -> None:
@@ -84,47 +84,45 @@ def search() -> None:
     )
 
     # Load base configuration and search configuration
-    search_config = load_config(args.search_config, True)
-    base_config = load_config(args.base_config, True)
+    search_config = load_yaml(args.search_config, False)
+    base_config = load_yaml(args.base_config, False)
 
     num_search_iters = (
         args.num_iters
         if args.num_iters is not None
-        else search_config.num_iters
+        else search_config["num_iters"]
     )
 
     # Setup search instance
     real = (
-        search_config.search_config.real
-        if "real" in search_config.search_config.keys()
+        search_config["search_config"]["real"]
+        if "real" in search_config["search_config"].keys()
         else None
     )
     integer = (
-        search_config.search_config.integer
-        if "integer" in search_config.search_config.keys()
+        search_config["search_config"]["integer"]
+        if "integer" in search_config["search_config"].keys()
         else None
     )
     categorical = (
-        search_config.search_config.categorical
-        if "categorical" in search_config.search_config.keys()
+        search_config["search_config"]["categorical"]
+        if "categorical" in search_config["search_config"].keys()
         else None
     )
-    if base_config is not None:
-        base_config = base_config.toDict()
 
     if args.reload_log:
         reload_path = save_path
     else:
         reload_path = None
-    strategy = Strategies[search_config.search_type](
+    strategy = Strategies[search_config["search_type"]](
         real,
         integer,
         categorical,
-        search_config.search_config,
-        search_config.maximize_objective,
+        search_config["search_config"],
+        search_config["maximize_objective"],
         fixed_params=base_config,
         reload_path=reload_path,
-        verbose=search_config.verbose,
+        verbose=search_config["verbose"],
     )
 
     # Append path for correct imports & load the main function module
@@ -140,7 +138,7 @@ def search() -> None:
         config = strategy.ask()
         # Add search id for logging inside main call
         config["search_eval_id"] = (
-            search_config.search_type.lower() + f"_{s_iter}"
+            search_config["search_type"].lower() + f"_{s_iter}"
         )
         result = foo.main(config)
         del config["search_eval_id"]

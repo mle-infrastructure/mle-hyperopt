@@ -1,6 +1,5 @@
 from typing import Optional
 from ..space import HyperSpace
-from skopt.space import Real, Integer, Categorical
 
 
 class SMBOSpace(HyperSpace):
@@ -58,6 +57,14 @@ class SMBOSpace(HyperSpace):
 
     def construct(self) -> None:
         """Setup/construct the search space."""
+        try:
+            from skopt.space import Real, Integer, Categorical
+        except ImportError:
+            raise ImportError(
+                "You need to install `scikit-optimize` & `scikit-learn==0.24.2`"
+                " to use the SMBO search strategy."
+            )
+
         param_range = {}
         if self.categorical is not None:
             for k, v in self.categorical.items():

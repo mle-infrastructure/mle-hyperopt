@@ -16,19 +16,7 @@ from .utils import (
     update_message,
     ranking_message,
 )
-import matplotlib.pyplot as plt
-import seaborn as sns
 from rich.console import Console
-
-sns.set(
-    context="poster",
-    style="white",
-    palette="Paired",
-    font="sans-serif",
-    font_scale=1.0,
-    color_codes=True,
-    rc=None,
-)
 
 
 class Strategy(object):
@@ -528,6 +516,14 @@ class Strategy(object):
         Returns:
             _type_: Figure and axis matplotlib objects
         """
+        try:
+            import matplotlib.pyplot as plt
+            import seaborn as sns
+        except ImportError:
+            raise ImportError(
+                "You need to install `matplotlib` and `seaborn` to "
+                "use `mle-hyperopt`'s plotting utilities."
+            )
         assert isinstance(self.log[0]["objective"], numbers.Number)
         objective_evals = [it["objective"] for it in self.log]
 
@@ -535,6 +531,16 @@ class Strategy(object):
             timeseries = np.minimum.accumulate(objective_evals)
         else:
             timeseries = np.maximum.accumulate(objective_evals)
+
+        sns.set(
+            context="poster",
+            style="white",
+            palette="Paired",
+            font="sans-serif",
+            font_scale=1.0,
+            color_codes=True,
+            rc=None,
+        )
 
         fig, ax = plt.subplots()
         ax.plot(np.arange(1, len(timeseries) + 1), timeseries)

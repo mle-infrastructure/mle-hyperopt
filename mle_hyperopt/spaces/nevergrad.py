@@ -1,6 +1,5 @@
 from typing import Optional
 from ..space import HyperSpace
-import nevergrad as ng
 
 
 class NevergradSpace(HyperSpace):
@@ -58,6 +57,12 @@ class NevergradSpace(HyperSpace):
 
     def construct(self) -> None:
         """Setup/construct the search space for nevergrad."""
+        try:
+            import nevergrad as ng
+        except ImportError:
+            raise ImportError(
+                "You need to install `nevergrad` to use its search strategies."
+            )
         param_dict = {}
         if self.categorical is not None:
             for k, v in self.categorical.items():
