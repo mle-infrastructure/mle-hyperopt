@@ -152,6 +152,9 @@ def visualize_2D_grid(
     # Construct the 2D array using helper function
     range_x = np.unique(temp_df[p_to_plot[0]])
     range_y = np.unique(temp_df[p_to_plot[1]])
+    print(range_x, range_y)
+    print(len(range_x))
+    print(len(range_y))
     heat_array = get_heatmap_array(
         range_x, range_y, temp_df.to_numpy(), norm_cols, norm_rows
     )

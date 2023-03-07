@@ -5,10 +5,13 @@ from mle_scheduler import MLEQueue
 def main():
     """Run Population-Based Training"""
     strategy = PBTSearch(
-        real={"lrate": {"begin": 1e-04, "end": 1e-02, "prior": "uniform"}},
+        real={"lrate": {"begin": 1e-06, "end": 1e-04, "prior": "uniform"}},
         search_config={
             "exploit": {"strategy": "truncation", "selection_percent": 0.2},
-            "explore": {"strategy": "perturbation", "perturb_coeffs": [0.8, 1.2]},
+            "explore": {
+                "strategy": "perturbation",
+                "perturb_coeffs": [0.8, 1.2],
+            },
             "steps_until_ready": 4,
             "num_workers": 5,
         },
@@ -34,6 +37,7 @@ def main():
         # Get results and storage checkpoints
         scores = [queue.log[r].stats.loss.mean[-1] for r in queue.mle_run_ids]
         ckpts = [queue.log[r].meta.model_ckpt for r in queue.mle_run_ids]
+        print(queue.log[queue.mle_run_ids[0]].meta)
         strategy.tell(configs, scores, ckpts, save=True)
 
 

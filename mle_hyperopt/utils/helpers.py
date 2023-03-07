@@ -12,8 +12,6 @@ import collections
 
 def convert(obj):
     """Conversion helper instead of JSON encoder for handling booleans."""
-    if isinstance(obj, bool):
-        return int(obj)
     if isinstance(obj, (list, tuple)):
         return [convert(item) for item in obj]
     if isinstance(obj, dict):
@@ -24,6 +22,8 @@ def convert(obj):
         return float(obj)
     if isinstance(obj, np.ndarray):
         return convert(obj.tolist())
+    if isinstance(obj, bool):
+        return int(obj)
     if isinstance(obj, np.bool_):
         return int(obj)
     return obj

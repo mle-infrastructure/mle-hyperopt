@@ -68,7 +68,8 @@ setup(
             os.path.join(
                 CURRENT_DIR, "requirements", "requirements-examples.txt"
             )
-        )
+        ),
+        "full": ["nevergrad", "scikit-optimize", "matplotlib", "seaborn"],
     },
     entry_points={
         "console_scripts": [
