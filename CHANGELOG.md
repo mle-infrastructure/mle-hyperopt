@@ -1,3 +1,8 @@
+## [v0.0.8] - [03/2023]
+
+### Fixed
+- Minor fixes for broken `scikit-optimize` dependency.
+
 ## [v0.0.7] - [02/20/2022]
 
 ### Added
