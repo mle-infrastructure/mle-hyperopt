@@ -7,7 +7,8 @@ import yaml
 import re
 import ast
 import numpy as np
-import collections
+import sys
+import collections.abc
 
 
 def convert(obj):
@@ -224,7 +225,7 @@ def flatten_config(dictionary, parent_key="", sep="/") -> dict:
     items = []
     for k, v in dictionary.items():
         new_key = parent_key + sep + k if parent_key else k
-        if isinstance(v, collections.MutableMapping):
+        if isinstance(v, collections.abc.MutableMapping):
             items.extend(flatten_config(v, new_key, sep=sep).items())
         else:
             items.append((new_key, v))
