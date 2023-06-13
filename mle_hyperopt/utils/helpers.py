@@ -1,5 +1,3 @@
-import pickle
-import pickle5
 from typing import List, Union
 import os
 import json
@@ -13,6 +11,11 @@ if sys.version_info.major == 3 and sys.version_info.minor >= 10:
     from collections.abc import MutableMapping
 else:
     from collections import MutableMapping
+
+if sys.version_info.major == 3 and sys.version_info.minor < 8:
+    import pickle5 as pickle
+else:
+    import pickle
 
 
 def convert(obj):
@@ -89,7 +92,7 @@ def load_strategy(filename: str):
         _type_: Instantiated strategy with previous results.
     """
     with open(filename, "rb") as input:
-        obj = pickle5.load(input)
+        obj = pickle.load(input)
     return obj
 
 
