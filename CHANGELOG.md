@@ -2,6 +2,7 @@
 
 ### Fixed
 - Fix `MutableMapping` to also work with python 3.10.
+- Fix `pickle5` install requirement to only apply for python < 3.8
 
 ## [v0.0.8] - [03/2023]
 

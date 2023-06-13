@@ -1,6 +1,6 @@
 numpy <= 1.23.0
 pandas
 rich
-pickle5
+pickle5; python_version < '3.8'
 dotmap
 pyyaml>=5.1
