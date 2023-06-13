@@ -1,3 +1,8 @@
+## [v0.0.9] - [06/2023]
+
+### Fixed
+- Fix `MutableMapping` to also work with python 3.10.
+
 ## [v0.0.8] - [03/2023]
 
 ### Fixed

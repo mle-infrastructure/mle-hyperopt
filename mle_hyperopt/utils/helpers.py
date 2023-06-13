@@ -8,7 +8,11 @@ import re
 import ast
 import numpy as np
 import sys
-import collections.abc
+
+if sys.version_info.major == 3 and sys.version_info.minor >= 10:
+    from collections.abc import MutableMapping
+else:
+    from collections import MutableMapping
 
 
 def convert(obj):
@@ -118,9 +122,7 @@ def load_log(filename: str) -> List[dict]:
     return log_results
 
 
-def load_yaml(
-    filename: str, keys_to_list: bool = True
-) -> Union[dict, List[dict]]:
+def load_yaml(filename: str, keys_to_list: bool = True) -> Union[dict, List[dict]]:
     """Load in YAML file.
 
     Args:
@@ -225,7 +227,7 @@ def flatten_config(dictionary, parent_key="", sep="/") -> dict:
     items = []
     for k, v in dictionary.items():
         new_key = parent_key + sep + k if parent_key else k
-        if isinstance(v, collections.abc.MutableMapping):
+        if isinstance(v, MutableMapping):
             items.extend(flatten_config(v, new_key, sep=sep).items())
         else:
             items.append((new_key, v))
