@@ -1,3 +1,7 @@
+## [v0.0.10] - [08/2024]
+
+- Fix rounding and numpy version
+
 ## [v0.0.9] - [06/2023]
 
 ### Fixed

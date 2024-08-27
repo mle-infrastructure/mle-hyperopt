@@ -76,10 +76,10 @@ def update_message(
     table.add_column(f"Configuration :bookmark: - {time_t}")
     print()
     for i in range(len(best_eval_id)):
-        best_e = np.round_(best_eval[i], 3)
+        best_e = np.round(best_eval[i], 3)
         for k, v in best_config[i].items():
-            if type(v) == float:
-                best_config[i][k] = np.round_(v, 3)
+            if isinstance(v, float):
+                best_config[i][k] = np.round(v, 3)
         best_c = dict(best_config[i])
         if best_ckpt is not None:
             best_c["ckpt"] = best_ckpt[i]
@@ -89,10 +89,10 @@ def update_message(
 
     # Add row(s) for best config(s) in batch
     for i in range(len(best_eval_id)):
-        best_batch_e = np.round_(best_batch_eval[i], 3)
+        best_batch_e = np.round(best_batch_eval[i], 3)
         for k, v in best_batch_config[i].items():
-            if type(v) == float:
-                best_batch_config[i][k] = np.round_(v, 3)
+            if isinstance(v, float):
+                best_batch_config[i][k] = np.round(v, 3)
         best_b_c = dict(best_batch_config[i])
         if best_batch_ckpt is not None:
             best_b_c["ckpt"] = best_batch_ckpt[i]
@@ -118,11 +118,11 @@ def ranking_message(
         best_evals (List[float, np.ndarray]): Top-k performance values.
     """
     # Ensure that update data is list to loop over
-    if type(best_eval_ids) in [int, np.int64]:
+    if isinstance(best_eval_ids, (int, np.int64)):
         best_eval_ids = [best_eval_ids]
-    if type(best_configs) == dict:
+    if isinstance(best_configs, dict):
         best_configs = [best_configs]
-    if type(best_evals) in [float, int]:
+    if isinstance(best_evals, (float, int)):
         best_evals = [best_evals]
 
     console = Console(width=console_width)
@@ -133,15 +133,13 @@ def ranking_message(
     table.add_column("Configuration :bookmark:")
     for i in range(len(best_configs)):
         # Round all the values for prettier printing
-        if type(best_evals[i]) == np.ndarray:
+        if isinstance(best_evals[i], np.ndarray):
             best_evals[i] = best_evals[i].tolist()
-            best_eval = [
-                round(best_evals[i][j], 3) for j in range(len(best_evals[i]))
-            ]
+            best_eval = [round(best_evals[i][j], 3) for j in range(len(best_evals[i]))]
         else:
             best_eval = round(best_evals[i], 3)
         for k, v in best_configs[i].items():
-            if type(v) == float:
+            if isinstance(v, float):
                 best_configs[i][k] = round(v, 3)
         table.add_row(
             f"{i+1}",
@@ -183,9 +181,7 @@ def print_halving_hello(
         num_total_iters (int): Number of total evaluations at the end of search.
     """
     console = Console(width=console_width)
-    console.log(
-        f"Start running {num_sh_batches} batches of Successive Halving."
-    )
+    console.log(f"Start running {num_sh_batches} batches of Successive Halving.")
     console.log(f"➞ Configurations per batch: {evals_per_batch}")
     console.log(f"➞ Iterations per batch: {iters_per_batch}")
     console.log(f"➞ Halving coefficient: {halving_coeff}")
@@ -215,8 +211,7 @@ def print_halving_update(
     """
     console = Console(width=console_width)
     done_iters = np.sum(
-        np.array(evals_per_batch)[:sh_counter]
-        * np.array(iters_per_batch)[:sh_counter]
+        np.array(evals_per_batch)[:sh_counter] * np.array(iters_per_batch)[:sh_counter]
     )
     console.log(
         f"Completed {sh_counter}/{num_sh_batches} batches of SH ➢"
@@ -247,13 +242,9 @@ def print_hyperband_hello(
         evals_per_batch (List[int]): List of number of jobs in all batches.
     """
     console = Console(width=console_width)
-    console.log(
-        f"Start running {num_hb_batches} batches of Hyperband evaluations."
-    )
+    console.log(f"Start running {num_hb_batches} batches of Hyperband evaluations.")
     console.log(f"➞ Evals per batch: {evals_per_batch}")
-    console.log(
-        f"➞ Total SH loops: {num_hb_loops} | Arms per loop: {sh_num_arms}"
-    )
+    console.log(f"➞ Total SH loops: {num_hb_loops} | Arms per loop: {sh_num_arms}")
     console.log(f"➞ Min. budget per loop: {sh_budgets}")
     console.log(
         f"➞ Start Loop No. 1/{num_hb_loops}: {sh_num_arms[0]} arms &"
@@ -293,9 +284,7 @@ def print_hyperband_update(
             f" {sh_num_arms[hb_counter]} arms & {sh_budgets[hb_counter]} min"
             " budget."
         )
-        console.log(
-            f"➞ Next batch of SH: {evals_per_batch[hb_batch_counter]} evals."
-        )
+        console.log(f"➞ Next batch of SH: {evals_per_batch[hb_batch_counter]} evals.")
 
 
 def print_pbt_hello(
@@ -319,9 +308,7 @@ def print_pbt_hello(
     console.log(f"➞ Exploitation strategy: {exploit_type}")
 
 
-def print_pbt_update(
-    step_counter: int, num_total_steps: int, copy_info: dict
-) -> None:
+def print_pbt_update(step_counter: int, num_total_steps: int, copy_info: dict) -> None:
     """Update message specific to PBT search.
 
     Args:
